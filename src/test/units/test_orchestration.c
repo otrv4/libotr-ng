@@ -1137,6 +1137,179 @@ test__otrng_client_ensure_correct_state__prekey_profile__creates_and_moves_when_
   f->client->prekey_profile = NULL;
 }
 
+static void
+test__otrng_client_ensure_correct_state__expired_client_profile__ensures(
+    orchestration_fixture_s *f, gconstpointer data) {
+  (void)data;
+
+  f->client->keypair = f->long_term_key;
+  f->client->forging_key = &f->forging_key->pub;
+  f->client->client_profile = f->client_profile;
+  f->client->prekey_profile = f->prekey_profile;
+  f->client->exp_client_profile = f->client_profile;
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_expired_client_profile__called, ==, 0);
+  g_assert_cmpint(store_expired_client_profile__called, ==, 0);
+
+  f->client->keypair = NULL;
+  f->client->forging_key = NULL;
+  f->client->client_profile = NULL;
+  f->client->prekey_profile = NULL;
+  f->client->exp_client_profile = NULL;
+}
+
+static void
+test__otrng_client_ensure_correct_state__expired_client_profile__loads(
+    orchestration_fixture_s *f, gconstpointer data) {
+  otrng_client_profile_s *client_profile2;
+  (void)data;
+
+  client_profile2 = otrng_client_profile_build(1234, "4", f->forging_key,
+                                               f->forging_key->pub, 20020);
+
+  f->client->keypair = f->long_term_key;
+  f->client->forging_key = &f->forging_key->pub;
+  f->client->client_profile = f->client_profile;
+  f->client->prekey_profile = f->prekey_profile;
+  f->client->exp_client_profile = client_profile2;
+  load_expired_client_profile__assign = f->client_profile;
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_expired_client_profile__called, ==, 1);
+  g_assert_cmpint(store_expired_client_profile__called, ==, 0);
+
+  f->client->keypair = NULL;
+  f->client->forging_key = NULL;
+  f->client->client_profile = NULL;
+  f->client->prekey_profile = NULL;
+  f->client->exp_client_profile = NULL;
+}
+
+static void
+test__otrng_client_ensure_correct_state__expired_client_profile__stores_empty(
+    orchestration_fixture_s *f, gconstpointer data) {
+  otrng_client_profile_s *client_profile2;
+  otrng_client_profile_s *client_profile3;
+  (void)data;
+
+  client_profile2 = otrng_client_profile_build(1234, "4", f->forging_key,
+                                               f->forging_key->pub, 20020);
+
+  client_profile3 = otrng_client_profile_build(1234, "4", f->long_term_key,
+                                               f->long_term_key->pub, 20020);
+
+  f->client->keypair = f->long_term_key;
+  f->client->forging_key = &f->forging_key->pub;
+  f->client->client_profile = f->client_profile;
+  f->client->prekey_profile = f->prekey_profile;
+  f->client->exp_client_profile = client_profile2;
+  load_expired_client_profile__assign = client_profile3;
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_expired_client_profile__called, ==, 1);
+  g_assert_cmpint(store_expired_client_profile__called, ==, 1);
+
+  g_assert(f->client->exp_client_profile == NULL);
+
+  f->client->keypair = NULL;
+  f->client->forging_key = NULL;
+  f->client->client_profile = NULL;
+  f->client->prekey_profile = NULL;
+  f->client->exp_client_profile = NULL;
+}
+
+static void
+test__otrng_client_ensure_correct_state__expired_prekey_profile__ensures(
+    orchestration_fixture_s *f, gconstpointer data) {
+  (void)data;
+
+  f->client->keypair = f->long_term_key;
+  f->client->forging_key = &f->forging_key->pub;
+  f->client->client_profile = f->client_profile;
+  f->client->prekey_profile = f->prekey_profile;
+  f->client->exp_client_profile = f->client_profile;
+  f->client->exp_prekey_profile = f->prekey_profile;
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_expired_prekey_profile__called, ==, 0);
+  g_assert_cmpint(store_expired_prekey_profile__called, ==, 0);
+
+  f->client->keypair = NULL;
+  f->client->forging_key = NULL;
+  f->client->client_profile = NULL;
+  f->client->prekey_profile = NULL;
+  f->client->exp_client_profile = NULL;
+  f->client->exp_prekey_profile = NULL;
+}
+
+static void
+test__otrng_client_ensure_correct_state__expired_prekey_profile__loads(
+    orchestration_fixture_s *f, gconstpointer data) {
+  otrng_prekey_profile_s *prekey_profile2;
+  (void)data;
+
+  prekey_profile2 = otrng_prekey_profile_build(1234, f->forging_key);
+
+  f->client->keypair = f->long_term_key;
+  f->client->forging_key = &f->forging_key->pub;
+  f->client->client_profile = f->client_profile;
+  f->client->prekey_profile = f->prekey_profile;
+  f->client->exp_client_profile = f->client_profile;
+  f->client->exp_prekey_profile = prekey_profile2;
+  load_expired_prekey_profile__assign = f->prekey_profile;
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_expired_prekey_profile__called, ==, 1);
+  g_assert_cmpint(store_expired_prekey_profile__called, ==, 0);
+
+  f->client->keypair = NULL;
+  f->client->forging_key = NULL;
+  f->client->client_profile = NULL;
+  f->client->prekey_profile = NULL;
+  f->client->exp_client_profile = NULL;
+  f->client->exp_prekey_profile = NULL;
+}
+
+static void
+test__otrng_client_ensure_correct_state__expired_prekey_profile__stores_empty(
+    orchestration_fixture_s *f, gconstpointer data) {
+  otrng_prekey_profile_s *prekey_profile2;
+  otrng_prekey_profile_s *prekey_profile3;
+  (void)data;
+
+  prekey_profile2 = otrng_prekey_profile_build(1234, f->forging_key);
+
+  prekey_profile3 = otrng_prekey_profile_build(4234, f->long_term_key);
+
+  f->client->keypair = f->long_term_key;
+  f->client->forging_key = &f->forging_key->pub;
+  f->client->client_profile = f->client_profile;
+  f->client->prekey_profile = f->prekey_profile;
+  f->client->exp_client_profile = f->client_profile;
+  f->client->exp_prekey_profile = prekey_profile2;
+  load_expired_prekey_profile__assign = prekey_profile3;
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_expired_prekey_profile__called, ==, 1);
+  g_assert_cmpint(store_expired_prekey_profile__called, ==, 1);
+
+  g_assert(f->client->exp_prekey_profile == NULL);
+
+  f->client->keypair = NULL;
+  f->client->forging_key = NULL;
+  f->client->client_profile = NULL;
+  f->client->prekey_profile = NULL;
+  f->client->exp_client_profile = NULL;
+  f->client->exp_prekey_profile = NULL;
+}
+
 #define WITH_O_FIXTURE(_p, _c)                                                 \
   WITH_FIXTURE(_p, _c, orchestration_fixture_s, orchestration_fixture)
 
@@ -1237,4 +1410,24 @@ void units_orchestration_add_tests(void) {
   WITH_O_FIXTURE(
       "/orchestration/ensure_correct_state/prekey_profile/fails",
       test__otrng_client_ensure_correct_state__prekey_profile__fails);
+
+  WITH_O_FIXTURE(
+      "/orchestration/ensure_correct_state/expired_client_profile/ensures",
+      test__otrng_client_ensure_correct_state__expired_client_profile__ensures);
+  WITH_O_FIXTURE(
+      "/orchestration/ensure_correct_state/expired_client_profile/loads",
+      test__otrng_client_ensure_correct_state__expired_client_profile__loads);
+  WITH_O_FIXTURE(
+      "/orchestration/ensure_correct_state/expired_client_profile/stores_empty",
+      test__otrng_client_ensure_correct_state__expired_client_profile__stores_empty);
+
+  WITH_O_FIXTURE(
+      "/orchestration/ensure_correct_state/expired_prekey_profile/ensures",
+      test__otrng_client_ensure_correct_state__expired_prekey_profile__ensures);
+  WITH_O_FIXTURE(
+      "/orchestration/ensure_correct_state/expired_prekey_profile/loads",
+      test__otrng_client_ensure_correct_state__expired_prekey_profile__loads);
+  WITH_O_FIXTURE(
+      "/orchestration/ensure_correct_state/expired_prekey_profile/stores_empty",
+      test__otrng_client_ensure_correct_state__expired_prekey_profile__stores_empty);
 }

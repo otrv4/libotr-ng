@@ -363,39 +363,36 @@ tstatic otrng_bool ensure_valid_client_profile(otrng_client_s *client) {
   return otrng_false;
 }
 
-tstatic otrng_bool ensure_valid_expired_client_profile(otrng_client_s *client) {
+tstatic void ensure_valid_expired_client_profile(otrng_client_s *client) {
   if (verify_valid_expired_client_profile(client)) {
-    return otrng_true;
+    return;
   }
 
   clean_expired_client_profile(client);
   load_expired_client_profile_from_storage(client);
 
   if (verify_valid_expired_client_profile(client)) {
-    return otrng_true;
+    return;
   }
 
   clean_expired_client_profile(client);
   client->global_state->callbacks->store_expired_client_profile(client);
-  return otrng_true;
 }
 
-tstatic otrng_bool ensure_valid_expired_prekey_profile(otrng_client_s *client) {
+tstatic void ensure_valid_expired_prekey_profile(otrng_client_s *client) {
   if (verify_valid_expired_prekey_profile(client)) {
-    return otrng_true;
+    return;
   }
 
   clean_expired_prekey_profile(client);
   load_expired_prekey_profile_from_storage(client);
 
   if (verify_valid_expired_prekey_profile(client)) {
-    return otrng_true;
+    return;
   }
 
   clean_expired_prekey_profile(client);
   client->global_state->callbacks->store_expired_prekey_profile(client);
-
-  return otrng_true;
 }
 
 tstatic otrng_bool ensure_valid_prekey_profile(otrng_client_s *client) {
@@ -521,20 +518,14 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
     return;
   }
 
-  if (!ensure_valid_expired_client_profile(client)) {
-    otrng_debug_exit("otrng_client_ensure_correct_state");
-    return;
-  }
+  ensure_valid_expired_client_profile(client);
 
   if (!ensure_valid_prekey_profile(client)) {
     otrng_debug_exit("otrng_client_ensure_correct_state");
     return;
   }
 
-  if (!ensure_valid_expired_prekey_profile(client)) {
-    otrng_debug_exit("otrng_client_ensure_correct_state");
-    return;
-  }
+  ensure_valid_expired_prekey_profile(client);
 
   if (!ensure_enough_prekey_messages(client)) {
     otrng_debug_exit("otrng_client_ensure_correct_state");
