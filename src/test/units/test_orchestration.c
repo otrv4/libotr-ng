@@ -1646,6 +1646,7 @@ static void test__otrng_client_ensure_correct_state__v3_key__ensures(
 // checks the DSA key in the client profile to make sure it's the same
 //   - and creates a new client profile otherwise
 //   - so v3 loading has to happen before client profile
+// fix all the other failing tests once I add this
 
 #define WITH_O_FIXTURE(_p, _c)                                                 \
   WITH_FIXTURE(_p, _c, orchestration_fixture_s, orchestration_fixture)
