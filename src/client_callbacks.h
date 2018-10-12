@@ -66,7 +66,7 @@ typedef struct otrng_client_callbacks_s {
   void (*create_instag)(const struct otrng_client_id_s client_opdata);
 
   /* REQUIRED */
-  void (*create_privkey_v3)(const struct otrng_client_id_s client_opdata);
+  void (*create_privkey_v3)(struct otrng_client_s *client);
 
   /* REQUIRED */
   void (*create_privkey_v4)(const struct otrng_client_id_s client_opdata);
@@ -168,6 +168,9 @@ typedef struct otrng_client_callbacks_s {
   void (*load_privkey_v4)(const struct otrng_client_id_s client_opdata);
 
   /* REQUIRED */
+  void (*load_privkey_v3)(struct otrng_client_s *client);
+
+  /* REQUIRED */
   void (*load_client_profile)(const struct otrng_client_id_s client_opdata);
 
   /* REQUIRED */
@@ -189,6 +192,9 @@ typedef struct otrng_client_callbacks_s {
 
   /* REQUIRED */
   void (*store_privkey_v4)(struct otrng_client_s *client);
+
+  /* REQUIRED */
+  void (*store_privkey_v3)(struct otrng_client_s *client);
 
   /* REQUIRED */
   void (*load_forging_key)(struct otrng_client_s *client);

@@ -85,7 +85,7 @@ otrng_result
 get_account_and_protocol_cb_empty(char **account, char **protocol,
                                   const struct otrng_client_id_s client_id);
 
-void create_privkey_v3_cb_empty(const struct otrng_client_id_s client_opdata);
+void create_privkey_v3_cb_empty(otrng_client_s *client);
 
 void create_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata);
 

@@ -31,8 +31,7 @@ tstatic void create_privkey_cb_v3(const otrng_v3_conn_s *conn) {
     return;
   }
 
-  conn->client->global_state->callbacks->create_privkey_v3(
-      conn->client->client_id);
+  conn->client->global_state->callbacks->create_privkey_v3(conn->client);
 }
 
 tstatic void create_instag_cb_v3(const otrng_s *conv) {

@@ -412,9 +412,7 @@ get_account_and_protocol_cb_empty(char **account, char **protocol,
   return OTRNG_SUCCESS;
 }
 
-void create_privkey_v3_cb_empty(const struct otrng_client_id_s client_opdata) {
-  (void)client_opdata;
-}
+void create_privkey_v3_cb_empty(otrng_client_s *client) { (void)client; }
 
 void create_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata) {
   (void)client_opdata;

@@ -220,6 +220,75 @@ static void create_instag(const otrng_client_id_s client_opdata) {
   otrng_client_add_instance_tag(temp_client, 1234);
 }
 
+static OtrlPrivKey *v3_create_new_key(otrng_client_s *client) {
+  OtrlPrivKey *result = otrng_xmalloc_z(sizeof(OtrlPrivKey));
+  result->accountname = otrng_xstrdup(client->client_id.account);
+  result->protocol = otrng_xstrdup(client->client_id.protocol);
+  return result;
+}
+
+static void v3_free_key(OtrlPrivKey *key) {
+  free(key->accountname);
+  free(key->protocol);
+  free(key);
+}
+
+static void v3_remove_key(OtrlPrivKey *key) {
+  *(key->tous) = key->next;
+  if (key->next) {
+    key->next->tous = key->tous;
+  }
+}
+
+static void v3_add_key_to(OtrlUserState us, OtrlPrivKey *key,
+                          otrng_client_s *client) {
+  OtrlPrivKey *existing;
+
+  existing = otrl_privkey_find(us, client->client_id.account,
+                               client->client_id.protocol);
+
+  if (existing) {
+    otrl_privkey_forget(existing);
+  }
+  if (key) {
+    key->next = us->privkey_root;
+    if (key->next) {
+      key->next->tous = &(key->next);
+    }
+    key->tous = &(us->privkey_root);
+    us->privkey_root = key;
+  }
+}
+
+static int load_privkey_v3__called = 0;
+static otrng_client_s *load_privkey_v3__called_with;
+static OtrlPrivKey *load_privkey_v3__assign = NULL;
+static void load_privkey_v3(otrng_client_s *client) {
+  load_privkey_v3__called++;
+  load_privkey_v3__called_with = client;
+
+  v3_add_key_to(client->global_state->user_state_v3, load_privkey_v3__assign,
+                client);
+}
+
+static int create_privkey_v3__called = 0;
+static otrng_client_s *create_privkey_v3__called_with;
+static OtrlPrivKey *create_privkey_v3__assign = NULL;
+static void create_privkey_v3(otrng_client_s *client) {
+  create_privkey_v3__called++;
+  create_privkey_v3__called_with = client;
+
+  v3_add_key_to(client->global_state->user_state_v3, create_privkey_v3__assign,
+                client);
+}
+
+static int store_privkey_v3__called = 0;
+static otrng_client_s *store_privkey_v3__called_with;
+static void store_privkey_v3(otrng_client_s *client) {
+  store_privkey_v3__called++;
+  store_privkey_v3__called_with = client;
+}
+
 typedef struct orchestration_fixture_s {
   otrng_client_callbacks_s *callbacks;
   otrng_keypair_s *long_term_key;
@@ -229,6 +298,7 @@ typedef struct orchestration_fixture_s {
   otrng_client_s *client;
   otrng_client_profile_s *client_profile;
   otrng_prekey_profile_s *prekey_profile;
+  OtrlPrivKey *v3_key;
 } orchestration_fixture_s;
 
 static void orchestration_fixture_setup(orchestration_fixture_s *f,
@@ -272,6 +342,9 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   f->callbacks->create_prekey_profile = create_prekey_profile;
   f->callbacks->get_account_and_protocol = get_account_and_protocol;
   f->callbacks->create_instag = create_instag;
+  f->callbacks->create_privkey_v3 = create_privkey_v3;
+  f->callbacks->store_privkey_v3 = store_privkey_v3;
+  f->callbacks->load_privkey_v3 = load_privkey_v3;
 
   f->long_term_key = otrng_keypair_new();
   otrng_keypair_generate(f->long_term_key, sym1);
@@ -282,6 +355,8 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   f->client_profile = otrng_client_profile_build(1234, "4", f->long_term_key,
                                                  f->forging_key->pub, 20020);
   f->prekey_profile = otrng_prekey_profile_build(1234, f->long_term_key);
+
+  f->v3_key = v3_create_new_key(f->client);
 
   temp_client = f->client;
 
@@ -370,6 +445,7 @@ static void orchestration_fixture_teardown(orchestration_fixture_s *f,
   free(f->forging_key);
   otrng_client_profile_free(f->client_profile);
   otrng_prekey_profile_free(f->prekey_profile);
+  v3_free_key(f->v3_key);
 }
 
 static otrng_client_profile_s *
@@ -1547,6 +1623,30 @@ static void test__otrng_client_ensure_correct_state__prekey_messages__fails(
   f->client->exp_prekey_profile = NULL;
 }
 
+static void test__otrng_client_ensure_correct_state__v3_key__ensures(
+    orchestration_fixture_s *f, gconstpointer data) {
+  (void)data;
+
+  f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
+
+  otrng_client_ensure_correct_state(f->client);
+
+  g_assert_cmpint(load_privkey_v3__called, ==, 0);
+  g_assert_cmpint(create_privkey_v3__called, ==, 0);
+  g_assert_cmpint(store_privkey_v3__called, ==, 0);
+
+  f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
+}
+
+// loads v3 key
+// creates and stores v3 key
+// fails v3 key
+// checks the DSA key in the client profile to make sure it's the same
+//   - and creates a new client profile otherwise
+//   - so v3 loading has to happen before client profile
+
 #define WITH_O_FIXTURE(_p, _c)                                                 \
   WITH_FIXTURE(_p, _c, orchestration_fixture_s, orchestration_fixture)
 
@@ -1684,4 +1784,7 @@ void units_orchestration_add_tests(void) {
   WITH_O_FIXTURE(
       "/orchestration/ensure_correct_state/prekey_messages/fails",
       test__otrng_client_ensure_correct_state__prekey_messages__fails);
+
+  WITH_O_FIXTURE("/orchestration/ensure_correct_state/v3_key/ensures",
+                 test__otrng_client_ensure_correct_state__v3_key__ensures);
 }
