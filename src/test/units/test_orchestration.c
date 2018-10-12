@@ -1547,7 +1547,6 @@ static void test__otrng_client_ensure_correct_state__prekey_messages__fails(
   f->client->exp_prekey_profile = NULL;
 }
 
-// TODO: test failure of creation
 #define WITH_O_FIXTURE(_p, _c)                                                 \
   WITH_FIXTURE(_p, _c, orchestration_fixture_s, orchestration_fixture)
 
