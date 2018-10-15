@@ -44,6 +44,9 @@ INTERNAL otrng_result otrng_client_instance_tag_write_to(otrng_client_s *client,
 INTERNAL otrng_result
 otrng_client_private_key_v3_write_to(const otrng_client_s *client, FILE *privf);
 
+INTERNAL otrng_result otrng_client_private_key_v3_read_from(
+    const otrng_client_s *client, FILE *privf);
+
 INTERNAL otrng_result
 otrng_client_client_profile_read_from(otrng_client_s *client, FILE *profilef);
 

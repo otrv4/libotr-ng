@@ -120,11 +120,6 @@ API otrng_result otrng_global_state_instag_generate_into(
   return otrng_client_instance_tag_write_to(get_client(gs, client_id), instag);
 }
 
-API otrng_result otrng_global_state_private_key_v3_generate_into(
-    otrng_global_state_s *gs, const otrng_client_id_s client_id, FILE *privf) {
-  return otrng_client_private_key_v3_write_to(get_client(gs, client_id), privf);
-}
-
 tstatic otrng_result otrng_global_state_add_private_key_v4(
     otrng_global_state_s *gs, const otrng_client_id_s clientop,
     const uint8_t sym[ED448_PRIVATE_BYTES]) {
@@ -149,6 +144,11 @@ API otrng_result otrng_global_state_generate_private_key(
   free(sym);
 
   return res;
+}
+
+API otrng_result otrng_global_state_generate_private_key_v3(
+    otrng_global_state_s *gs, const otrng_client_id_s client_id) {
+  return otrng_v3_create_private_key(get_client(gs, client_id));
 }
 
 tstatic otrng_result otrng_global_state_add_forging_key(
@@ -331,11 +331,70 @@ API otrng_result otrng_global_state_instance_tags_read_from(
 }
 
 API otrng_result otrng_global_state_private_key_v3_read_from(
-    otrng_global_state_s *gs, FILE *keys) {
+    otrng_global_state_s *gs, FILE *keys,
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep)) {
   gcry_error_t res = otrl_privkey_read_FILEp(gs->user_state_v3, keys);
+  (void)read_client_id_for_key;
   if (res) {
     return OTRNG_ERROR;
   }
+  return OTRNG_SUCCESS;
+}
+
+static void sexp_write(FILE *fp, gcry_sexp_t sexp) {
+  size_t buflen;
+  char *buf;
+
+  buflen = gcry_sexp_sprint(sexp, GCRYSEXP_FMT_ADVANCED, NULL, 0);
+  buf = otrng_xmalloc_z(buflen);
+  gcry_sexp_sprint(sexp, GCRYSEXP_FMT_ADVANCED, buf, buflen);
+  fprintf(fp, "%s", buf);
+  free(buf);
+}
+
+static gcry_error_t account_write(FILE *fp, const char *accountname,
+                                  const char *protocol, gcry_sexp_t privkey) {
+  gcry_error_t err;
+  gcry_sexp_t names, protos;
+
+  fprintf(fp, " (account\n");
+
+  err = gcry_sexp_build(&names, NULL, "(name %s)", accountname);
+  if (!err) {
+    sexp_write(fp, names);
+    gcry_sexp_release(names);
+  }
+  if (!err) {
+    err = gcry_sexp_build(&protos, NULL, "(protocol %s)", protocol);
+  }
+  if (!err) {
+    sexp_write(fp, protos);
+    gcry_sexp_release(protos);
+  }
+  if (!err) {
+    sexp_write(fp, privkey);
+  }
+
+  fprintf(fp, " )\n");
+
+  return err;
+}
+
+API otrng_result otrng_global_state_private_key_v3_write_to(
+    const otrng_global_state_s *gs, FILE *fp) {
+  gcry_error_t ret;
+  OtrlUserState us = gs->user_state_v3;
+  OtrlPrivKey *p;
+
+  fprintf(fp, "(privkeys\n");
+  for (p = us->privkey_root; p; p = p->next) {
+    ret = account_write(fp, p->accountname, p->protocol, p->privkey);
+    if (ret) {
+      return OTRNG_ERROR;
+    }
+  }
+  fprintf(fp, ")\n");
+
   return OTRNG_SUCCESS;
 }
 

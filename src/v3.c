@@ -840,3 +840,145 @@ tstatic char *otrng_v3_retrieve_injected_message(otrng_v3_conn_s *conn) {
 
   return to_send;
 }
+
+#define write_int(x)                                                           \
+  do {                                                                         \
+    bufp[0] = ((x) >> 24) & 0xff;                                              \
+    bufp[1] = ((x) >> 16) & 0xff;                                              \
+    bufp[2] = ((x) >> 8) & 0xff;                                               \
+    bufp[3] = (x)&0xff;                                                        \
+    bufp += 4;                                                                 \
+    lenp -= 4;                                                                 \
+  } while (0)
+
+#define write_mpi(x, nx, dx)                                                   \
+  do {                                                                         \
+    write_int(nx);                                                             \
+    gcry_mpi_print(format, bufp, lenp, NULL, (x));                             \
+    bufp += (nx);                                                              \
+    lenp -= (nx);                                                              \
+  } while (0)
+
+/* Ugh */
+static gcry_error_t make_pubkey(unsigned char **pubbufp, size_t *publenp,
+                                gcry_sexp_t privkey) {
+  gcry_mpi_t p, q, g, y;
+  gcry_sexp_t dsas, ps, qs, gs, ys;
+  size_t np, nq, ng, ny;
+  enum gcry_mpi_format format = GCRYMPI_FMT_USG;
+  unsigned char *bufp;
+  size_t lenp;
+
+  *pubbufp = NULL;
+  *publenp = 0;
+
+  /* Extract the public parameters */
+  dsas = gcry_sexp_find_token(privkey, "dsa", 0);
+  if (dsas == NULL) {
+    return gcry_error(GPG_ERR_UNUSABLE_SECKEY);
+  }
+  ps = gcry_sexp_find_token(dsas, "p", 0);
+  qs = gcry_sexp_find_token(dsas, "q", 0);
+  gs = gcry_sexp_find_token(dsas, "g", 0);
+  ys = gcry_sexp_find_token(dsas, "y", 0);
+  gcry_sexp_release(dsas);
+  if (!ps || !qs || !gs || !ys) {
+    gcry_sexp_release(ps);
+    gcry_sexp_release(qs);
+    gcry_sexp_release(gs);
+    gcry_sexp_release(ys);
+    return gcry_error(GPG_ERR_UNUSABLE_SECKEY);
+  }
+  p = gcry_sexp_nth_mpi(ps, 1, GCRYMPI_FMT_USG);
+  gcry_sexp_release(ps);
+  q = gcry_sexp_nth_mpi(qs, 1, GCRYMPI_FMT_USG);
+  gcry_sexp_release(qs);
+  g = gcry_sexp_nth_mpi(gs, 1, GCRYMPI_FMT_USG);
+  gcry_sexp_release(gs);
+  y = gcry_sexp_nth_mpi(ys, 1, GCRYMPI_FMT_USG);
+  gcry_sexp_release(ys);
+  if (!p || !q || !g || !y) {
+    gcry_mpi_release(p);
+    gcry_mpi_release(q);
+    gcry_mpi_release(g);
+    gcry_mpi_release(y);
+    return gcry_error(GPG_ERR_UNUSABLE_SECKEY);
+  }
+
+  *publenp = 0;
+  gcry_mpi_print(format, NULL, 0, &np, p);
+  *publenp += np + 4;
+  gcry_mpi_print(format, NULL, 0, &nq, q);
+  *publenp += nq + 4;
+  gcry_mpi_print(format, NULL, 0, &ng, g);
+  *publenp += ng + 4;
+  gcry_mpi_print(format, NULL, 0, &ny, y);
+  *publenp += ny + 4;
+
+  *pubbufp = malloc(*publenp);
+  if (*pubbufp == NULL) {
+    gcry_mpi_release(p);
+    gcry_mpi_release(q);
+    gcry_mpi_release(g);
+    gcry_mpi_release(y);
+    return gcry_error(GPG_ERR_ENOMEM);
+  }
+  bufp = *pubbufp;
+  lenp = *publenp;
+
+  write_mpi(p, np, "P");
+  write_mpi(q, nq, "Q");
+  write_mpi(g, ng, "G");
+  write_mpi(y, ny, "Y");
+
+  gcry_mpi_release(p);
+  gcry_mpi_release(q);
+  gcry_mpi_release(g);
+  gcry_mpi_release(y);
+
+  return gcry_error(GPG_ERR_NO_ERROR);
+}
+
+// Creates a new v3 private key and adds it to the user state, WITHOUT writing
+// it to disk. This duplicates some functionality from libotr in order to
+// separate out functionality we want to factor a bit
+API otrng_result otrng_v3_create_private_key(otrng_client_s *client) {
+  gcry_error_t err;
+  gcry_sexp_t key, parms;
+  OtrlPrivKey *p = NULL;
+  OtrlUserState us = client->global_state->user_state_v3;
+  static const char *parmstr = "(genkey (dsa (nbits 4:1024)))";
+
+  err = gcry_sexp_new(&parms, parmstr, strlen(parmstr), 0);
+  if (err) {
+    return OTRNG_ERROR;
+  }
+
+  err = gcry_pk_genkey(&key, parms);
+  gcry_sexp_release(parms);
+  if (err) {
+    return OTRNG_ERROR;
+  }
+
+  p = otrng_secure_alloc(sizeof(OtrlPrivKey));
+
+  p->privkey = gcry_sexp_find_token(key, "private-key", 0);
+  gcry_sexp_release(key);
+
+  p->accountname = otrng_xstrdup(client->client_id.account);
+  p->protocol = otrng_xstrdup(client->client_id.protocol);
+  p->pubkey_type = OTRL_PUBKEY_TYPE_DSA;
+  p->next = us->privkey_root;
+  if (p->next) {
+    p->next->tous = &(p->next);
+  }
+  p->tous = &(us->privkey_root);
+  us->privkey_root = p;
+
+  if (make_pubkey(&(p->pubkey_data), &(p->pubkey_datalen), p->privkey)) {
+    otrl_privkey_forget(p);
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
+}

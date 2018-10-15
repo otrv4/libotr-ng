@@ -216,12 +216,7 @@ static void test_otrng_client_profile_transitional_signature(void) {
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
   client->global_state = otrng_global_state_new(test_callbacks, otrng_false);
 
-  /* Generate DSA key */
-  FILE *tmpFILEp = tmpfile();
-
-  otrng_assert_is_success(
-      otrng_client_private_key_v3_write_to(client, tmpFILEp));
-  fclose(tmpFILEp);
+  otrng_assert_is_success(otrng_v3_create_private_key(client));
 
   OtrlPrivKey *dsa_key = otrng_client_get_private_key_v3(client);
 

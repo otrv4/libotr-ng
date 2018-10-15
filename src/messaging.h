@@ -69,6 +69,9 @@ API otrng_result otrng_global_state_private_key_v3_generate_into(
 API otrng_result otrng_global_state_generate_private_key(
     otrng_global_state_s *gs, const otrng_client_id_s client_id);
 
+API otrng_result otrng_global_state_generate_private_key_v3(
+    otrng_global_state_s *gs, const otrng_client_id_s client_id);
+
 API otrng_result otrng_global_state_generate_forging_key(
     otrng_global_state_s *gs, const otrng_client_id_s client_id);
 
@@ -79,6 +82,9 @@ API otrng_result otrng_global_state_generate_prekey_profile(
     otrng_global_state_s *gs, const otrng_client_id_s client_id);
 
 API otrng_result otrng_global_state_private_key_v4_write_to(
+    const otrng_global_state_s *gs, FILE *privf);
+
+API otrng_result otrng_global_state_private_key_v3_write_to(
     const otrng_global_state_s *gs, FILE *privf);
 
 API otrng_result otrng_global_state_forging_key_write_to(
@@ -103,7 +109,8 @@ API otrng_result otrng_global_state_instance_tags_read_from(
     otrng_global_state_s *gs, FILE *instag);
 
 API otrng_result otrng_global_state_private_key_v3_read_from(
-    otrng_global_state_s *gs, FILE *keys);
+    otrng_global_state_s *gs, FILE *keys,
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep));
 
 API otrng_result otrng_global_state_private_key_v4_read_from(
     otrng_global_state_s *gs, FILE *privf,

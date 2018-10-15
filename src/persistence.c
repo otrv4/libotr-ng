@@ -320,8 +320,7 @@ INTERNAL otrng_result
 otrng_client_instance_tag_read_from(otrng_client_s *client, FILE *instagf) {
   gcry_error_t ret;
 
-  if (client->global_state->user_state_v3 ==
-      NULL) { // TODO: unsure about this check. It is not a pointer
+  if (client->global_state->user_state_v3 == NULL) {
     return OTRNG_ERROR;
   }
 
@@ -333,17 +332,14 @@ otrng_client_instance_tag_read_from(otrng_client_s *client, FILE *instagf) {
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_client_private_key_v3_write_to(
-    const otrng_client_s *client, FILE *privf) {
-  gcry_error_t ret;
+INTERNAL otrng_result
+otrng_client_private_key_v3_read_from(const otrng_client_s *client, FILE *fp) {
+  OtrlUserState us = client->global_state->user_state_v3;
 
-  ret = otrl_privkey_generate_FILEp(client->global_state->user_state_v3, privf,
-                                    client->client_id.account,
-                                    client->client_id.protocol);
-
-  if (ret) {
+  if (otrl_privkey_read_FILEp(us, fp)) {
     return OTRNG_ERROR;
   }
+
   return OTRNG_SUCCESS;
 }
 

@@ -29,7 +29,7 @@
 tstatic void signal_error_in_state_management(otrng_client_s *client,
                                               const char *area) {
   (void)client;
-  // TODO: this should probably have a better implementation later
+  // this should probably have a better implementation later
   otrng_debug_fprintf(
       stderr, "encountered error when trying to ensure OTR state: %s\n", area);
 }
@@ -38,6 +38,12 @@ tstatic void load_long_term_keys_from_storage(otrng_client_s *client) {
   otrng_debug_enter("orchestration.load_long_term_keys_from_storage");
   client->global_state->callbacks->load_privkey_v4(client->client_id);
   otrng_debug_exit("orchestration.load_long_term_keys_from_storage");
+}
+
+tstatic void load_long_term_keys_v3_from_storage(otrng_client_s *client) {
+  otrng_debug_enter("orchestration.load_long_term_keys_v3_from_storage");
+  client->global_state->callbacks->load_privkey_v3(client);
+  otrng_debug_exit("orchestration.load_long_term_keys_v3_from_storage");
 }
 
 tstatic void load_forging_key_from_storage(otrng_client_s *client) {
@@ -50,6 +56,12 @@ tstatic void create_long_term_keys(otrng_client_s *client) {
   otrng_debug_enter("orchestration.create_long_term_keys");
   client->global_state->callbacks->create_privkey_v4(client->client_id);
   otrng_debug_exit("orchestration.create_long_term_keys");
+}
+
+tstatic void create_long_term_keys_v3(otrng_client_s *client) {
+  otrng_debug_enter("orchestration.create_long_term_keys_v3");
+  client->global_state->callbacks->create_privkey_v3(client);
+  otrng_debug_exit("orchestration.create_long_term_keys_v3");
 }
 
 tstatic void create_forging_key(otrng_client_s *client) {
@@ -492,6 +504,38 @@ tstatic otrng_bool ensure_enough_prekey_messages(otrng_client_s *client) {
   return otrng_false;
 }
 
+tstatic otrng_bool verify_valid_long_term_key_v3(otrng_client_s *client) {
+  if (otrl_privkey_find(client->global_state->user_state_v3,
+                        client->client_id.account,
+                        client->client_id.protocol) != NULL) {
+    return otrng_true;
+  }
+  return otrng_false;
+}
+
+tstatic otrng_bool ensure_valid_long_term_key_v3(otrng_client_s *client) {
+  if (verify_valid_long_term_key_v3(client)) {
+    return otrng_true;
+  }
+
+  load_long_term_keys_v3_from_storage(client);
+
+  if (verify_valid_long_term_key_v3(client)) {
+    return otrng_true;
+  }
+
+  create_long_term_keys_v3(client);
+
+  if (verify_valid_long_term_key_v3(client)) {
+    clean_client_profile(client);
+    client->global_state->callbacks->store_privkey_v3(client);
+    return otrng_true;
+  }
+
+  signal_error_in_state_management(client, "No long term v3 key pair");
+  return otrng_false;
+}
+
 /* Note, the ensure_ family of functions will check whether the
    values are there and correct, and try to fix them if not.
    The verify_ family of functions will just check that the values
@@ -504,6 +548,11 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   otrng_debug_fprintf(stderr, "client=%s\n", client->client_id.account);
 
   if (!ensure_valid_long_term_key(client)) {
+    otrng_debug_exit("otrng_client_ensure_correct_state");
+    return;
+  }
+
+  if (!ensure_valid_long_term_key_v3(client)) {
     otrng_debug_exit("otrng_client_ensure_correct_state");
     return;
   }
@@ -537,6 +586,10 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
 
 API otrng_bool otrng_client_verify_correct_state(otrng_client_s *client) {
   if (!verify_valid_long_term_key(client)) {
+    return otrng_false;
+  }
+
+  if (!verify_valid_long_term_key_v3(client)) {
     return otrng_false;
   }
 

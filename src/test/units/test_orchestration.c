@@ -430,6 +430,17 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
 
   store_prekey_messages__called = 0;
   store_prekey_messages__called_with = NULL;
+
+  load_privkey_v3__called = 0;
+  load_privkey_v3__assign = NULL;
+  load_privkey_v3__called_with = NULL;
+
+  create_privkey_v3__called = 0;
+  create_privkey_v3__assign = NULL;
+  create_privkey_v3__called_with = NULL;
+
+  store_privkey_v3__called = 0;
+  store_privkey_v3__called_with = NULL;
 }
 
 static void orchestration_fixture_teardown(orchestration_fixture_s *f,
@@ -564,6 +575,7 @@ static void test__otrng_client_ensure_correct_state__forging_key__ensures(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
 
   otrng_client_ensure_correct_state(f->client);
@@ -574,12 +586,14 @@ static void test__otrng_client_ensure_correct_state__forging_key__ensures(
 
   f->client->keypair = NULL;
   f->client->forging_key = NULL;
+  v3_remove_key(f->v3_key);
 }
 
 static void test__otrng_client_ensure_correct_state__forging_key__loads(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   load_forging_key__assign = &f->forging_key->pub;
 
   g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
@@ -594,6 +608,7 @@ static void test__otrng_client_ensure_correct_state__forging_key__loads(
   g_assert(f->client->forging_key == &f->forging_key->pub);
 
   f->client->forging_key = NULL;
+  v3_remove_key(f->v3_key);
   f->client->keypair = NULL;
 }
 
@@ -601,6 +616,7 @@ static void test__otrng_client_ensure_correct_state__forging_key__creates(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   create_forging_key__assign = &f->forging_key->pub;
   f->client->client_profile =
       create_client_profile_copy_from(f->client_profile);
@@ -622,6 +638,7 @@ static void test__otrng_client_ensure_correct_state__forging_key__creates(
   g_assert(f->client->client_profile == NULL);
 
   f->client->forging_key = NULL;
+  v3_remove_key(f->v3_key);
   f->client->keypair = NULL;
 }
 
@@ -629,6 +646,7 @@ static void test__otrng_client_ensure_correct_state__forging_key__fails(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->client_profile = f->client_profile;
 
   otrng_client_ensure_correct_state(f->client);
@@ -648,6 +666,7 @@ static void test__otrng_client_ensure_correct_state__forging_key__fails(
 
   f->client->client_profile = NULL;
   f->client->forging_key = NULL;
+  v3_remove_key(f->v3_key);
   f->client->keypair = NULL;
 }
 
@@ -655,6 +674,7 @@ static void test__otrng_client_ensure_correct_state__client_profile__ensures(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
 
@@ -666,6 +686,7 @@ static void test__otrng_client_ensure_correct_state__client_profile__ensures(
   g_assert_cmpint(store_client_profile__called, ==, 0);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
 }
@@ -674,6 +695,7 @@ static void test__otrng_client_ensure_correct_state__client_profile__loads(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   load_client_profile__assign = f->client_profile;
 
@@ -689,6 +711,7 @@ static void test__otrng_client_ensure_correct_state__client_profile__loads(
   g_assert(f->client->client_profile == f->client_profile);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
 }
@@ -697,6 +720,7 @@ static void test__otrng_client_ensure_correct_state__client_profile__creates(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   create_client_profile__assign = f->client_profile;
 
@@ -711,6 +735,7 @@ static void test__otrng_client_ensure_correct_state__client_profile__creates(
   g_assert(f->client->should_publish == otrng_true);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
 }
@@ -719,6 +744,7 @@ static void test__otrng_client_ensure_correct_state__client_profile__fails(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
 
   otrng_client_ensure_correct_state(f->client);
@@ -730,6 +756,7 @@ static void test__otrng_client_ensure_correct_state__client_profile__fails(
   g_assert(f->client->client_profile == NULL);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
 }
@@ -744,6 +771,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_key(
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   otrng_keypair_generate(long_term2, sym3);
   client_profile2 = otrng_client_profile_build(1234, "4", long_term2,
                                                f->forging_key->pub, 20020);
@@ -761,6 +789,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_key(
   g_assert(f->client->client_profile == f->client_profile);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   otrng_keypair_free(long_term2);
@@ -776,6 +805,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_forgin
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   otrng_keypair_generate(forging2, sym3);
   client_profile2 = otrng_client_profile_build(1234, "4", f->long_term_key,
                                                forging2->pub, 20020);
@@ -793,6 +823,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_forgin
   g_assert(f->client->client_profile == f->client_profile);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   otrng_keypair_free(forging2);
@@ -805,6 +836,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_instan
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   client_profile2 = otrng_client_profile_build(4234, "4", f->long_term_key,
                                                f->forging_key->pub, 20020);
   f->client->forging_key = &f->forging_key->pub;
@@ -821,6 +853,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_instan
   g_assert(f->client->client_profile == f->client_profile);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
 }
@@ -837,6 +870,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_and_moves_when_ex
   client_profile_sign(client_profile2, f->long_term_key);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = client_profile2;
   f->client->exp_client_profile = NULL;
@@ -854,6 +888,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_and_moves_when_ex
   g_assert(f->client->exp_client_profile == client_profile2);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
 }
@@ -870,6 +905,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_and_moves_when_cl
   client_profile_sign(client_profile2, f->long_term_key);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = client_profile2;
   f->client->exp_client_profile = NULL;
@@ -887,6 +923,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_and_moves_when_cl
   g_assert(f->client->exp_client_profile == client_profile2);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
 }
@@ -903,6 +940,7 @@ test__otrng_client_ensure_correct_state__client_profile__creates_and_moves_when_
   client_profile_sign(client_profile2, f->long_term_key);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = NULL;
   f->client->exp_client_profile = NULL;
@@ -921,6 +959,7 @@ test__otrng_client_ensure_correct_state__client_profile__creates_and_moves_when_
   g_assert(f->client->exp_client_profile == client_profile2);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
 }
@@ -941,6 +980,7 @@ test__otrng_client_ensure_correct_state__client_profile__creates_and_moves_when_
                                                f->forging_key->pub, 1);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = NULL;
   f->client->exp_client_profile = client_profile3;
@@ -959,6 +999,7 @@ test__otrng_client_ensure_correct_state__client_profile__creates_and_moves_when_
   g_assert(f->client->exp_client_profile == client_profile2);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
 }
@@ -967,6 +1008,7 @@ static void test__otrng_client_ensure_correct_state__prekey_profile__ensures(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
 
@@ -981,6 +1023,7 @@ static void test__otrng_client_ensure_correct_state__prekey_profile__ensures(
   g_assert_cmpint(store_prekey_profile__called, ==, 0);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -990,6 +1033,7 @@ static void test__otrng_client_ensure_correct_state__prekey_profile__loads(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
 
@@ -1006,6 +1050,7 @@ static void test__otrng_client_ensure_correct_state__prekey_profile__loads(
   g_assert(f->client->prekey_profile == f->prekey_profile);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1015,6 +1060,7 @@ static void test__otrng_client_ensure_correct_state__prekey_profile__creates(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   create_prekey_profile__assign = f->prekey_profile;
@@ -1030,6 +1076,7 @@ static void test__otrng_client_ensure_correct_state__prekey_profile__creates(
   g_assert(f->client->should_publish == otrng_true);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1039,6 +1086,7 @@ static void test__otrng_client_ensure_correct_state__prekey_profile__fails(
     orchestration_fixture_s *f, gconstpointer data) {
   (void)data;
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
 
@@ -1051,6 +1099,7 @@ static void test__otrng_client_ensure_correct_state__prekey_profile__fails(
   g_assert(f->client->prekey_profile == NULL);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
 }
@@ -1065,6 +1114,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_when_wrong_key(
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   otrng_keypair_generate(long_term2, sym3);
   prekey_profile2 = otrng_prekey_profile_build(1234, long_term2);
 
@@ -1084,6 +1134,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_when_wrong_key(
   g_assert(f->client->prekey_profile == f->prekey_profile);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1097,6 +1148,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_when_wrong_instan
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   prekey_profile2 = otrng_prekey_profile_build(4234, f->long_term_key);
   f->client->forging_key = &f->forging_key->pub;
   f->client->prekey_profile = prekey_profile2;
@@ -1113,6 +1165,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_when_wrong_instan
   g_assert(f->client->prekey_profile == f->prekey_profile);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1129,6 +1182,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_and_moves_when_ex
   otrng_prekey_profile_sign(prekey_profile2, f->long_term_key);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = prekey_profile2;
@@ -1147,6 +1201,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_and_moves_when_ex
   g_assert(f->client->exp_prekey_profile == prekey_profile2);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1163,6 +1218,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_and_moves_when_cl
   otrng_prekey_profile_sign(prekey_profile2, f->long_term_key);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = prekey_profile2;
@@ -1181,6 +1237,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_and_moves_when_cl
   g_assert(f->client->exp_prekey_profile == prekey_profile2);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1197,6 +1254,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__creates_and_moves_when_
   otrng_prekey_profile_sign(prekey_profile2, f->long_term_key);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = NULL;
@@ -1216,6 +1274,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__creates_and_moves_when_
   g_assert(f->client->exp_prekey_profile == prekey_profile2);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1235,6 +1294,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__creates_and_moves_when_
   prekey_profile3 = otrng_prekey_profile_build(1234, f->long_term_key);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = NULL;
@@ -1254,6 +1314,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__creates_and_moves_when_
   g_assert(f->client->exp_prekey_profile == prekey_profile2);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1265,6 +1326,7 @@ test__otrng_client_ensure_correct_state__expired_client_profile__ensures(
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1278,6 +1340,7 @@ test__otrng_client_ensure_correct_state__expired_client_profile__ensures(
   g_assert_cmpint(store_expired_client_profile__called, ==, 0);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1294,6 +1357,7 @@ test__otrng_client_ensure_correct_state__expired_client_profile__loads(
                                                f->forging_key->pub, 20020);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1307,6 +1371,7 @@ test__otrng_client_ensure_correct_state__expired_client_profile__loads(
   g_assert_cmpint(store_expired_client_profile__called, ==, 0);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1327,6 +1392,7 @@ test__otrng_client_ensure_correct_state__expired_client_profile__stores_empty(
                                                f->long_term_key->pub, 20020);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1342,6 +1408,7 @@ test__otrng_client_ensure_correct_state__expired_client_profile__stores_empty(
   g_assert(f->client->exp_client_profile == NULL);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1354,6 +1421,7 @@ test__otrng_client_ensure_correct_state__expired_prekey_profile__ensures(
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1367,6 +1435,7 @@ test__otrng_client_ensure_correct_state__expired_prekey_profile__ensures(
   g_assert_cmpint(store_expired_prekey_profile__called, ==, 0);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1383,6 +1452,7 @@ test__otrng_client_ensure_correct_state__expired_prekey_profile__loads(
   prekey_profile2 = otrng_prekey_profile_build(1234, f->forging_key);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1397,6 +1467,7 @@ test__otrng_client_ensure_correct_state__expired_prekey_profile__loads(
   g_assert_cmpint(store_expired_prekey_profile__called, ==, 0);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1416,6 +1487,7 @@ test__otrng_client_ensure_correct_state__expired_prekey_profile__stores_empty(
   prekey_profile3 = otrng_prekey_profile_build(4234, f->long_term_key);
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1432,6 +1504,7 @@ test__otrng_client_ensure_correct_state__expired_prekey_profile__stores_empty(
   g_assert(f->client->exp_prekey_profile == NULL);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1470,6 +1543,7 @@ static void test__otrng_client_ensure_correct_state__prekey_messages__ensures(
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1484,6 +1558,7 @@ static void test__otrng_client_ensure_correct_state__prekey_messages__ensures(
   g_assert_cmpint(store_prekey_messages__called, ==, 0);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1497,6 +1572,7 @@ static void test__otrng_client_ensure_correct_state__prekey_messages__loads(
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1514,6 +1590,7 @@ static void test__otrng_client_ensure_correct_state__prekey_messages__loads(
   g_assert_cmpint(store_prekey_messages__called, ==, 0);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1526,6 +1603,7 @@ static void test__otrng_client_ensure_correct_state__prekey_messages__creates(
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1553,6 +1631,7 @@ static void test__otrng_client_ensure_correct_state__prekey_messages__creates(
                ->should_publish == otrng_true);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1566,6 +1645,7 @@ test__otrng_client_ensure_correct_state__prekey_messages__creates_based_on_to_pu
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1584,6 +1664,7 @@ test__otrng_client_ensure_correct_state__prekey_messages__creates_based_on_to_pu
   g_assert_cmpint(f->client->prekey_msgs_num_to_publish, ==, 0);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1596,6 +1677,7 @@ static void test__otrng_client_ensure_correct_state__prekey_messages__fails(
   (void)data;
 
   f->client->keypair = f->long_term_key;
+  v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
   f->client->forging_key = &f->forging_key->pub;
   f->client->client_profile = f->client_profile;
   f->client->prekey_profile = f->prekey_profile;
@@ -1616,6 +1698,7 @@ static void test__otrng_client_ensure_correct_state__prekey_messages__fails(
   g_assert_cmpint(f->client->prekey_msgs_num_to_publish, ==, 0);
 
   f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
   f->client->forging_key = NULL;
   f->client->client_profile = NULL;
   f->client->prekey_profile = NULL;
@@ -1630,7 +1713,9 @@ static void test__otrng_client_ensure_correct_state__v3_key__ensures(
   f->client->keypair = f->long_term_key;
   v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
 
+  g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
   otrng_client_ensure_correct_state(f->client);
+  g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
 
   g_assert_cmpint(load_privkey_v3__called, ==, 0);
   g_assert_cmpint(create_privkey_v3__called, ==, 0);
@@ -1640,13 +1725,62 @@ static void test__otrng_client_ensure_correct_state__v3_key__ensures(
   v3_remove_key(f->v3_key);
 }
 
-// loads v3 key
-// creates and stores v3 key
-// fails v3 key
-// checks the DSA key in the client profile to make sure it's the same
-//   - and creates a new client profile otherwise
-//   - so v3 loading has to happen before client profile
-// fix all the other failing tests once I add this
+static void test__otrng_client_ensure_correct_state__v3_key__loads(
+    orchestration_fixture_s *f, gconstpointer data) {
+  (void)data;
+
+  f->client->keypair = f->long_term_key;
+
+  load_privkey_v3__assign = f->v3_key;
+
+  g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
+  otrng_client_ensure_correct_state(f->client);
+  g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
+
+  g_assert_cmpint(load_privkey_v3__called, ==, 1);
+  g_assert_cmpint(create_privkey_v3__called, ==, 0);
+  g_assert_cmpint(store_privkey_v3__called, ==, 0);
+
+  f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
+}
+
+static void test__otrng_client_ensure_correct_state__v3_key__creates(
+    orchestration_fixture_s *f, gconstpointer data) {
+  (void)data;
+
+  f->client->keypair = f->long_term_key;
+
+  create_privkey_v3__assign = f->v3_key;
+
+  g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
+  otrng_client_ensure_correct_state(f->client);
+  g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
+
+  g_assert_cmpint(load_privkey_v3__called, ==, 1);
+  g_assert_cmpint(create_privkey_v3__called, ==, 1);
+  g_assert_cmpint(store_privkey_v3__called, ==, 1);
+
+  f->client->keypair = NULL;
+  v3_remove_key(f->v3_key);
+}
+
+static void test__otrng_client_ensure_correct_state__v3_key__fails(
+    orchestration_fixture_s *f, gconstpointer data) {
+  (void)data;
+
+  f->client->keypair = f->long_term_key;
+
+  g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
+  otrng_client_ensure_correct_state(f->client);
+  g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
+
+  g_assert_cmpint(load_privkey_v3__called, ==, 1);
+  g_assert_cmpint(create_privkey_v3__called, ==, 1);
+  g_assert_cmpint(store_privkey_v3__called, ==, 0);
+
+  f->client->keypair = NULL;
+}
 
 #define WITH_O_FIXTURE(_p, _c)                                                 \
   WITH_FIXTURE(_p, _c, orchestration_fixture_s, orchestration_fixture)
@@ -1788,4 +1922,10 @@ void units_orchestration_add_tests(void) {
 
   WITH_O_FIXTURE("/orchestration/ensure_correct_state/v3_key/ensures",
                  test__otrng_client_ensure_correct_state__v3_key__ensures);
+  WITH_O_FIXTURE("/orchestration/ensure_correct_state/v3_key/loads",
+                 test__otrng_client_ensure_correct_state__v3_key__loads);
+  WITH_O_FIXTURE("/orchestration/ensure_correct_state/v3_key/creates",
+                 test__otrng_client_ensure_correct_state__v3_key__creates);
+  WITH_O_FIXTURE("/orchestration/ensure_correct_state/v3_key/fails",
+                 test__otrng_client_ensure_correct_state__v3_key__fails);
 }

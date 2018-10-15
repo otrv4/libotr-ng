@@ -87,6 +87,8 @@ INTERNAL otrng_result otrng_v3_smp_continue(char **to_send,
 
 INTERNAL otrng_result otrng_v3_smp_abort(otrng_v3_conn_s *conn);
 
+API otrng_result otrng_v3_create_private_key(struct otrng_client_s *client);
+
 #ifdef OTRNG_V3_PRIVATE
 
 tstatic void otrng_v3_store_injected_message(const char *msg,

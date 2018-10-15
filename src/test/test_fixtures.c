@@ -188,12 +188,13 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_fixture->v34->v3_conn =
       otrng_v3_conn_new(otrng_fixture->client, "they_are_alice");
 
-  // TODO: @refactoring This should be done automatically
-  FILE *tmpFILEp = tmpfile();
+  /* // TODO: @refactoring This should be done automatically */
+  /* FILE *tmpFILEp = tmpfile(); */
 
-  otrng_assert_is_success(
-      otrng_client_private_key_v3_write_to(otrng_fixture->client, tmpFILEp));
-  fclose(tmpFILEp);
+  /* otrng_assert_is_success( */
+  /*     otrng_client_private_key_v3_write_to(otrng_fixture->client, tmpFILEp));
+   */
+  /* fclose(tmpFILEp); */
 
   /* Generate the instance tag */
   otrng_client_add_instance_tag(otrng_fixture->client, 0x100 + 1);
