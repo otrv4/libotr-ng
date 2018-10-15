@@ -40,7 +40,7 @@ tstatic void create_instag_cb_v3(const otrng_s *conv) {
   }
 
   otrng_client_callbacks_create_instag(conv->client->global_state->callbacks,
-                                       conv->client->client_id);
+                                       conv->client);
 }
 
 tstatic void gone_secure_cb_v3(const otrng_s *conv) {
@@ -645,8 +645,6 @@ INTERNAL otrng_result otrng_v3_send_message(char **new_msg, const char *msg,
                                             otrng_v3_conn_s *conn) {
   // TODO: @client convert TLVs
   OtrlTLV *tlvsv3 = NULL;
-  char *account_name = NULL;
-  char *protocol_name = NULL;
   int err;
 
   (void)tlvs;
@@ -655,18 +653,11 @@ INTERNAL otrng_result otrng_v3_send_message(char **new_msg, const char *msg,
     return OTRNG_ERROR;
   }
 
-  if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
-                                             conn->client)) {
-    return OTRNG_ERROR;
-  }
-
   err = otrl_message_sending(
       conn->client->global_state->user_state_v3, conn->ops, conn->opdata,
-      account_name, protocol_name, conn->peer, OTRL_INSTAG_RECENT, msg, tlvsv3,
-      new_msg, OTRL_FRAGMENT_SEND_SKIP, &conn->ctx, NULL, NULL);
-
-  free(account_name);
-  free(protocol_name);
+      conn->client->client_id.account, conn->client->client_id.protocol,
+      conn->peer, OTRL_INSTAG_RECENT, msg, tlvsv3, new_msg,
+      OTRL_FRAGMENT_SEND_SKIP, &conn->ctx, NULL, NULL);
 
   if (!err) {
     return OTRNG_SUCCESS;
@@ -682,8 +673,6 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
                                                otrng_v3_conn_s *conn) {
   int ignore_msg;
   OtrlTLV *tlvs_v3 = NULL;
-  char *account_name = NULL;
-  char *protocol_name = NULL;
   char *new_msg = NULL;
 
   (void)tlvs;
@@ -694,18 +683,10 @@ INTERNAL otrng_result otrng_v3_receive_message(char **to_send,
     return OTRNG_ERROR;
   }
 
-  if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
-                                             conn->client)) {
-    return OTRNG_ERROR;
-  }
-
-  ignore_msg = otrl_message_receiving(conn->client->global_state->user_state_v3,
-                                      conn->ops, conn->opdata, account_name,
-                                      protocol_name, conn->peer, msg, &new_msg,
-                                      &tlvs_v3, &conn->ctx, NULL, NULL);
-
-  free(account_name);
-  free(protocol_name);
+  ignore_msg = otrl_message_receiving(
+      conn->client->global_state->user_state_v3, conn->ops, conn->opdata,
+      conn->client->client_id.account, conn->client->client_id.protocol,
+      conn->peer, msg, &new_msg, &tlvs_v3, &conn->ctx, NULL, NULL);
 
   (void)ignore_msg;
 
@@ -743,19 +724,10 @@ INTERNAL otrng_result otrng_v3_close(char **to_send, otrng_v3_conn_s *conn) {
   // TODO: @client there is also: otrl_message_disconnect, which only
   // disconnects one instance
 
-  char *account_name = NULL;
-  char *protocol_name = NULL;
-
-  if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
-                                             conn->client)) {
-    return OTRNG_ERROR;
-  }
-
   otrl_message_disconnect_all_instances(
       conn->client->global_state->user_state_v3, conn->ops, conn->opdata,
-      account_name, protocol_name, conn->peer);
-  free(account_name);
-  free(protocol_name);
+      conn->client->client_id.account, conn->client->client_id.protocol,
+      conn->peer);
 
   *to_send = otrng_v3_retrieve_injected_message(conn);
 

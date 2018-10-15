@@ -52,19 +52,7 @@ otrng_shared_session_state_s get_shared_session_state_cb(const otrng_s *conv) {
   return ret;
 }
 
-static otrng_result
-get_account_and_protocol_cb(char **account_name, char **protocol_name,
-                            const otrng_client_id_s client_id) {
-  const char *account =
-      client_id.account; /* Tests use client_name as client_id. */
-
-  *account_name = otrng_xstrdup(account);
-  *protocol_name = otrng_xstrdup("otr");
-  return OTRNG_SUCCESS;
-}
-
-void create_client_profile_cb(struct otrng_client_s *client,
-                              const otrng_client_id_s client_opdata) {
+void create_client_profile_cb(struct otrng_client_s *client) {
   const char *allowed_versions = "34";
 
   // TODO: The callback probably wants to invoke
@@ -79,8 +67,6 @@ void create_client_profile_cb(struct otrng_client_s *client,
       *otrng_client_get_forging_key(client),
       otrng_client_get_client_profile_exp_time(client));
 
-  (void)client_opdata;
-
   if (!instance_tag || !keypair || !profile) {
     return;
   }
@@ -90,12 +76,9 @@ void create_client_profile_cb(struct otrng_client_s *client,
   otrng_client_profile_free(profile);
 }
 
-void create_prekey_profile_cb(struct otrng_client_s *client,
-                              const otrng_client_id_s client_opdata) {
+void create_prekey_profile_cb(struct otrng_client_s *client) {
   otrng_prekey_profile_s *profile =
       otrng_client_build_default_prekey_profile(client);
-
-  (void)client_opdata;
 
   otrng_client_add_prekey_profile(client, profile);
 
@@ -134,7 +117,6 @@ static void display_error_message_cb(const otrng_error_event event,
 }
 
 otrng_client_callbacks_s test_callbacks[1] = {{
-    .get_account_and_protocol = &get_account_and_protocol_cb,
     .create_privkey_v3 = &create_privkey_v3_cb_empty,
     .create_privkey_v4 = &create_privkey_v4_cb_empty,
     .create_forging_key = &create_forging_key_cb_empty,
@@ -415,30 +397,20 @@ get_account_and_protocol_cb_empty(char **account, char **protocol,
 
 void create_privkey_v3_cb_empty(otrng_client_s *client) { (void)client; }
 
-void create_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata) {
-  (void)client_opdata;
-}
+void create_privkey_v4_cb_empty(otrng_client_s *client) { (void)client; }
 
-void create_forging_key_cb_empty(const struct otrng_client_id_s client_opdata) {
-  (void)client_opdata;
-}
+void create_forging_key_cb_empty(otrng_client_s *client) { (void)client; }
 
-void create_client_profile_cb_empty(
-    struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata) {
+void create_client_profile_cb_empty(struct otrng_client_s *client) {
   (void)client;
-  (void)client_opdata;
 }
 
 void write_expired_client_profile_cb_empty(struct otrng_client_s *client) {
   (void)client;
 }
 
-void create_prekey_profile_cb_empty(
-    struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata) {
+void create_prekey_profile_cb_empty(struct otrng_client_s *client) {
   (void)client;
-  (void)client_opdata;
 }
 
 void write_expired_prekey_profile_cb_empty(struct otrng_client_s *client) {
@@ -464,16 +436,12 @@ void display_error_message_cb_empty(const otrng_error_event event,
   (void)otr;
 }
 
-void load_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata) {
-  (void)client_opdata;
+void load_privkey_v4_cb_empty(struct otrng_client_s *client) { (void)client; }
+
+void load_client_profile_cb_empty(struct otrng_client_s *client) {
+  (void)client;
 }
 
-void load_client_profile_cb_empty(
-    const struct otrng_client_id_s client_opdata) {
-  (void)client_opdata;
-}
-
-void load_prekey_profile_cb_empty(
-    const struct otrng_client_id_s client_opdata) {
-  (void)client_opdata;
+void load_prekey_profile_cb_empty(struct otrng_client_s *client) {
+  (void)client;
 }

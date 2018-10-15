@@ -36,12 +36,11 @@
 
 INTERNAL void maybe_create_keys(otrng_client_s *client) {
   const otrng_client_callbacks_s *cb = client->global_state->callbacks;
-  const otrng_client_id_s client_id = client->client_id;
   uint32_t instance_tag;
 
   instance_tag = otrng_client_get_instance_tag(client);
   if (!instance_tag) {
-    otrng_client_callbacks_create_instag(cb, client_id);
+    otrng_client_callbacks_create_instag(cb, client);
   }
 }
 

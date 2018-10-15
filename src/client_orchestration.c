@@ -36,7 +36,7 @@ tstatic void signal_error_in_state_management(otrng_client_s *client,
 
 tstatic void load_long_term_keys_from_storage(otrng_client_s *client) {
   otrng_debug_enter("orchestration.load_long_term_keys_from_storage");
-  client->global_state->callbacks->load_privkey_v4(client->client_id);
+  client->global_state->callbacks->load_privkey_v4(client);
   otrng_debug_exit("orchestration.load_long_term_keys_from_storage");
 }
 
@@ -54,7 +54,7 @@ tstatic void load_forging_key_from_storage(otrng_client_s *client) {
 
 tstatic void create_long_term_keys(otrng_client_s *client) {
   otrng_debug_enter("orchestration.create_long_term_keys");
-  client->global_state->callbacks->create_privkey_v4(client->client_id);
+  client->global_state->callbacks->create_privkey_v4(client);
   otrng_debug_exit("orchestration.create_long_term_keys");
 }
 
@@ -66,13 +66,13 @@ tstatic void create_long_term_keys_v3(otrng_client_s *client) {
 
 tstatic void create_forging_key(otrng_client_s *client) {
   otrng_debug_enter("orchestration.create_forging_key");
-  client->global_state->callbacks->create_forging_key(client->client_id);
+  client->global_state->callbacks->create_forging_key(client);
   otrng_debug_exit("orchestration.create_forging_key");
 }
 
 tstatic void load_client_profile_from_storage(otrng_client_s *client) {
   otrng_debug_enter("orchestration.load_client_profile_from_storage");
-  client->global_state->callbacks->load_client_profile(client->client_id);
+  client->global_state->callbacks->load_client_profile(client);
   otrng_debug_exit("orchestration.load_client_profile_from_storage");
 }
 
@@ -90,21 +90,19 @@ tstatic void load_expired_prekey_profile_from_storage(otrng_client_s *client) {
 
 tstatic void create_client_profile(otrng_client_s *client) {
   otrng_debug_enter("orchestration.create_client_profile");
-  client->global_state->callbacks->create_client_profile(client,
-                                                         client->client_id);
+  client->global_state->callbacks->create_client_profile(client);
   otrng_debug_exit("orchestration.create_client_profile");
 }
 
 tstatic void load_prekey_profile_from_storage(otrng_client_s *client) {
   otrng_debug_enter("orchestration.load_prekey_profile_from_storage");
-  client->global_state->callbacks->load_prekey_profile(client->client_id);
+  client->global_state->callbacks->load_prekey_profile(client);
   otrng_debug_exit("orchestration.load_prekey_profile_from_storage");
 }
 
 tstatic void create_prekey_profile(otrng_client_s *client) {
   otrng_debug_enter("orchestration.create_prekey_profile");
-  client->global_state->callbacks->create_prekey_profile(client,
-                                                         client->client_id);
+  client->global_state->callbacks->create_prekey_profile(client);
   otrng_debug_exit("orchestration.create_prekey_profile");
 }
 
@@ -365,8 +363,7 @@ tstatic otrng_bool ensure_valid_client_profile(otrng_client_s *client) {
     client->client_profile->should_publish = otrng_true;
     client->should_publish = otrng_true;
 
-    client->global_state->callbacks->store_client_profile(client,
-                                                          client->client_id);
+    client->global_state->callbacks->store_client_profile(client);
     return otrng_true;
   }
 
@@ -433,8 +430,7 @@ tstatic otrng_bool ensure_valid_prekey_profile(otrng_client_s *client) {
     client->prekey_profile->should_publish = otrng_true;
     client->should_publish = otrng_true;
 
-    client->global_state->callbacks->store_prekey_profile(client,
-                                                          client->client_id);
+    client->global_state->callbacks->store_prekey_profile(client);
     return otrng_true;
   }
 

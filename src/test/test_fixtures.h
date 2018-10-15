@@ -54,11 +54,9 @@ otrng_client_id_s create_client_id(const char *protocol, const char *account);
 
 otrng_shared_session_state_s get_shared_session_state_cb(const otrng_s *conv);
 
-void create_client_profile_cb(struct otrng_client_s *client,
-                              const otrng_client_id_s client_opdata);
+void create_client_profile_cb(struct otrng_client_s *client);
 
-void create_prekey_profile_cb(struct otrng_client_s *client,
-                              const otrng_client_id_s client_opdata);
+void create_prekey_profile_cb(struct otrng_client_s *client);
 otrng_public_key *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]);
 
@@ -87,25 +85,19 @@ get_account_and_protocol_cb_empty(char **account, char **protocol,
 
 void create_privkey_v3_cb_empty(otrng_client_s *client);
 
-void create_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata);
+void create_privkey_v4_cb_empty(otrng_client_s *client);
 
-void create_forging_key_cb_empty(const struct otrng_client_id_s client_opdata);
+void create_forging_key_cb_empty(otrng_client_s *client);
 
-void create_client_profile_cb_empty(
-    struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata);
+void create_client_profile_cb_empty(struct otrng_client_s *client);
 
 void write_expired_client_profile_cb_empty(struct otrng_client_s *client);
 
-void create_prekey_profile_cb_empty(
-    struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata);
+void create_prekey_profile_cb_empty(struct otrng_client_s *client);
 
 void write_expired_prekey_profile_cb_empty(struct otrng_client_s *client);
 
-void create_shared_prekey_cb_empty(
-    struct otrng_client_s *client,
-    const struct otrng_client_id_s client_opdata);
+void create_shared_prekey_cb_empty(struct otrng_client_s *client);
 
 void display_error_message_cb_empty(const otrng_error_event event,
                                     string_p *to_display,
@@ -113,11 +105,11 @@ void display_error_message_cb_empty(const otrng_error_event event,
 otrng_shared_session_state_s
 get_shared_session_state_cb_empty(const struct otrng_s *conv);
 
-void load_privkey_v4_cb_empty(const struct otrng_client_id_s client_opdata);
+void load_privkey_v4_cb_empty(struct otrng_client_s *client);
 
-void load_client_profile_cb_empty(const struct otrng_client_id_s client_opdata);
+void load_client_profile_cb_empty(struct otrng_client_s *client);
 
-void load_prekey_profile_cb_empty(const struct otrng_client_id_s client_opdata);
+void load_prekey_profile_cb_empty(struct otrng_client_s *client);
 
 extern otrng_client_callbacks_s test_callbacks[];
 

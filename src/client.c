@@ -525,29 +525,20 @@ API otrng_prekey_client_s *
 otrng_client_get_prekey_client(const char *server_identity,
                                otrng_prekey_client_callbacks_s *callbacks,
                                otrng_client_s *client) {
-  char *account = NULL;
-  char *protocol = NULL;
-
   if (client->prekey_client) {
     return client->prekey_client;
   }
-  if (otrng_failed(
-          otrng_client_get_account_and_protocol(&account, &protocol, client))) {
-    return NULL;
-  }
-  free(protocol);
 
   // TODO: this should be a hashmap, since it its one client PER server
   client->prekey_client = otrng_prekey_client_new();
-  otrng_prekey_client_init(client->prekey_client, server_identity, account,
+  otrng_prekey_client_init(client->prekey_client, server_identity,
+                           client->client_id.account,
                            otrng_client_get_instance_tag(client),
                            otrng_client_get_keypair_v4(client),
                            otrng_client_get_client_profile(client),
                            otrng_client_get_prekey_profile(client),
                            otrng_client_get_max_published_prekey_msg(client),
                            otrng_client_get_minimum_stored_prekey_msg(client));
-
-  free(account);
 
   client->prekey_client->callbacks =
       otrng_xmalloc_z(sizeof(otrng_prekey_client_callbacks_s));
@@ -686,36 +677,11 @@ API void otrng_conversation_debug_print(FILE *f, int indent,
 
 #endif /* DEBUG */
 
-tstatic otrng_result get_account_and_protocol_cb(char **account,
-                                                 char **protocol,
-                                                 const otrng_client_s *client) {
-  return client->global_state->callbacks->get_account_and_protocol(
-      account, protocol, client->client_id);
-}
-
-INTERNAL otrng_result otrng_client_get_account_and_protocol(
-    char **account, char **protocol, const otrng_client_s *client) {
-  return get_account_and_protocol_cb(account, protocol, client);
-}
-
 INTERNAL OtrlPrivKey *
 otrng_client_get_private_key_v3(const otrng_client_s *client) {
-  OtrlPrivKey *ret = NULL;
-
-  // TODO: We could use a "get storage key" callback and use it as
-  // account_name plus an arbitrary "libotrng-storage" protocol.
-  char *account_name = NULL;
-  char *protocol_name = NULL;
-  if (!get_account_and_protocol_cb(&account_name, &protocol_name, client)) {
-    return ret;
-  }
-
-  ret = otrl_privkey_find(client->global_state->user_state_v3, account_name,
-                          protocol_name);
-
-  free(account_name);
-  free(protocol_name);
-  return ret;
+  return otrl_privkey_find(client->global_state->user_state_v3,
+                           client->client_id.account,
+                           client->client_id.protocol);
 }
 
 INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client) {
@@ -730,7 +696,7 @@ INTERNAL otrng_keypair_s *otrng_client_get_keypair_v4(otrng_client_s *client) {
   // TODO @orchestration remove this when orchestration is done
   otrng_debug_fprintf(
       stderr, "client.c otrng_client_get_keypair_v4 -> creating private key\n");
-  client->global_state->callbacks->create_privkey_v4(client->client_id);
+  client->global_state->callbacks->create_privkey_v4(client);
 
   return client->keypair;
 }
@@ -850,8 +816,7 @@ otrng_client_get_prekey_profile(otrng_client_s *client) {
     return client->prekey_profile;
   }
 
-  client->global_state->callbacks->create_prekey_profile(client,
-                                                         client->client_id);
+  client->global_state->callbacks->create_prekey_profile(client);
 
   return client->prekey_profile;
 }
@@ -933,36 +898,27 @@ tstatic void otrl_userstate_instance_tag_add(OtrlUserState us,
   us->instag_root = instag;
 }
 
-INTERNAL unsigned int
-otrng_client_get_instance_tag(const otrng_client_s *client) {
-  char *account_name = NULL;
-  char *protocol_name = NULL;
+INTERNAL unsigned int otrng_client_get_instance_tag(otrng_client_s *client) {
   OtrlInsTag *instag;
 
   if (client->global_state->user_state_v3 == NULL) {
     return (unsigned int)0;
   }
 
-  // TODO: We could use a "get storage key" callback and use it as
-  // account_name plus an arbitrary "libotrng-storage" protocol.
-  if (!get_account_and_protocol_cb(&account_name, &protocol_name, client)) {
-    return (unsigned int)1;
-  }
-
   //  fprintf(stderr,"first: %s\n",
   //  client->global_state->user_state_v3->instag_root->accountname);
-  instag = otrl_instag_find(client->global_state->user_state_v3, account_name,
-                            protocol_name);
+  instag =
+      otrl_instag_find(client->global_state->user_state_v3,
+                       client->client_id.account, client->client_id.protocol);
 
   if (!instag) {
     otrng_client_callbacks_create_instag(client->global_state->callbacks,
-                                         client->client_id);
+                                         client);
   }
 
-  instag = otrl_instag_find(client->global_state->user_state_v3, account_name,
-                            protocol_name);
-  free(account_name);
-  free(protocol_name);
+  instag =
+      otrl_instag_find(client->global_state->user_state_v3,
+                       client->client_id.account, client->client_id.protocol);
 
   if (!instag) {
     return (unsigned int)0;
@@ -973,8 +929,6 @@ otrng_client_get_instance_tag(const otrng_client_s *client) {
 
 INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
                                                     unsigned int instag) {
-  char *account_name = NULL;
-  char *protocol_name = NULL;
   OtrlInsTag *p;
 
   if (!client) {
@@ -985,24 +939,15 @@ INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
     return OTRNG_ERROR;
   }
 
-  // TODO: We could use a "get storage key" callback and use it as
-  // account_name plus an arbitrary "libotrng-storage" protocol.
-  if (!get_account_and_protocol_cb(&account_name, &protocol_name, client)) {
-    return OTRNG_ERROR;
-  }
-
-  p = otrl_instag_find(client->global_state->user_state_v3, account_name,
-                       protocol_name);
+  p = otrl_instag_find(client->global_state->user_state_v3,
+                       client->client_id.account, client->client_id.protocol);
   if (p) {
-    free(account_name);
-    free(protocol_name);
     return OTRNG_ERROR;
   }
 
-  p = otrng_instance_tag_new(protocol_name, account_name, instag);
+  p = otrng_instance_tag_new(client->client_id.protocol,
+                             client->client_id.account, instag);
 
-  free(account_name);
-  free(protocol_name);
   if (!p) {
     return OTRNG_ERROR;
   }
@@ -1138,15 +1083,13 @@ API void otrng_client_published(otrng_client_s *client) {
   if (client->client_profile->is_publishing) {
     client->client_profile->should_publish = otrng_false;
     client->client_profile->is_publishing = otrng_false;
-    client->global_state->callbacks->store_client_profile(client,
-                                                          client->client_id);
+    client->global_state->callbacks->store_client_profile(client);
   }
 
   if (client->prekey_profile->is_publishing) {
     client->prekey_profile->should_publish = otrng_false;
     client->prekey_profile->is_publishing = otrng_false;
-    client->global_state->callbacks->store_prekey_profile(client,
-                                                          client->client_id);
+    client->global_state->callbacks->store_prekey_profile(client);
   }
 
   for (current = client->our_prekeys; current != NULL;

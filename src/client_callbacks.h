@@ -57,26 +57,20 @@ struct otrng_s;
 struct otrng_client_id_s;
 
 typedef struct otrng_client_callbacks_s {
-  /* REQUIRED */
-  otrng_result (*get_account_and_protocol)(
-      char **account, char **protocol,
-      const struct otrng_client_id_s client_id);
-
   /* OPTIONAL */ // TODO: why is this optional?
-  void (*create_instag)(const struct otrng_client_id_s client_opdata);
+  void (*create_instag)(struct otrng_client_s *client);
 
   /* REQUIRED */
   void (*create_privkey_v3)(struct otrng_client_s *client);
 
   /* REQUIRED */
-  void (*create_privkey_v4)(const struct otrng_client_id_s client_opdata);
+  void (*create_privkey_v4)(struct otrng_client_s *client);
 
   /* REQUIRED */
-  void (*create_forging_key)(const struct otrng_client_id_s client_opdata);
+  void (*create_forging_key)(struct otrng_client_s *client);
 
   /* REQUIRED */
-  void (*create_client_profile)(struct otrng_client_s *client,
-                                const struct otrng_client_id_s client_opdata);
+  void (*create_client_profile)(struct otrng_client_s *client);
 
   /* REQUIRED */
   void (*store_expired_client_profile)(struct otrng_client_s *client);
@@ -91,8 +85,7 @@ typedef struct otrng_client_callbacks_s {
   void (*load_expired_prekey_profile)(struct otrng_client_s *client);
 
   /* REQUIRED */
-  void (*create_prekey_profile)(struct otrng_client_s *client,
-                                const struct otrng_client_id_s client_opdata);
+  void (*create_prekey_profile)(struct otrng_client_s *client);
 
   /* OPTIONAL */
   void (*gone_secure)(const struct otrng_s *);
@@ -165,24 +158,22 @@ typedef struct otrng_client_callbacks_s {
       const struct otrng_s *conv);
 
   /* REQUIRED */
-  void (*load_privkey_v4)(const struct otrng_client_id_s client_opdata);
+  void (*load_privkey_v4)(struct otrng_client_s *client);
 
   /* REQUIRED */
   void (*load_privkey_v3)(struct otrng_client_s *client);
 
   /* REQUIRED */
-  void (*load_client_profile)(const struct otrng_client_id_s client_opdata);
+  void (*load_client_profile)(struct otrng_client_s *client);
 
   /* REQUIRED */
-  void (*load_prekey_profile)(const struct otrng_client_id_s client_opdata);
+  void (*load_prekey_profile)(struct otrng_client_s *client);
 
   /* REQUIRED */
-  void (*store_client_profile)(struct otrng_client_s *client,
-                               const struct otrng_client_id_s client_opdata);
+  void (*store_client_profile)(struct otrng_client_s *client);
 
   /* REQUIRED */
-  void (*store_prekey_profile)(struct otrng_client_s *client,
-                               const struct otrng_client_id_s client_opdata);
+  void (*store_prekey_profile)(struct otrng_client_s *client);
 
   /* REQUIRED */
   void (*load_prekey_messages)(struct otrng_client_s *client);
@@ -206,9 +197,9 @@ typedef struct otrng_client_callbacks_s {
 INTERNAL otrng_bool
 otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb);
 
-INTERNAL void otrng_client_callbacks_create_instag(
-    const otrng_client_callbacks_s *cb,
-    const struct otrng_client_id_s client_opdata);
+INTERNAL void
+otrng_client_callbacks_create_instag(const otrng_client_callbacks_s *cb,
+                                     struct otrng_client_s *client);
 
 INTERNAL void
 otrng_client_callbacks_gone_secure(const otrng_client_callbacks_s *cb,

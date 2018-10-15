@@ -49,8 +49,8 @@ static void test_instance_tag_generates_tag_when_file_empty() {
 }
 
 static int INSTAG_CB_CALLED = 0;
-static void test_create_instag_cb(const otrng_client_id_s client_opdata) {
-  (void)client_opdata;
+static void test_create_instag_cb(otrng_client_s *client) {
+  (void)client;
   INSTAG_CB_CALLED = 1;
 }
 
@@ -58,7 +58,7 @@ static void test_invokes_create_instag_callbacks(void) {
   otrng_client_callbacks_s callbacks = {.create_instag =
                                             &test_create_instag_cb};
 
-  otrng_client_callbacks_create_instag(&callbacks, ALICE_IDENTITY);
+  otrng_client_callbacks_create_instag(&callbacks, NULL);
   otrng_assert(INSTAG_CB_CALLED);
 }
 

@@ -25,9 +25,8 @@
 INTERNAL otrng_bool
 otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
   return otrng_bool_is_true(
-      cb->get_account_and_protocol != NULL && cb->create_privkey_v3 != NULL &&
-      cb->create_privkey_v4 != NULL && cb->create_forging_key != NULL &&
-      cb->create_client_profile != NULL &&
+      cb->create_privkey_v3 != NULL && cb->create_privkey_v4 != NULL &&
+      cb->create_forging_key != NULL && cb->create_client_profile != NULL &&
       cb->store_expired_client_profile != NULL &&
       cb->create_prekey_profile != NULL &&
       cb->store_expired_prekey_profile != NULL &&
@@ -44,12 +43,12 @@ otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
 
 INTERNAL void
 otrng_client_callbacks_create_instag(const otrng_client_callbacks_s *cb,
-                                     const otrng_client_id_s client_opdata) {
+                                     otrng_client_s *client) {
   if (!cb->create_instag) {
     return;
   }
 
-  cb->create_instag(client_opdata);
+  cb->create_instag(client);
 }
 
 INTERNAL void

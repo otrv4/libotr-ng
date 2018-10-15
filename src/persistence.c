@@ -293,22 +293,11 @@ INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
 
 INTERNAL otrng_result otrng_client_instance_tag_write_to(otrng_client_s *client,
                                                          FILE *instagf) {
-  // TODO: We could use a "get storage key" callback and use it as
-  // account_name plus an arbitrary "libotrng-storage" protocol.
-  char *account_name = NULL;
-  char *protocol_name = NULL;
   gcry_error_t ret;
 
-  if (!otrng_client_get_account_and_protocol(&account_name, &protocol_name,
-                                             client)) {
-    return OTRNG_ERROR;
-  }
-
   ret = otrl_instag_generate_FILEp(client->global_state->user_state_v3, instagf,
-                                   account_name, protocol_name);
-
-  free(account_name);
-  free(protocol_name);
+                                   client->client_id.account,
+                                   client->client_id.protocol);
 
   if (ret) {
     return OTRNG_ERROR;

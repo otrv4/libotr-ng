@@ -57,7 +57,6 @@ static otrng_client_id_s read_client_id_for_privf(FILE *privf) {
 }
 
 static otrng_client_callbacks_s empty_callbacks[1] = {{
-    .get_account_and_protocol = &get_account_and_protocol_cb_empty,
     .create_client_profile = &create_client_profile_cb_empty,
     .create_prekey_profile = &create_prekey_profile_cb_empty,
     .get_shared_session_state = &get_shared_session_state_cb_empty,

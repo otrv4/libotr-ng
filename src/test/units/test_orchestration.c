@@ -27,26 +27,24 @@
 
 #include <libotr/privkey.h>
 
-static otrng_client_s *temp_client;
-
 static int load_privkey_v4__called = 0;
-static otrng_client_id_s load_privkey_v4__called_with;
+static otrng_client_s *load_privkey_v4__called_with;
 static otrng_keypair_s *load_privkey_v4__assign = NULL;
-static void load_privkey_v4(const otrng_client_id_s cid) {
+static void load_privkey_v4(otrng_client_s *client) {
   load_privkey_v4__called++;
-  load_privkey_v4__called_with = cid;
+  load_privkey_v4__called_with = client;
 
-  temp_client->keypair = load_privkey_v4__assign;
+  client->keypair = load_privkey_v4__assign;
 }
 
 static int create_privkey_v4__called = 0;
-static otrng_client_id_s create_privkey_v4__called_with;
+static otrng_client_s *create_privkey_v4__called_with;
 static otrng_keypair_s *create_privkey_v4__assign = NULL;
-static void create_privkey_v4(const otrng_client_id_s cid) {
+static void create_privkey_v4(otrng_client_s *client) {
   create_privkey_v4__called++;
-  create_privkey_v4__called_with = cid;
+  create_privkey_v4__called_with = client;
 
-  temp_client->keypair = create_privkey_v4__assign;
+  client->keypair = create_privkey_v4__assign;
 }
 
 static int store_privkey_v4__called = 0;
@@ -57,20 +55,18 @@ static void store_privkey_v4(otrng_client_s *client) {
 }
 
 static int load_client_profile__called = 0;
-static otrng_client_id_s load_client_profile__called_with;
+static otrng_client_s *load_client_profile__called_with;
 static otrng_client_profile_s *load_client_profile__assign = NULL;
-static void load_client_profile(const otrng_client_id_s cid) {
+static void load_client_profile(otrng_client_s *client) {
   load_client_profile__called++;
-  load_client_profile__called_with = cid;
+  load_client_profile__called_with = client;
 
-  temp_client->client_profile = load_client_profile__assign;
+  client->client_profile = load_client_profile__assign;
 }
 
 static int store_client_profile__called = 0;
 static otrng_client_s *store_client_profile__called_with;
-static void store_client_profile(otrng_client_s *client,
-                                 const otrng_client_id_s cid) {
-  (void)cid;
+static void store_client_profile(otrng_client_s *client) {
   store_client_profile__called++;
   store_client_profile__called_with = client;
 }
@@ -78,30 +74,26 @@ static void store_client_profile(otrng_client_s *client,
 static int create_client_profile__called = 0;
 static otrng_client_s *create_client_profile__called_with;
 static otrng_client_profile_s *create_client_profile__assign = NULL;
-static void create_client_profile(otrng_client_s *client,
-                                  const otrng_client_id_s cid) {
-  (void)cid;
+static void create_client_profile(otrng_client_s *client) {
   create_client_profile__called_with = client;
   create_client_profile__called++;
 
-  temp_client->client_profile = create_client_profile__assign;
+  client->client_profile = create_client_profile__assign;
 }
 
 static int load_prekey_profile__called = 0;
-static otrng_client_id_s load_prekey_profile__called_with;
+static otrng_client_s *load_prekey_profile__called_with;
 static otrng_prekey_profile_s *load_prekey_profile__assign = NULL;
-static void load_prekey_profile(const otrng_client_id_s cid) {
+static void load_prekey_profile(otrng_client_s *client) {
   load_prekey_profile__called++;
-  load_prekey_profile__called_with = cid;
+  load_prekey_profile__called_with = client;
 
-  temp_client->prekey_profile = load_prekey_profile__assign;
+  client->prekey_profile = load_prekey_profile__assign;
 }
 
 static int store_prekey_profile__called = 0;
 static otrng_client_s *store_prekey_profile__called_with;
-static void store_prekey_profile(otrng_client_s *client,
-                                 const otrng_client_id_s cid) {
-  (void)cid;
+static void store_prekey_profile(otrng_client_s *client) {
   store_prekey_profile__called++;
   store_prekey_profile__called_with = client;
 }
@@ -109,13 +101,11 @@ static void store_prekey_profile(otrng_client_s *client,
 static int create_prekey_profile__called = 0;
 static otrng_client_s *create_prekey_profile__called_with;
 static otrng_prekey_profile_s *create_prekey_profile__assign = NULL;
-static void create_prekey_profile(otrng_client_s *client,
-                                  const otrng_client_id_s cid) {
-  (void)cid;
+static void create_prekey_profile(otrng_client_s *client) {
   create_prekey_profile__called_with = client;
   create_prekey_profile__called++;
 
-  temp_client->prekey_profile = create_prekey_profile__assign;
+  client->prekey_profile = create_prekey_profile__assign;
 }
 
 static void prekey_free_from_list(void *prekey) {
@@ -131,11 +121,11 @@ static void load_prekey_messages(otrng_client_s *client) {
   load_prekey_messages__called_with = client;
 
   if (load_prekey_messages__should_assign) {
-    if (temp_client->our_prekeys != NULL) {
-      otrng_list_free(temp_client->our_prekeys, prekey_free_from_list);
+    if (client->our_prekeys != NULL) {
+      otrng_list_free(client->our_prekeys, prekey_free_from_list);
     }
 
-    temp_client->our_prekeys = load_prekey_messages__assign;
+    client->our_prekeys = load_prekey_messages__assign;
   }
 }
 
@@ -153,7 +143,7 @@ static void load_forging_key(otrng_client_s *client) {
   load_forging_key__called++;
   load_forging_key__called_with = client;
 
-  temp_client->forging_key = load_forging_key__assign;
+  client->forging_key = load_forging_key__assign;
 }
 
 static int store_forging_key__called = 0;
@@ -164,13 +154,13 @@ static void store_forging_key(otrng_client_s *client) {
 }
 
 static int create_forging_key__called = 0;
-static otrng_client_id_s create_forging_key__called_with;
+static otrng_client_s *create_forging_key__called_with;
 static otrng_public_key *create_forging_key__assign = NULL;
-static void create_forging_key(const otrng_client_id_s cid) {
+static void create_forging_key(otrng_client_s *client) {
   create_forging_key__called++;
-  create_forging_key__called_with = cid;
+  create_forging_key__called_with = client;
 
-  temp_client->forging_key = create_forging_key__assign;
+  client->forging_key = create_forging_key__assign;
 }
 
 static int store_expired_client_profile__called = 0;
@@ -207,17 +197,8 @@ static void load_expired_prekey_profile(otrng_client_s *client) {
   client->exp_prekey_profile = load_expired_prekey_profile__assign;
 }
 
-static otrng_result
-get_account_and_protocol(char **account_name, char **protocol_name,
-                         const otrng_client_id_s client_id) {
-  *account_name = otrng_xstrdup(client_id.account);
-  *protocol_name = otrng_xstrdup(client_id.protocol);
-  return OTRNG_SUCCESS;
-}
-
-static void create_instag(const otrng_client_id_s client_opdata) {
-  (void)client_opdata;
-  otrng_client_add_instance_tag(temp_client, 1234);
+static void create_instag(otrng_client_s *client) {
+  otrng_client_add_instance_tag(client, 1234);
 }
 
 static OtrlPrivKey *v3_create_new_key(otrng_client_s *client) {
@@ -340,7 +321,6 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   f->callbacks->store_expired_prekey_profile = store_expired_prekey_profile;
   f->callbacks->load_expired_prekey_profile = load_expired_prekey_profile;
   f->callbacks->create_prekey_profile = create_prekey_profile;
-  f->callbacks->get_account_and_protocol = get_account_and_protocol;
   f->callbacks->create_instag = create_instag;
   f->callbacks->create_privkey_v3 = create_privkey_v3;
   f->callbacks->store_privkey_v3 = store_privkey_v3;
@@ -358,20 +338,16 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
 
   f->v3_key = v3_create_new_key(f->client);
 
-  temp_client = f->client;
-
   load_privkey_v4__called = 0;
   load_privkey_v4__assign = NULL;
-  load_privkey_v4__called_with.protocol = NULL;
-  load_privkey_v4__called_with.account = NULL;
+  load_privkey_v4__called_with = NULL;
 
   store_privkey_v4__called = 0;
   store_privkey_v4__called_with = NULL;
 
   create_privkey_v4__called = 0;
   create_privkey_v4__assign = NULL;
-  create_privkey_v4__called_with.protocol = NULL;
-  create_privkey_v4__called_with.account = NULL;
+  create_privkey_v4__called_with = NULL;
 
   load_forging_key__called = 0;
   load_forging_key__assign = NULL;
@@ -382,13 +358,11 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
 
   create_forging_key__called = 0;
   create_forging_key__assign = NULL;
-  create_forging_key__called_with.protocol = NULL;
-  create_forging_key__called_with.account = NULL;
+  create_forging_key__called_with = NULL;
 
   load_client_profile__called = 0;
   load_client_profile__assign = NULL;
-  load_client_profile__called_with.protocol = NULL;
-  load_client_profile__called_with.account = NULL;
+  load_client_profile__called_with = NULL;
 
   create_client_profile__called = 0;
   create_client_profile__assign = NULL;
@@ -413,8 +387,7 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
 
   load_prekey_profile__called = 0;
   load_prekey_profile__assign = NULL;
-  load_prekey_profile__called_with.protocol = NULL;
-  load_prekey_profile__called_with.account = NULL;
+  load_prekey_profile__called_with = NULL;
 
   load_expired_prekey_profile__called = 0;
   load_expired_prekey_profile__assign = NULL;
@@ -490,12 +463,8 @@ static void test__otrng_client_ensure_correct_state__creates_new_long_term_key(
   g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
 
   g_assert_cmpint(load_privkey_v4__called, ==, 1);
-  g_assert_cmpstr(load_privkey_v4__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_privkey_v4__called_with.account, ==, "sita@otr.im");
 
   g_assert_cmpint(create_privkey_v4__called, ==, 1);
-  g_assert_cmpstr(create_privkey_v4__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(create_privkey_v4__called_with.account, ==, "sita@otr.im");
 
   g_assert_cmpint(store_privkey_v4__called, ==, 1);
   g_assert(store_privkey_v4__called_with == f->client);
@@ -522,12 +491,8 @@ test__otrng_client_ensure_correct_state__fails_creating_long_term_key(
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_privkey_v4__called, ==, 1);
-  g_assert_cmpstr(load_privkey_v4__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_privkey_v4__called_with.account, ==, "sita@otr.im");
 
   g_assert_cmpint(create_privkey_v4__called, ==, 1);
-  g_assert_cmpstr(create_privkey_v4__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(create_privkey_v4__called_with.account, ==, "sita@otr.im");
 
   g_assert_cmpint(store_privkey_v4__called, ==, 0);
 
@@ -547,8 +512,6 @@ static void test__otrng_client_ensure_correct_state__loads_long_term_key(
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_privkey_v4__called, ==, 1);
-  g_assert_cmpstr(load_privkey_v4__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_privkey_v4__called_with.account, ==, "sita@otr.im");
 
   g_assert_cmpint(create_privkey_v4__called, ==, 0);
   g_assert_cmpint(store_privkey_v4__called, ==, 0);
@@ -627,8 +590,6 @@ static void test__otrng_client_ensure_correct_state__forging_key__creates(
   g_assert(load_forging_key__called_with == f->client);
 
   g_assert_cmpint(create_forging_key__called, ==, 1);
-  g_assert_cmpstr(create_forging_key__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(create_forging_key__called_with.account, ==, "sita@otr.im");
 
   g_assert_cmpint(store_forging_key__called, ==, 1);
   g_assert(store_forging_key__called_with == f->client);
@@ -655,8 +616,6 @@ static void test__otrng_client_ensure_correct_state__forging_key__fails(
   g_assert(load_forging_key__called_with == f->client);
 
   g_assert_cmpint(create_forging_key__called, ==, 1);
-  g_assert_cmpstr(create_forging_key__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(create_forging_key__called_with.account, ==, "sita@otr.im");
 
   g_assert_cmpint(store_forging_key__called, ==, 0);
 
@@ -704,8 +663,6 @@ static void test__otrng_client_ensure_correct_state__client_profile__loads(
   g_assert(otrng_client_verify_correct_state(f->client) == otrng_false);
 
   g_assert_cmpint(load_client_profile__called, ==, 1);
-  g_assert_cmpstr(load_client_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_client_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_client_profile__called, ==, 0);
   g_assert_cmpint(store_client_profile__called, ==, 0);
   g_assert(f->client->client_profile == f->client_profile);
@@ -782,8 +739,6 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_key(
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_client_profile__called, ==, 1);
-  g_assert_cmpstr(load_client_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_client_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_client_profile__called, ==, 0);
   g_assert_cmpint(store_client_profile__called, ==, 0);
   g_assert(f->client->client_profile == f->client_profile);
@@ -816,8 +771,6 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_forgin
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_client_profile__called, ==, 1);
-  g_assert_cmpstr(load_client_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_client_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_client_profile__called, ==, 0);
   g_assert_cmpint(store_client_profile__called, ==, 0);
   g_assert(f->client->client_profile == f->client_profile);
@@ -846,8 +799,6 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_instan
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_client_profile__called, ==, 1);
-  g_assert_cmpstr(load_client_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_client_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_client_profile__called, ==, 0);
   g_assert_cmpint(store_client_profile__called, ==, 0);
   g_assert(f->client->client_profile == f->client_profile);
@@ -879,8 +830,6 @@ test__otrng_client_ensure_correct_state__client_profile__loads_and_moves_when_ex
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_client_profile__called, ==, 1);
-  g_assert_cmpstr(load_client_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_client_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_client_profile__called, ==, 0);
   g_assert_cmpint(store_client_profile__called, ==, 0);
   g_assert_cmpint(store_expired_client_profile__called, ==, 1);
@@ -914,8 +863,6 @@ test__otrng_client_ensure_correct_state__client_profile__loads_and_moves_when_cl
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_client_profile__called, ==, 1);
-  g_assert_cmpstr(load_client_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_client_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_client_profile__called, ==, 0);
   g_assert_cmpint(store_client_profile__called, ==, 0);
   g_assert_cmpint(store_expired_client_profile__called, ==, 1);
@@ -950,8 +897,6 @@ test__otrng_client_ensure_correct_state__client_profile__creates_and_moves_when_
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_client_profile__called, ==, 1);
-  g_assert_cmpstr(load_client_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_client_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_client_profile__called, ==, 1);
   g_assert_cmpint(store_client_profile__called, ==, 1);
   g_assert_cmpint(store_expired_client_profile__called, ==, 1);
@@ -990,8 +935,6 @@ test__otrng_client_ensure_correct_state__client_profile__creates_and_moves_when_
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_client_profile__called, ==, 1);
-  g_assert_cmpstr(load_client_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_client_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_client_profile__called, ==, 1);
   g_assert_cmpint(store_client_profile__called, ==, 1);
   g_assert_cmpint(store_expired_client_profile__called, ==, 1);
@@ -1043,8 +986,7 @@ static void test__otrng_client_ensure_correct_state__prekey_profile__loads(
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_prekey_profile__called, ==, 1);
-  g_assert_cmpstr(load_prekey_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_prekey_profile__called_with.account, ==, "sita@otr.im");
+
   g_assert_cmpint(create_prekey_profile__called, ==, 0);
   g_assert_cmpint(store_prekey_profile__called, ==, 0);
   g_assert(f->client->prekey_profile == f->prekey_profile);
@@ -1127,8 +1069,6 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_when_wrong_key(
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_prekey_profile__called, ==, 1);
-  g_assert_cmpstr(load_prekey_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_prekey_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_prekey_profile__called, ==, 0);
   g_assert_cmpint(store_prekey_profile__called, ==, 0);
   g_assert(f->client->prekey_profile == f->prekey_profile);
@@ -1158,8 +1098,6 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_when_wrong_instan
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_prekey_profile__called, ==, 1);
-  g_assert_cmpstr(load_prekey_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_prekey_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_prekey_profile__called, ==, 0);
   g_assert_cmpint(store_prekey_profile__called, ==, 0);
   g_assert(f->client->prekey_profile == f->prekey_profile);
@@ -1192,8 +1130,6 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_and_moves_when_ex
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_prekey_profile__called, ==, 1);
-  g_assert_cmpstr(load_prekey_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_prekey_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_prekey_profile__called, ==, 0);
   g_assert_cmpint(store_prekey_profile__called, ==, 0);
   g_assert_cmpint(store_expired_prekey_profile__called, ==, 1);
@@ -1228,8 +1164,6 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_and_moves_when_cl
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_prekey_profile__called, ==, 1);
-  g_assert_cmpstr(load_prekey_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_prekey_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_prekey_profile__called, ==, 0);
   g_assert_cmpint(store_prekey_profile__called, ==, 0);
   g_assert_cmpint(store_expired_prekey_profile__called, ==, 1);
@@ -1265,8 +1199,6 @@ test__otrng_client_ensure_correct_state__prekey_profile__creates_and_moves_when_
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_prekey_profile__called, ==, 1);
-  g_assert_cmpstr(load_prekey_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_prekey_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_prekey_profile__called, ==, 1);
   g_assert_cmpint(store_prekey_profile__called, ==, 1);
   g_assert_cmpint(store_expired_prekey_profile__called, ==, 1);
@@ -1305,8 +1237,6 @@ test__otrng_client_ensure_correct_state__prekey_profile__creates_and_moves_when_
   otrng_client_ensure_correct_state(f->client);
 
   g_assert_cmpint(load_prekey_profile__called, ==, 1);
-  g_assert_cmpstr(load_prekey_profile__called_with.protocol, ==, "test-otr");
-  g_assert_cmpstr(load_prekey_profile__called_with.account, ==, "sita@otr.im");
   g_assert_cmpint(create_prekey_profile__called, ==, 1);
   g_assert_cmpint(store_prekey_profile__called, ==, 1);
   g_assert_cmpint(store_expired_prekey_profile__called, ==, 1);

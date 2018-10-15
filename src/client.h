@@ -173,9 +173,6 @@ API prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages,
                                    otrng_client_s *client);
 
-INTERNAL otrng_result otrng_client_get_account_and_protocol(
-    char **account, char **protocol, const otrng_client_s *client);
-
 INTERNAL OtrlPrivKey *
 otrng_client_get_private_key_v3(const otrng_client_s *client);
 
@@ -221,8 +218,7 @@ otrng_client_get_exp_prekey_profile(otrng_client_s *client);
 API otrng_result otrng_client_add_exp_prekey_profile(
     otrng_client_s *client, const otrng_prekey_profile_s *exp_profile);
 
-INTERNAL unsigned int
-otrng_client_get_instance_tag(const otrng_client_s *client);
+INTERNAL unsigned int otrng_client_get_instance_tag(otrng_client_s *client);
 
 INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
                                                     unsigned int instag);
