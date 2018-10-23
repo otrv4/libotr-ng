@@ -289,7 +289,10 @@ INTERNAL otrng_result otrng_dh_mpi_deserialize(dh_mpi *dst,
   gcry_error_t err;
 
   if (!buff_len) {
-    gcry_mpi_set_ui(*dst, 0); // TODO: can this fail?
+    if (gcry_mpi_set_ui(*dst, 0) == NULL) {
+      return OTRNG_ERROR;
+    }
+
     return OTRNG_SUCCESS;
   }
 
@@ -324,7 +327,6 @@ API otrng_bool otrng_dh_mpi_valid(dh_mpi mpi) {
   return otrng_true;
 }
 
-// TODO: check the return
 INTERNAL dh_mpi otrng_dh_mpi_copy(const dh_mpi src) {
   return gcry_mpi_copy(src);
 }

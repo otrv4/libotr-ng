@@ -800,7 +800,6 @@ INTERNAL otrng_bool otrng_client_profile_is_expired_but_valid(
 
 INTERNAL otrng_result otrng_client_profile_transitional_sign(
     otrng_client_profile_s *client_profile, OtrlPrivKey *privkey) {
-
   size_t size;
   uint8_t *data;
   size_t data_len;
@@ -829,6 +828,7 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
 
   if (client_profile_body_serialize_pre_transitional_signature(
           data, size, &data_len, client_profile) < 5) {
+    free(data);
     return OTRNG_ERROR;
   }
 
@@ -841,7 +841,7 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
     return OTRNG_ERROR;
   }
 
-  if (written != 40) { // TODO: extract
+  if (written != OTRv3_DSA_SIG_BYTES) {
     free(client_profile->transitional_signature);
     client_profile->transitional_signature = NULL;
     return OTRNG_ERROR;
