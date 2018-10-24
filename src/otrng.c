@@ -929,13 +929,14 @@ tstatic otrng_result reply_with_non_interactive_auth_message(string_p *dst,
     return OTRNG_ERROR;
   }
 
-  if (otrng_failed(otrng_key_manager_generate_shared_secret(otr->keys, otrng_false))) {
+  if (otrng_failed(
+          otrng_key_manager_generate_shared_secret(otr->keys, otrng_false))) {
     otrng_dake_non_interactive_auth_message_destroy(&auth);
     return OTRNG_ERROR;
   }
 
   if (!double_ratcheting_init(otr, 't')) {
-     otrng_dake_non_interactive_auth_message_destroy(&auth);
+    otrng_dake_non_interactive_auth_message_destroy(&auth);
     return OTRNG_ERROR;
   }
 
