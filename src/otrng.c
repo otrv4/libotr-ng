@@ -282,6 +282,7 @@ API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
     if (otr->sending_init_message) {
       free(otr->sending_init_message);
     }
+    free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -710,6 +711,7 @@ tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
           their_ecdh(otr),                            /* Y */
           t, t_len)) {
     free(t);
+    otrng_dake_auth_r_destroy(&msg);
     return OTRNG_ERROR;
   }
 
@@ -802,10 +804,12 @@ tstatic otrng_result serialize_and_encode_non_interactive_auth(
   return OTRNG_SUCCESS;
 }
 
+// TODO: move this to the dake file
 tstatic otrng_bool non_interactive_auth_message_init(
     dake_non_interactive_auth_message_s *auth, otrng_s *otr) {
   auth->sender_instance_tag = our_instance_tag(otr);
   auth->receiver_instance_tag = otr->their_instance_tag;
+
   if (!otrng_client_profile_copy(auth->profile, get_my_client_profile(otr))) {
     return otrng_false;
   }
@@ -912,30 +916,35 @@ tstatic otrng_result double_ratcheting_init(otrng_s *otr,
 tstatic otrng_result reply_with_non_interactive_auth_message(string_p *dst,
                                                              otrng_s *otr) {
   dake_non_interactive_auth_message_s auth;
-  otrng_result ret;
-
   otrng_dake_non_interactive_auth_message_init(&auth);
   maybe_create_keys(otr->client);
 
-  ret = build_non_interactive_auth_message(&auth, otr);
-
-  if (ret == OTRNG_SUCCESS) {
-    ret = serialize_and_encode_non_interactive_auth(dst, &auth);
+  if (otrng_failed(build_non_interactive_auth_message(&auth, otr))) {
+    otrng_dake_non_interactive_auth_message_destroy(&auth);
+    return OTRNG_ERROR;
   }
 
-  if (!otrng_key_manager_generate_shared_secret(otr->keys, otrng_false)) {
+  if (otrng_failed(serialize_and_encode_non_interactive_auth(dst, &auth))) {
+    otrng_dake_non_interactive_auth_message_destroy(&auth);
+    return OTRNG_ERROR;
+  }
+
+  if (otrng_failed(otrng_key_manager_generate_shared_secret(otr->keys, otrng_false))) {
+    otrng_dake_non_interactive_auth_message_destroy(&auth);
     return OTRNG_ERROR;
   }
 
   if (!double_ratcheting_init(otr, 't')) {
+     otrng_dake_non_interactive_auth_message_destroy(&auth);
     return OTRNG_ERROR;
   }
 
   otrng_dake_non_interactive_auth_message_destroy(&auth);
-  return ret;
+
+  return OTRNG_SUCCESS;
 }
 
-// This is only used for tests
+/* This is only used for tests */
 INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
@@ -1100,20 +1109,6 @@ tstatic otrng_result receive_prekey_ensemble(string_p *dst,
   return OTRNG_SUCCESS;
 }
 
-// TODO: Will this exist?
-API otrng_result otrng_send_offline_message(char **dst,
-                                            const prekey_ensemble_s *ensemble,
-                                            const char *plaintext,
-                                            otrng_s *otr) {
-  (void)dst;
-  (void)ensemble;
-  (void)plaintext;
-  (void)otr;
-  // This was supposed to send the non interactive auth AND the encrypted data
-  // message on the same network message.
-  return OTRNG_ERROR;
-}
-
 API otrng_result otrng_send_non_interactive_auth(
     char **dst, const prekey_ensemble_s *ensemble, otrng_s *otr) {
   otrng_fingerprint fp;
@@ -1263,16 +1258,16 @@ tstatic otrng_bool verify_non_interactive_auth_message(
         return otrng_false;
       }
 
+      free(phi);
+
       if (!otrng_rsig_verify(auth->sigma, *otr->client->forging_key, /* H_b */
                              auth->profile->long_term_pub_key,       /* H_a */
                              our_ecdh(otr),                          /* Y  */
                              t, t_len)) {
-        free(phi);
         free(t);
         return otrng_false;
       }
 
-      free(phi);
       return otrng_false;
     }
   }

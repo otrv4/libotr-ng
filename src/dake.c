@@ -201,9 +201,11 @@ INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
   otrng_dh_mpi_release(auth_r->A);
   auth_r->A = NULL;
   otrng_ec_point_destroy(auth_r->X);
+
   otrng_client_profile_destroy(auth_r->profile);
   free(auth_r->profile);
   auth_r->profile = NULL;
+
   otrng_ring_sig_destroy(auth_r->sigma);
   free(auth_r->sigma);
   auth_r->sigma = NULL;
