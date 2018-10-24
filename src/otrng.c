@@ -1079,13 +1079,8 @@ tstatic otrng_result receive_prekey_ensemble(string_p *dst,
     return OTRNG_ERROR;
   }
 
-  // TODO: @client_profile As part of validating the prekey ensemble, we should
-  // also:
-  // 1. If the Transitional Signature is present, verify its validity using the
-  // OTRv3 DSA key.
-  //    (the OTRv3 key needed to validate the signature should be somewhere in
-  //    client maybe).
-  // 1. Check if the Client Profile's version is supported by the receiver.
+  // TODO: @non_interactive Check if the Client Profile's version is supported
+  // by the receiver.
 
   // TODO: @non_interactive Decide whether to send a message using this Prekey
   // Ensemble if the long-term key within the Client Profile is trusted or not.
@@ -1194,8 +1189,7 @@ tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
 }
 
 tstatic otrng_bool verify_non_interactive_auth_message(
-    otrng_response_s *response, const dake_non_interactive_auth_message_s *auth,
-    otrng_s *otr) {
+    const dake_non_interactive_auth_message_s *auth, otrng_s *otr) {
   uint8_t *phi = NULL;
   size_t phi_len = 0;
   unsigned char *t = NULL;
@@ -1221,8 +1215,6 @@ tstatic otrng_bool verify_non_interactive_auth_message(
       .ecdh = *(auth->X),
       .dh = auth->A,
   };
-
-  (void)response;
 
   if (!initiator.prekey_profile) {
     return otrng_false;
@@ -1340,10 +1332,6 @@ tstatic otrng_result non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
-  // Shared prekey is the same as used to generate my current prekey profile.
-  // Should be always true, though.
-  // TODO: it seems people ignore the error message returned from this
-  // function...
   if (!otrng_ec_point_eq(our_shared_prekey(otr)->pub,
                          get_my_prekey_profile(otr)->shared_prekey)) {
     return OTRNG_ERROR;
@@ -1384,7 +1372,7 @@ tstatic otrng_result non_interactive_auth_message_received(
   }
 
   // TODO: this should happen before we change any internal state
-  if (!verify_non_interactive_auth_message(response, auth, otr)) {
+  if (!verify_non_interactive_auth_message(auth, otr)) {
     return OTRNG_ERROR;
   }
 
@@ -1407,7 +1395,6 @@ tstatic otrng_result non_interactive_auth_message_received(
 tstatic otrng_result receive_non_interactive_auth_message(
     otrng_response_s *response, const uint8_t *src, size_t len, otrng_s *otr) {
   dake_non_interactive_auth_message_s auth;
-  otrng_result ret;
 
   otrng_dake_non_interactive_auth_message_init(&auth);
   if (otr->state == OTRNG_STATE_FINISHED) {
@@ -1419,14 +1406,17 @@ tstatic otrng_result receive_non_interactive_auth_message(
     return OTRNG_ERROR;
   }
 
-  // TODO: we should actually care about the result here before setting the
-  // state
-  ret = non_interactive_auth_message_received(response, &auth, otr);
-  otrng_dake_non_interactive_auth_message_destroy(&auth);
+  if (otrng_failed(
+          non_interactive_auth_message_received(response, &auth, otr))) {
+    otrng_dake_non_interactive_auth_message_destroy(&auth);
+    return OTRNG_ERROR;
+  }
 
   otr->state = OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE;
 
-  return ret;
+  otrng_dake_non_interactive_auth_message_destroy(&auth);
+
+  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_result receive_identity_message_on_state_start(
