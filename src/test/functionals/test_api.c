@@ -202,7 +202,6 @@ static void test_otrng_send_offline_message() {
 
   prekey_ensemble_s *ensemble = otrng_build_prekey_ensemble(bob);
   otrng_assert(ensemble);
-  // TODO: @non_interactive should this validation happen outside?
   otrng_assert_is_success(otrng_prekey_ensemble_validate(ensemble));
 
   g_assert_cmpint(bob->their_prekeys_id, ==, 0);

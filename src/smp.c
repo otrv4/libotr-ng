@@ -80,6 +80,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp,
     event = otrng_process_smp_message2(&to_send, tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = SMP_STATE_EXPECT_1;
+      smp->progress = SMP_ZERO_PROGRESS;
       to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
       if (!to_send) {
         return NULL;
@@ -120,6 +121,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp,
 
   case OTRNG_TLV_SMP_ABORT:
     smp->state_expect = SMP_STATE_EXPECT_1;
+    smp->progress = SMP_ZERO_PROGRESS;
     event = OTRNG_SMP_EVENT_ABORT;
     break;
   case OTRNG_TLV_NONE:
