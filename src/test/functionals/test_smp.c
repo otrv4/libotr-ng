@@ -219,14 +219,15 @@ static void test_smp_state_machine_abort(void) {
   g_assert_cmpint(tlv_abort->type, ==, OTRNG_TLV_SMP_ABORT);
   g_assert_cmpint(alice->smp->progress, ==, SMP_ZERO_PROGRESS);
   g_assert_cmpint(bob->smp->progress, ==, SMP_HALF_PROGRESS);
-
-  // Alice should have correct context after generates tlv_smp_3
   g_assert_cmpint(alice->smp->state_expect, ==, SMP_STATE_EXPECT_1);
-  otrng_assert(alice->smp->g3b);
-  otrng_assert(alice->smp->pa_pb);
-  otrng_assert(alice->smp->qa_qb);
 
+  // Bob receives the abort
+  tlv_s *tlv_none = process_tlv(tlv_abort, bob);
   otrng_tlv_free(tlv_abort);
+  otrng_assert(!tlv_none);
+
+  g_assert_cmpint(bob->smp->progress, ==, SMP_ZERO_PROGRESS);
+  g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_1);
 
   otrng_global_state_free(alice_state->global_state);
   otrng_global_state_free(bob_state->global_state);
