@@ -205,7 +205,7 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
     }
 
     smp->state_expect = SMP_STATE_EXPECT_2;
-    smp->progress = 25;
+    smp->progress = SMP_QUARTER_PROGRESS;
     handle_smp_event_cb_v4(OTRNG_SMP_EVENT_IN_PROGRESS, smp->progress, question,
                            q_len, conversation);
 
