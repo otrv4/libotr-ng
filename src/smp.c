@@ -70,6 +70,11 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp,
     event = otrng_process_smp_message1(tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = SMP_STATE_EXPECT_1;
+      smp->progress = SMP_ZERO_PROGRESS;
+      to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
+      if (!to_send) {
+        return NULL;
+      }
     } else if (event == OTRNG_SMP_EVENT_ERROR ||
                event == OTRNG_SMP_EVENT_FAILURE) {
       smp->state_expect = SMP_STATE_EXPECT_1;
@@ -95,6 +100,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp,
     event = otrng_process_smp_message3(&to_send, tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = SMP_STATE_EXPECT_1;
+      smp->progress = SMP_ZERO_PROGRESS;
       to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
       if (!to_send) {
         return NULL;
@@ -109,6 +115,7 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp,
     event = otrng_process_smp_message4(tlv, smp);
     if (event == OTRNG_SMP_EVENT_ABORT) {
       smp->state_expect = SMP_STATE_EXPECT_1;
+      smp->progress = SMP_ZERO_PROGRESS;
       to_send = otrng_tlv_new(OTRNG_TLV_SMP_ABORT, 0, NULL);
       if (!to_send) {
         return NULL;
