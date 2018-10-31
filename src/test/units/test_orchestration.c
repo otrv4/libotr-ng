@@ -327,10 +327,10 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   f->callbacks->load_privkey_v3 = load_privkey_v3;
 
   f->long_term_key = otrng_keypair_new();
-  otrng_keypair_generate(f->long_term_key, sym1);
+  otrng_assert_is_success(otrng_keypair_generate(f->long_term_key, sym1));
 
   f->forging_key = otrng_keypair_new();
-  otrng_keypair_generate(f->forging_key, sym2);
+  otrng_assert_is_success(otrng_keypair_generate(f->forging_key, sym2));
 
   f->client_profile = otrng_client_profile_build(1234, "4", f->long_term_key,
                                                  f->forging_key->pub, 20020);
@@ -436,7 +436,11 @@ static otrng_client_profile_s *
 create_client_profile_copy_from(const otrng_client_profile_s *src) {
   otrng_client_profile_s *result =
       otrng_xmalloc_z(sizeof(otrng_client_profile_s));
-  otrng_client_profile_copy(result, src);
+  if (!otrng_client_profile_copy(result, src)) {
+    free(result);
+    return NULL;
+  }
+
   return result;
 }
 
@@ -729,7 +733,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_key(
 
   f->client->keypair = f->long_term_key;
   v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
-  otrng_keypair_generate(long_term2, sym3);
+  otrng_assert_is_success(otrng_keypair_generate(long_term2, sym3));
   client_profile2 = otrng_client_profile_build(1234, "4", long_term2,
                                                f->forging_key->pub, 20020);
   f->client->forging_key = &f->forging_key->pub;
@@ -761,7 +765,7 @@ test__otrng_client_ensure_correct_state__client_profile__loads_when_wrong_forgin
 
   f->client->keypair = f->long_term_key;
   v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
-  otrng_keypair_generate(forging2, sym3);
+  otrng_assert_is_success(otrng_keypair_generate(forging2, sym3));
   client_profile2 = otrng_client_profile_build(1234, "4", f->long_term_key,
                                                forging2->pub, 20020);
   f->client->forging_key = &f->forging_key->pub;
@@ -1057,7 +1061,7 @@ test__otrng_client_ensure_correct_state__prekey_profile__loads_when_wrong_key(
 
   f->client->keypair = f->long_term_key;
   v3_add_key_to(f->client->global_state->user_state_v3, f->v3_key, f->client);
-  otrng_keypair_generate(long_term2, sym3);
+  otrng_assert_is_success(otrng_keypair_generate(long_term2, sym3));
   prekey_profile2 = otrng_prekey_profile_build(1234, long_term2);
 
   f->client->forging_key = &f->forging_key->pub;

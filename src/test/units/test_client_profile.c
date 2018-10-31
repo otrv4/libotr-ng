@@ -150,7 +150,8 @@ static void test_otrng_client_profile_deserializes() {
 
   size_t written = 0;
   uint8_t *ser = NULL;
-  otrng_client_profile_serialize(&ser, &written, profile);
+  otrng_assert_is_success(
+      otrng_client_profile_serialize(&ser, &written, profile));
 
   otrng_client_profile_s deser;
 

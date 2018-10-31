@@ -209,7 +209,7 @@ void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data) {
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {
       1}; /* Non-random private key on purpose */
-  otrng_keypair_generate(f->keypair, sym);
+  otrng_assert_is_success(otrng_keypair_generate(f->keypair, sym));
   otrng_assert(otrng_ec_point_valid(f->keypair->pub));
 
   f->profile = client_profile_new("4");

@@ -174,7 +174,8 @@ static void test_global_state_client_profile_management(void) {
 
   uint8_t *buffer = NULL;
   size_t s = 0;
-  otrng_client_profile_serialize(&buffer, &s, client->client_profile);
+  otrng_assert(
+      otrng_client_profile_serialize(&buffer, &s, client->client_profile));
   char *encoded = otrng_base64_encode(buffer, s);
   const char *expected =
       "AAAABQABAAAABAACABAFcsFMsTB3RLkvO"
