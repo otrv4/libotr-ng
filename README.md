@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/otrv4/libotr-ng.svg?branch=master)](https://travis-ci.org/otrv4/libotr-ng)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fotrv4%2Flibotr-ng.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fotrv4%2Flibotr-ng?ref=badge_shield)
+[![Coverity Status](https://scan.coverity.com/projects/16830/badge.svg)](https://scan.coverity.com/projects/libotr-ng)
+
 
 ## Build
 Before you try to build libotr-ng, verify you have installed:
