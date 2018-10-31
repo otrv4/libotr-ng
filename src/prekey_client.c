@@ -347,6 +347,8 @@ static char *start_dake_and_then_send(otrng_prekey_client_s *client,
 
   msg.client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
   if (!otrng_client_profile_copy(msg.client_profile, client->client_profile)) {
+    otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
+    free(sym);
     return NULL;
   }
 
@@ -1139,7 +1141,6 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *dake_2,
                                    composite_phi, composite_phi_len)) {
     free(shared_secret);
     free(ecdh_shared);
-    free(our_profile);
     free(composite_phi);
     free(t);
     return NULL;
@@ -1155,7 +1156,6 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *dake_2,
           tlen)) {
     free(shared_secret);
     free(ecdh_shared);
-    free(our_profile);
     free(t);
     return NULL;
   }

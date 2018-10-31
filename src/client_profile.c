@@ -42,7 +42,7 @@ tstatic otrng_client_profile_s *client_profile_new(const char *versions) {
   }
 
   client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
-  client_profile->versions = versions ? otrng_xstrdup(versions) : NULL;
+  client_profile->versions = otrng_xstrdup(versions);
 
   return client_profile;
 }

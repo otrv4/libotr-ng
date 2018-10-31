@@ -577,6 +577,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
     ecdh_keypair_s ecdh;
     dh_keypair_s dh;
     if (!otrng_generate_ephemeral_keys(&ecdh, &dh)) {
+      free(messages);
       return NULL;
     }
 

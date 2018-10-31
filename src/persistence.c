@@ -79,8 +79,10 @@ API otrng_result otrng_client_private_key_v4_write_to_buffer(
   keylen = strlen(key);
 
   if (s + keylen + 1 > buflen) {
+    free(key);
     return OTRNG_ERROR;
   }
+
   memcpy(buf + s, key, keylen);
   free(key);
   s += keylen;
@@ -248,6 +250,7 @@ otrng_client_private_key_v4_read_from(otrng_client_s *client, FILE *privf) {
 
   len = get_limited_line(&line, privf);
   if (len < 0) {
+    otrng_keypair_free(keypair);
     return OTRNG_ERROR;
   }
 

@@ -73,30 +73,42 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
   goldilocks_shake256_ctx_p hd;
 
   if (!hash_init_with_usage(hd, usage_smp_secret)) {
+    otrng_secure_wipe(hash, HASH_BYTES);
+    free(hash);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, version, 1) == GOLDILOCKS_FAILURE) {
+    otrng_secure_wipe(hash, HASH_BYTES);
+    free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, our_fp, FPRINT_LEN_BYTES) == GOLDILOCKS_FAILURE) {
+    otrng_secure_wipe(hash, HASH_BYTES);
+    free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, their_fp, FPRINT_LEN_BYTES) == GOLDILOCKS_FAILURE) {
+    otrng_secure_wipe(hash, HASH_BYTES);
+    free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, ssid, SSID_BYTES) == GOLDILOCKS_FAILURE) {
+    otrng_secure_wipe(hash, HASH_BYTES);
+    free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, answer, answer_len) == GOLDILOCKS_FAILURE) {
+    otrng_secure_wipe(hash, HASH_BYTES);
+    free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
@@ -119,10 +131,14 @@ tstatic otrng_result hash_to_scalar(ec_scalar dst, uint8_t *ser_p,
   uint8_t *hash = otrng_secure_alloc(HASH_BYTES);
 
   if (!hash_init_with_usage(hd, usage_smp)) {
+    otrng_secure_wipe(hash, HASH_BYTES);
+    free(hash);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, ser_p, ser_p_len) == GOLDILOCKS_FAILURE) {
+    otrng_secure_wipe(hash, HASH_BYTES);
+    free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
@@ -1264,28 +1280,26 @@ tstatic otrng_smp_event receive_smp_message_1(const tlv_s *tlv,
     return OTRNG_SMP_EVENT_ABORT;
   }
 
-  do {
-    if (!smp_message_1_deserialize(&msg_1, tlv)) {
-      continue;
-    }
-
-    if (!smp_message_1_valid_points(&msg_1)) {
-      continue;
-    }
-
-    if (!smp_message_1_valid_zkp(&msg_1)) {
-      continue;
-    }
-
-    smp->message1 = otrng_xmalloc_z(sizeof(smp_message_1_s));
-
-    smp_message_1_copy(smp->message1, &msg_1);
+  if (!smp_message_1_deserialize(&msg_1, tlv)) {
     otrng_smp_message_1_destroy(&msg_1);
-    return OTRNG_SMP_EVENT_NONE;
-  } while (0);
+    return OTRNG_SMP_EVENT_ERROR;
+  }
 
+  if (!smp_message_1_valid_points(&msg_1)) {
+    otrng_smp_message_1_destroy(&msg_1);
+    return OTRNG_SMP_EVENT_ERROR;
+  }
+
+  if (!smp_message_1_valid_zkp(&msg_1)) {
+    otrng_smp_message_1_destroy(&msg_1);
+    return OTRNG_SMP_EVENT_ERROR;
+  }
+
+  smp->message1 = otrng_xmalloc_z(sizeof(smp_message_1_s));
+
+  smp_message_1_copy(smp->message1, &msg_1);
   otrng_smp_message_1_destroy(&msg_1);
-  return OTRNG_SMP_EVENT_ERROR;
+  return OTRNG_SMP_EVENT_NONE;
 }
 
 INTERNAL otrng_smp_event otrng_reply_with_smp_message_2(tlv_s **to_send,
@@ -1310,7 +1324,7 @@ INTERNAL otrng_smp_event otrng_reply_with_smp_message_2(tlv_s **to_send,
 
   free(buffer);
 
-  if (!to_send) {
+  if (!*to_send) {
     return OTRNG_SMP_EVENT_ERROR;
   }
 

@@ -292,7 +292,6 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
   if (!shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
                                    PROOF_C_SIZE)) {
-    free(cbuf);
     otrng_dh_mpi_release(r);
     free(p);
     return OTRNG_ERROR;

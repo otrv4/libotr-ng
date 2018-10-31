@@ -44,6 +44,8 @@ otrng_dake_identity_message_new(const otrng_client_profile_s *profile) {
   identity_msg->profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   if (!otrng_client_profile_copy(identity_msg->profile, profile)) {
+    free(identity_msg->profile);
+    free(identity_msg);
     return NULL;
   }
 
