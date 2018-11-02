@@ -40,11 +40,11 @@ INTERNAL void otrng_smp_protocol_init(smp_protocol_s *smp) {
 }
 
 INTERNAL void otrng_smp_destroy(smp_protocol_s *smp) {
-  free(smp->secret);
+  otrng_free(smp->secret);
   smp->secret = NULL;
 
   otrng_smp_message_1_destroy(smp->message1);
-  free(smp->message1);
+  otrng_free(smp->message1);
   smp->message1 = NULL;
 
   otrng_ec_scalar_destroy(smp->a2);
@@ -73,42 +73,36 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
   goldilocks_shake256_ctx_p hd;
 
   if (!hash_init_with_usage(hd, usage_smp_secret)) {
-    otrng_secure_wipe(hash, HASH_BYTES);
-    free(hash);
+    otrng_secure_free(hash);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, version, 1) == GOLDILOCKS_FAILURE) {
-    otrng_secure_wipe(hash, HASH_BYTES);
-    free(hash);
+    otrng_secure_free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, our_fp, FPRINT_LEN_BYTES) == GOLDILOCKS_FAILURE) {
-    otrng_secure_wipe(hash, HASH_BYTES);
-    free(hash);
+    otrng_secure_free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, their_fp, FPRINT_LEN_BYTES) == GOLDILOCKS_FAILURE) {
-    otrng_secure_wipe(hash, HASH_BYTES);
-    free(hash);
+    otrng_secure_free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, ssid, SSID_BYTES) == GOLDILOCKS_FAILURE) {
-    otrng_secure_wipe(hash, HASH_BYTES);
-    free(hash);
+    otrng_secure_free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, answer, answer_len) == GOLDILOCKS_FAILURE) {
-    otrng_secure_wipe(hash, HASH_BYTES);
-    free(hash);
+    otrng_secure_free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
@@ -119,8 +113,7 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
   *secret = otrng_secure_alloc(HASH_BYTES);
 
   memcpy(*secret, hash, HASH_BYTES);
-  otrng_secure_wipe(hash, HASH_BYTES);
-  free(hash);
+  otrng_secure_free(hash);
 
   return OTRNG_SUCCESS;
 }
@@ -131,14 +124,12 @@ tstatic otrng_result hash_to_scalar(ec_scalar dst, uint8_t *ser_p,
   uint8_t *hash = otrng_secure_alloc(HASH_BYTES);
 
   if (!hash_init_with_usage(hd, usage_smp)) {
-    otrng_secure_wipe(hash, HASH_BYTES);
-    free(hash);
+    otrng_secure_free(hash);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, ser_p, ser_p_len) == GOLDILOCKS_FAILURE) {
-    otrng_secure_wipe(hash, HASH_BYTES);
-    free(hash);
+    otrng_secure_free(hash);
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
@@ -147,14 +138,12 @@ tstatic otrng_result hash_to_scalar(ec_scalar dst, uint8_t *ser_p,
   hash_destroy(hd);
 
   if (!otrng_deserialize_ec_scalar(dst, hash, ED448_SCALAR_BYTES)) {
-    otrng_secure_wipe(hash, HASH_BYTES);
-    free(hash);
+    otrng_secure_free(hash);
     return OTRNG_ERROR;
   }
   otrng_secure_wipe(ser_p, ED448_POINT_BYTES);
 
-  otrng_secure_wipe(hash, HASH_BYTES);
-  free(hash);
+  otrng_secure_free(hash);
 
   return OTRNG_SUCCESS;
 }
@@ -367,7 +356,7 @@ INTERNAL void otrng_smp_message_1_destroy(smp_message_1_s *msg) {
     return;
   }
 
-  free(msg->question);
+  otrng_free(msg->question);
   msg->question = NULL;
   msg->q_len = 0;
 
@@ -1322,7 +1311,7 @@ INTERNAL otrng_smp_event otrng_reply_with_smp_message_2(tlv_s **to_send,
 
   *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_2, buff_len, buffer);
 
-  free(buffer);
+  otrng_free(buffer);
 
   if (!*to_send) {
     return OTRNG_SMP_EVENT_ERROR;
@@ -1378,7 +1367,7 @@ tstatic otrng_smp_event reply_with_smp_message_3(tlv_s **to_send,
 
   *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_3, buff_len, buffer);
 
-  free(buffer);
+  otrng_free(buffer);
 
   if (!*to_send) {
     return OTRNG_SMP_EVENT_ERROR;
@@ -1431,7 +1420,7 @@ tstatic otrng_smp_event reply_with_smp_message_4(tlv_s **to_send,
 
   *to_send = otrng_tlv_new(OTRNG_TLV_SMP_MSG_4, buff_len, buffer);
 
-  free(buffer);
+  otrng_free(buffer);
 
   if (!*to_send) {
     return OTRNG_SMP_EVENT_ERROR;

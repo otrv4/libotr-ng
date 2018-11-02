@@ -46,7 +46,7 @@ static void test_send_dake_1_message(void) {
   dake_1 = otrng_prekey_client_publish(alice->prekey_client);
 
   otrng_assert(dake_1);
-  free(dake_1);
+  otrng_free(dake_1);
 
   otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
@@ -120,7 +120,7 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   otrng_assert(dake_3);
   otrng_assert(alice->prekey_client->after_dake == 0);
 
-  free(dake_3);
+  otrng_free(dake_3);
 
   otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
@@ -163,7 +163,7 @@ static void test_receive_prekey_server_messages(void) {
 
   otrng_assert(!to_send); /* wrong instance tag */
 
-  free(dake_2);
+  otrng_free(dake_2);
 
   char *success =
       otrng_xstrndup("AAQGbQJzmIlxG+O+"
@@ -176,7 +176,7 @@ static void test_receive_prekey_server_messages(void) {
 
   otrng_assert(!to_send); /* wrong instance tag */
 
-  free(success);
+  otrng_free(success);
 
   otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);

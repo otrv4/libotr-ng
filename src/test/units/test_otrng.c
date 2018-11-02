@@ -39,7 +39,7 @@ static void test_otrng_builds_query_message(otrng_fixture_s *otrng_fixture,
   const char *expected_qm = "?OTRv4? And some random invitation text.";
   g_assert_cmpstr(query_message, ==, expected_qm);
 
-  free(query_message);
+  otrng_free(query_message);
 }
 
 static void test_otrng_builds_query_message_v34(otrng_fixture_s *otrng_fixture,
@@ -54,7 +54,7 @@ static void test_otrng_builds_query_message_v34(otrng_fixture_s *otrng_fixture,
   const char *expected_qm = "?OTRv43? And some random invitation text.";
   g_assert_cmpstr(query_message, ==, expected_qm);
 
-  free(query_message);
+  otrng_free(query_message);
 }
 
 static void test_otrng_builds_whitespace_tag(otrng_fixture_s *otrng_fixture,
@@ -68,7 +68,7 @@ static void test_otrng_builds_whitespace_tag(otrng_fixture_s *otrng_fixture,
   otrng_assert_is_success(
       otrng_build_whitespace_tag(&whitespace_tag, message, otrng_fixture->otr));
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
-  free(whitespace_tag);
+  otrng_free(whitespace_tag);
 }
 
 static void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
@@ -83,7 +83,7 @@ static void test_otrng_builds_whitespace_tag_v34(otrng_fixture_s *otrng_fixture,
   otrng_assert_is_success(
       otrng_build_whitespace_tag(&whitespace_tag, message, otrng_fixture->v34));
   g_assert_cmpstr(whitespace_tag, ==, expected_tag);
-  free(whitespace_tag);
+  otrng_free(whitespace_tag);
 }
 
 static void test_otrng_receives_plaintext_without_ws_tag_on_start(
@@ -232,7 +232,7 @@ static void test_otrng_destroy() {
   otrng_assert(otr->their_client_profile == NULL);
   otrng_assert(otr->v3_conn == NULL);
 
-  free(otr);
+  otrng_free(otr);
   otrng_client_free(client);
 }
 
@@ -282,7 +282,7 @@ static void test_otrng_build_prekey_ensemble() {
   otrng_assert_dh_public_key_eq(ensemble->message->B, stored->b->pub);
 
   otrng_prekey_ensemble_free(ensemble);
-  otrng_free(otr);
+  otrng_conn_free(otr);
   otrng_global_state_free(client->global_state);
   otrng_client_free(client);
 }
@@ -299,10 +299,10 @@ static void test_otrng_invokes_shared_session_state_callbacks(void) {
   otrng_assert_cmpmem(session.identifier2, "bob", strlen(session.identifier2));
   otrng_assert(session.password == NULL);
 
-  free(session.identifier1);
-  free(session.identifier2);
+  otrng_free(session.identifier1);
+  otrng_free(session.identifier2);
 
-  otrng_free(protocol);
+  otrng_conn_free(protocol);
   otrng_global_state_free(client->global_state);
   otrng_client_free(client);
 }
@@ -317,9 +317,9 @@ static void test_otrng_generates_shared_session_state_string(void) {
   otrng_assert(state1_str);
   otrng_assert_cmpmem(state1_str, "alicebob", strlen("alicebob"));
 
-  free(state1_str);
-  free(state1->identifier1);
-  free(state1->identifier2);
+  otrng_free(state1_str);
+  otrng_free(state1->identifier1);
+  otrng_free(state1->identifier2);
 
   otrng_shared_session_state_s state2[1];
   state2->identifier1 = otrng_xstrdup("bob");
@@ -330,9 +330,9 @@ static void test_otrng_generates_shared_session_state_string(void) {
   otrng_assert(state2_str);
   otrng_assert_cmpmem(state2_str, "alicebob", strlen("alicebob"));
 
-  free(state2_str);
-  free(state2->identifier1);
-  free(state2->identifier2);
+  otrng_free(state2_str);
+  otrng_free(state2->identifier1);
+  otrng_free(state2->identifier2);
 
   otrng_shared_session_state_s state3[1];
   state3->identifier1 = otrng_xstrdup("bob");
@@ -343,10 +343,10 @@ static void test_otrng_generates_shared_session_state_string(void) {
   otrng_assert(state3_str);
   otrng_assert_cmpmem(state3_str, "alicebobpasswd", strlen("alicebobpasswd"));
 
-  free(state3_str);
-  free(state3->identifier1);
-  free(state3->identifier2);
-  free(state3->password);
+  otrng_free(state3_str);
+  otrng_free(state3->identifier1);
+  otrng_free(state3->identifier2);
+  otrng_free(state3->password);
 
   char *state4_str = otrng_generate_session_state_string(NULL);
   otrng_assert(state4_str == NULL);
@@ -357,7 +357,7 @@ static void test_otrng_generates_shared_session_state_string(void) {
   state4->password = NULL;
 
   otrng_assert(otrng_generate_session_state_string(state4) == NULL);
-  free(state4->identifier1);
+  otrng_free(state4->identifier1);
 
   otrng_shared_session_state_s state5[1];
   state5->identifier1 = NULL;
@@ -365,7 +365,7 @@ static void test_otrng_generates_shared_session_state_string(void) {
   state5->password = NULL;
 
   otrng_assert(otrng_generate_session_state_string(state5) == NULL);
-  free(state5->identifier2);
+  otrng_free(state5->identifier2);
 }
 
 void units_otrng_add_tests(void) {

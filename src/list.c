@@ -58,7 +58,7 @@ INTERNAL void otrng_list_free(list_element_s *head,
       current->data = NULL;
     }
 
-    free(current);
+    otrng_free(current);
     current = next;
   }
 }

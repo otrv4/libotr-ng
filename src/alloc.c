@@ -74,6 +74,20 @@ INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc(size_t size) {
   return result;
 }
 
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc_array(size_t count, size_t size) {
+  // TODO: this should be implemented
+  // more properly
+  return otrng_secure_alloc(count * size);
+}
+
+INTERNAL void otrng_free(/*@notnull@*/ /*@only@*/ void *p) /*@modifies p@*/ {
+  free(p);
+}
+
+INTERNAL void otrng_secure_free(/*@notnull@*/ /*@only@*/ void *p) /*@modifies p@*/ {
+  free(p);
+}
+
 INTERNAL void otrng_secure_wipe(/*@notnull@*/ /*@only@*/ void *p,
                                 size_t size) /*@modifies p@*/ {
   sodium_memzero(p, size);

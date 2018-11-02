@@ -44,8 +44,8 @@ otrng_dake_identity_message_new(const otrng_client_profile_s *profile) {
   identity_msg->profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
   if (!otrng_client_profile_copy(identity_msg->profile, profile)) {
-    free(identity_msg->profile);
-    free(identity_msg);
+    otrng_free(identity_msg->profile);
+    otrng_free(identity_msg);
     return NULL;
   }
 
@@ -59,7 +59,7 @@ otrng_dake_identity_message_destroy(dake_identity_message_s *identity_msg) {
   identity_msg->sender_instance_tag = 0;
   identity_msg->receiver_instance_tag = 0;
   otrng_client_profile_destroy(identity_msg->profile);
-  free(identity_msg->profile);
+  otrng_free(identity_msg->profile);
   identity_msg->profile = NULL;
   otrng_ec_point_destroy(identity_msg->Y);
   otrng_dh_mpi_release(identity_msg->B);
@@ -73,7 +73,7 @@ otrng_dake_identity_message_free(dake_identity_message_s *identity_msg) {
   }
 
   otrng_dake_identity_message_destroy(identity_msg);
-  free(identity_msg);
+  otrng_free(identity_msg);
 }
 
 INTERNAL otrng_result otrng_dake_identity_message_serialize(
@@ -100,11 +100,11 @@ INTERNAL otrng_result otrng_dake_identity_message_serialize(
   cursor += otrng_serialize_bytes_array(cursor, profile, profile_len);
   cursor += otrng_serialize_ec_point(cursor, identity_msg->Y);
 
-  free(profile);
+  otrng_free(profile);
 
   if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buffer)), &len,
                                      identity_msg->B)) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
   cursor += len;
@@ -205,11 +205,11 @@ INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
   otrng_ec_point_destroy(auth_r->X);
 
   otrng_client_profile_destroy(auth_r->profile);
-  free(auth_r->profile);
+  otrng_free(auth_r->profile);
   auth_r->profile = NULL;
 
   otrng_ring_sig_destroy(auth_r->sigma);
-  free(auth_r->sigma);
+  otrng_free(auth_r->sigma);
   auth_r->sigma = NULL;
 }
 
@@ -237,12 +237,12 @@ INTERNAL otrng_result otrng_dake_auth_r_serialize(uint8_t **dst, size_t *nbytes,
   cursor += otrng_serialize_bytes_array(cursor, our_profile, our_profile_len);
   cursor += otrng_serialize_ec_point(cursor, auth_r->X);
 
-  free(our_profile);
+  otrng_free(our_profile);
 
   len = 0;
   if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buffer)), &len,
                                      auth_r->A)) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -347,7 +347,7 @@ INTERNAL void otrng_dake_auth_i_init(dake_auth_i_s *auth_i) {
 
 INTERNAL void otrng_dake_auth_i_destroy(dake_auth_i_s *auth_i) {
   otrng_ring_sig_destroy(auth_i->sigma);
-  free(auth_i->sigma);
+  otrng_free(auth_i->sigma);
   auth_i->sigma = NULL;
 }
 
@@ -447,10 +447,10 @@ INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
   non_interactive_auth->A = NULL;
   otrng_ec_point_destroy(non_interactive_auth->X);
   otrng_client_profile_destroy(non_interactive_auth->profile);
-  free(non_interactive_auth->profile);
+  otrng_free(non_interactive_auth->profile);
   non_interactive_auth->profile = NULL;
   otrng_ring_sig_destroy(non_interactive_auth->sigma);
-  free(non_interactive_auth->sigma);
+  otrng_free(non_interactive_auth->sigma);
   non_interactive_auth->sigma = NULL;
   otrng_secure_wipe(non_interactive_auth->auth_mac, HASH_BYTES);
 }
@@ -485,12 +485,12 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_serialize(
   cursor += otrng_serialize_bytes_array(cursor, our_profile, our_profile_len);
   cursor += otrng_serialize_ec_point(cursor, non_interactive_auth->X);
 
-  free(our_profile);
+  otrng_free(our_profile);
 
   len = 0;
   if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buffer)), &len,
                                      non_interactive_auth->A)) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -729,8 +729,8 @@ tstatic otrng_result build_rsign_tag(
     }
   } while (0);
 
-  free(ser_i_profile);
-  free(ser_r_profile);
+  otrng_free(ser_i_profile);
+  otrng_free(ser_r_profile);
 
   // TODO: I don't _think_ these are necessary, since the points are public
   // values
@@ -774,7 +774,7 @@ INTERNAL otrng_result build_interactive_rsign_tag(
   }
 
   if (result == OTRNG_ERROR) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -858,20 +858,17 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
 
   if (!shake_256_kdf1(auth_mac_k, HASH_BYTES, usage_auth_mac_key, tmp_key,
                       HASH_BYTES)) {
-    otrng_secure_wipe(auth_mac_k, HASH_BYTES);
-    free(auth_mac_k);
+    otrng_secure_free(auth_mac_k);
     return OTRNG_ERROR;
   }
 
   /* Auth MAC = KDF_1(usage_auth_mac || auth_mac_k || t, 64) */
   if (!otrng_key_manager_calculate_auth_mac(dst, auth_mac_k, t, t_len)) {
-    otrng_secure_wipe(auth_mac_k, HASH_BYTES);
-    free(auth_mac_k);
+    otrng_secure_free(auth_mac_k);
     return OTRNG_ERROR;
   }
 
-  otrng_secure_wipe(auth_mac_k, HASH_BYTES);
-  free(auth_mac_k);
+  otrng_secure_free(auth_mac_k);
 
   return OTRNG_SUCCESS;
 }

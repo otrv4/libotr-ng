@@ -141,7 +141,7 @@ static void test_data_message_serializes() {
   otrng_assert_cmpmem(cursor, expected_enc, 7);
 
   otrng_data_message_free(data_msg);
-  free(ser);
+  otrng_free(ser);
 }
 
 static void test_data_message_serializes_absent_dh() {
@@ -169,7 +169,7 @@ static void test_data_message_serializes_absent_dh() {
   otrng_assert_cmpmem(cursor, data_msg->nonce, DATA_MSG_NONCE_BYTES);
 
   otrng_data_message_free(data_msg);
-  free(ser);
+  otrng_free(ser);
 }
 
 static void test_otrng_data_message_deserializes() {
@@ -210,7 +210,7 @@ static void test_otrng_data_message_deserializes() {
 
   otrng_data_message_free(data_msg);
   otrng_data_message_free(deser);
-  free(ser);
+  otrng_free(ser);
 }
 
 static void test_data_message_valid() {
@@ -230,7 +230,7 @@ static void test_data_message_valid() {
   otrng_assert_is_success(otrng_data_message_authenticator(
       data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
 
-  free(body);
+  otrng_free(body);
 
   otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
 
@@ -248,7 +248,7 @@ static void test_data_message_valid() {
   otrng_assert_is_success(otrng_data_message_authenticator(
       data_msg->mac, DATA_MSG_MAC_BYTES, mac_key, body, bodylen));
 
-  free(body);
+  otrng_free(body);
 
   otrng_assert(otrng_valid_data_message(mac_key, data_msg) == otrng_true);
 

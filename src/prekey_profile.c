@@ -41,7 +41,7 @@ INTERNAL void otrng_prekey_profile_free(otrng_prekey_profile_s *dst) {
   }
 
   otrng_prekey_profile_destroy(dst);
-  free(dst);
+  otrng_free(dst);
 }
 
 INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
@@ -208,7 +208,7 @@ prekey_profile_body_serialize_into(uint8_t **dst, size_t *dst_len,
 
   written = prekey_profile_body_serialize(buffer, size, profile);
   if (written == 0) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -230,12 +230,12 @@ INTERNAL otrng_result otrng_prekey_profile_serialize(
   written =
       prekey_profile_body_serialize(buffer, PREKEY_PROFILE_BODY_BYTES, profile);
   if (written == 0) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
   if (size - written < ED448_SIGNATURE_BYTES) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -262,12 +262,12 @@ INTERNAL otrng_result otrng_prekey_profile_serialize_with_metadata(
   written =
       prekey_profile_body_serialize(buffer, PREKEY_PROFILE_BODY_BYTES, profile);
   if (written == 0) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
   if (size - written < ED448_SIGNATURE_BYTES) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -298,7 +298,7 @@ tstatic otrng_result otrng_prekey_profile_sign(
   }
 
   otrng_ec_sign_simple(profile->signature, longterm_pair->sym, body, body_len);
-  free(body);
+  otrng_free(body);
 
   return OTRNG_SUCCESS;
 }
@@ -364,7 +364,7 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
 
   valid = otrng_ec_verify(profile->signature, pubkey, body, body_len);
 
-  free(body);
+  otrng_free(body);
   return valid;
 }
 

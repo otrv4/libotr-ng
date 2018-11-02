@@ -67,7 +67,7 @@ INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
   otrng_secure_wipe(keypair->sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_destroy(keypair->priv);
   otrng_ec_point_destroy(keypair->pub);
-  free(keypair);
+  otrng_secure_free(keypair);
 }
 
 INTERNAL otrng_result otrng_symmetric_key_serialize(
@@ -114,13 +114,11 @@ INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_s *ecdh,
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
   if (!otrng_ecdh_keypair_generate(ecdh, sym)) {
-    otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-    free(sym);
+    otrng_secure_free(sym);
     return OTRNG_ERROR;
   }
 
-  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-  free(sym);
+  otrng_secure_free(sym);
 
   return otrng_dh_keypair_generate(dh);
 }
@@ -139,7 +137,7 @@ otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair) {
   }
 
   shared_prekey_pair_destroy(prekey_pair);
-  free(prekey_pair);
+  otrng_secure_free(prekey_pair);
 }
 
 INTERNAL uint8_t *otrng_derive_key_from_extra_symm_key(
@@ -149,23 +147,20 @@ INTERNAL uint8_t *otrng_derive_key_from_extra_symm_key(
   uint8_t *derived_key = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
 
   if (!hash_init_with_usage(hd, usage)) {
-    otrng_secure_wipe(derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
-    free(derived_key);
+    otrng_secure_free(derived_key);
     return NULL;
   }
 
   if (hash_update(hd, use_data, use_data_len) == GOLDILOCKS_FAILURE) {
     hash_destroy(hd);
-    otrng_secure_wipe(derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
-    free(derived_key);
+    otrng_secure_free(derived_key);
     return NULL;
   }
 
   if (hash_update(hd, extra_symm_key, EXTRA_SYMMETRIC_KEY_BYTES) ==
       GOLDILOCKS_FAILURE) {
     hash_destroy(hd);
-    otrng_secure_wipe(derived_key, EXTRA_SYMMETRIC_KEY_BYTES);
-    free(derived_key);
+    otrng_secure_free(derived_key);
     return NULL;
   }
 
@@ -268,13 +263,13 @@ API void otrng_public_key_debug_print(FILE *f, otrng_public_key k) {
 
   uint8_t *r = otrng_xmalloc_z(ED448_POINT_BYTES);
   if (!otrng_ec_point_encode(r, ED448_POINT_BYTES, k)) {
-    free(r);
+    otrng_free(r);
     debug_api_print(f, "ERROR!!");
     return;
   }
 
   otrng_debug_print_data(f, r, ED448_POINT_BYTES);
-  free(r);
+  otrng_free(r);
 }
 
 API void otrng_private_key_debug_print(FILE *f, otrng_private_key k) {
@@ -287,7 +282,7 @@ API void otrng_private_key_debug_print(FILE *f, otrng_private_key k) {
   otrng_ec_scalar_encode(r, k);
 
   otrng_debug_print_data(f, r, ED448_SCALAR_BYTES);
-  free(r);
+  otrng_free(r);
 }
 
 API void otrng_shared_prekey_pub_debug_print(FILE *f,
@@ -298,13 +293,13 @@ API void otrng_shared_prekey_pub_debug_print(FILE *f,
 
   uint8_t *r = otrng_xmalloc_z(ED448_POINT_BYTES);
   if (!otrng_ec_point_encode(r, ED448_POINT_BYTES, k)) {
-    free(r);
+    otrng_free(r);
     debug_api_print(f, "ERROR!!");
     return;
   }
 
   otrng_debug_print_data(f, r, ED448_POINT_BYTES);
-  free(r);
+  otrng_free(r);
 }
 
 API void otrng_shared_prekey_priv_debug_print(FILE *f,
@@ -317,7 +312,7 @@ API void otrng_shared_prekey_priv_debug_print(FILE *f,
   otrng_ec_scalar_encode(r, k);
 
   otrng_debug_print_data(f, r, ED448_SCALAR_BYTES);
-  free(r);
+  otrng_free(r);
 }
 
 #endif /* DEBUG */

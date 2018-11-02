@@ -53,11 +53,11 @@ tstatic void otrng_message_free(otrng_message_to_send_s *msg) {
   }
 
   for (i = 0; i < msg->total; i++) {
-    free(msg->pieces[i]);
+    otrng_free(msg->pieces[i]);
   }
 
-  free(msg->pieces);
-  free(msg);
+  otrng_free(msg->pieces);
+  otrng_free(msg);
 }
 
 tstatic void initialize_fragment_context(fragment_context_s *context) {
@@ -77,7 +77,7 @@ tstatic void free_fragments_in_context(fragment_context_s *context) {
   }
 
   for (i = 0; i < context->total; i++) {
-    free(context->fragments[i]);
+    otrng_free(context->fragments[i]);
     context->fragments[i] = NULL;
   }
 }
@@ -95,8 +95,8 @@ tstatic /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
 
 INTERNAL void otrng_fragment_context_free(fragment_context_s *context) {
   free_fragments_in_context(context);
-  free(context->fragments);
-  free(context);
+  otrng_free(context->fragments);
+  otrng_free(context);
 }
 
 static otrng_result create_fragment_message(char **dst, const char *piece,

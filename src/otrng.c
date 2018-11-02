@@ -169,7 +169,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
 static void free_fragment_context(void *p) { otrng_fragment_context_free(p); }
 
 tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
-  free(otr->peer);
+  otrng_free(otr->peer);
 
   otrng_key_manager_free(otr->keys);
   otr->keys = NULL;
@@ -181,7 +181,7 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   otr->their_prekey_profile = NULL;
 
   otrng_smp_destroy(otr->smp);
-  free(otr->smp);
+  otrng_secure_free(otr->smp);
   otr->smp = NULL;
 
   otrng_list_free(otr->pending_fragments, free_fragment_context);
@@ -190,25 +190,25 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
   otrng_v3_conn_free(otr->v3_conn);
   otr->v3_conn = NULL;
 
-  free(otr->shared_session_state);
+  otrng_free(otr->shared_session_state);
   otr->shared_session_state = NULL;
 
   // TODO: @freeing should we free this after being used by phi?
-  free(otr->sending_init_message);
+  otrng_free(otr->sending_init_message);
   otr->sending_init_message = NULL;
 
   // TODO: @freeing should we free this after being used by phi?;
-  free(otr->receiving_init_message);
+  otrng_free(otr->receiving_init_message);
   otr->receiving_init_message = NULL;
 }
 
-INTERNAL void otrng_free(/*@only@ */ otrng_s *otr) {
+INTERNAL void otrng_conn_free(/*@only@ */ otrng_s *otr) {
   if (!otr) {
     return;
   }
 
   otrng_destroy(otr);
-  free(otr);
+  otrng_free(otr);
 }
 
 INTERNAL otrng_result otrng_build_query_message(string_p *dst,
@@ -241,12 +241,12 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
 
   /* Add '\0' */
   if (*otrng_stpncpy(cursor, msg, qm_size - rem)) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR; /* could not zero-terminate the string */
   }
 
   if (otr->sending_init_message) {
-    free(otr->sending_init_message);
+    otrng_free(otr->sending_init_message);
   }
 
   otr->sending_init_message = otrng_xstrdup(buffer);
@@ -280,14 +280,14 @@ API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
   res = otrng_stpcpy(cursor, msg);
   if (!res) {
     if (otr->sending_init_message) {
-      free(otr->sending_init_message);
+      otrng_free(otr->sending_init_message);
     }
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
   if (otr->sending_init_message) {
-    free(otr->sending_init_message);
+    otrng_free(otr->sending_init_message);
   }
 
   otr->sending_init_message = otrng_xstrdup(buffer);
@@ -338,7 +338,7 @@ tstatic otrng_result message_to_display_without_tag(otrng_response_s *response,
 
   response->to_display = otrng_xstrndup(buffer, chars);
 
-  free(buffer);
+  otrng_free(buffer);
   return OTRNG_SUCCESS;
 }
 
@@ -399,12 +399,12 @@ INTERNAL void otrng_response_free(otrng_response_s *response) {
     return;
   }
 
-  free(response->to_display);
-  free(response->to_send);
+  otrng_free(response->to_display);
+  otrng_free(response->to_send);
 
   otrng_tlv_list_free(response->tlvs);
 
-  free(response);
+  otrng_free(response);
 }
 
 // TODO: @erroing Is not receiving a plaintext a problem?
@@ -428,7 +428,7 @@ tstatic otrng_result serialize_and_encode_identity_message(
 
   *dst = otrl_base64_otr_encode(buffer, len);
 
-  free(buffer);
+  otrng_free(buffer);
   return OTRNG_SUCCESS;
 }
 
@@ -523,7 +523,7 @@ tstatic otrng_result serialize_and_encode_auth_r(string_p *dst,
 
   *dst = otrl_base64_otr_encode(buffer, len);
 
-  free(buffer);
+  otrng_free(buffer);
   return OTRNG_SUCCESS;
 }
 
@@ -570,9 +570,9 @@ static const char *get_shared_session_state(otrng_s *otr) {
   state = otrng_get_shared_session_state(otr);
   otr->shared_session_state = otrng_generate_session_state_string(&state);
 
-  free(state.identifier1);
-  free(state.identifier2);
-  free(state.password);
+  otrng_free(state.identifier1);
+  otrng_free(state.identifier2);
+  otrng_free(state.password);
 
   return otr->shared_session_state;
 }
@@ -648,7 +648,7 @@ static otrng_result generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
   ret = build_interactive_rsign_tag(dst, dst_len, auth_tag_type, &initiator,
                                     &responder, phi, phi_len);
 
-  free(phi);
+  otrng_free(phi);
   return ret;
 }
 
@@ -674,7 +674,7 @@ static otrng_result generate_receiving_rsig_tag(
   ret = build_interactive_rsign_tag(dst, dst_len, auth_tag_type, &initiator,
                                     responder, phi, phi_len);
 
-  free(phi);
+  otrng_free(phi);
   return ret;
 }
 
@@ -710,12 +710,12 @@ tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
           otr->client->keypair->pub,                  /* H_a */
           their_ecdh(otr),                            /* Y */
           t, t_len)) {
-    free(t);
+    otrng_free(t);
     otrng_dake_auth_r_destroy(&msg);
     return OTRNG_ERROR;
   }
 
-  free(t);
+  otrng_free(t);
 
   result = serialize_and_encode_auth_r(dst, &msg);
   otrng_dake_auth_r_destroy(&msg);
@@ -800,7 +800,7 @@ tstatic otrng_result serialize_and_encode_non_interactive_auth(
 
   *dst = otrl_base64_otr_encode(buffer, len);
 
-  free(buffer);
+  otrng_free(buffer);
   return OTRNG_SUCCESS;
 }
 
@@ -874,11 +874,11 @@ tstatic otrng_result build_non_interactive_auth_message(
   if (!build_non_interactive_rsign_tag(&t, &t_len, &initiator, &responder,
                                        otr->keys->their_shared_prekey, phi,
                                        phi_len)) {
-    free(phi);
+    otrng_free(phi);
     return OTRNG_ERROR;
   }
 
-  free(phi);
+  otrng_free(phi);
 
   /* sigma = RSig(H_a, sk_ha, {F_b, H_a, Y}, t) */
   if (!otrng_rsig_authenticate(
@@ -888,14 +888,14 @@ tstatic otrng_result build_non_interactive_auth_message(
           otr->client->keypair->pub,                  /* H_a */
           their_ecdh(otr),                            /* Y */
           t, t_len)) {
-    free(t);
+    otrng_free(t);
     return OTRNG_ERROR;
   }
 
   ret = otrng_dake_non_interactive_auth_message_authenticator(
       auth->auth_mac, auth, t, t_len, otr->keys->tmp_key);
 
-  free(t);
+  otrng_free(t);
 
   return ret;
 }
@@ -1229,7 +1229,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   if (!build_non_interactive_rsign_tag(&t, &t_len, &initiator, &responder,
                                        initiator.prekey_profile->shared_prekey,
                                        phi, phi_len)) {
-    free(phi);
+    otrng_free(phi);
     return otrng_false;
   }
 
@@ -1238,7 +1238,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
                          auth->profile->long_term_pub_key,       /* H_a */
                          our_ecdh(otr),                          /* Y  */
                          t, t_len)) {
-    free(t);
+    otrng_free(t);
     t = NULL;
 
     if ((initiator.exp_client_profile != NULL) &&
@@ -1247,17 +1247,17 @@ tstatic otrng_bool verify_non_interactive_auth_message(
       if (!build_fallback_non_interactive_rsign_tag(
               &t, &t_len, &initiator, &responder,
               initiator.exp_prekey_profile->shared_prekey, phi, phi_len)) {
-        free(phi);
+        otrng_free(phi);
         return otrng_false;
       }
 
-      free(phi);
+      otrng_free(phi);
 
       if (!otrng_rsig_verify(auth->sigma, *otr->client->forging_key, /* H_b */
                              auth->profile->long_term_pub_key,       /* H_a */
                              our_ecdh(otr),                          /* Y  */
                              t, t_len)) {
-        free(t);
+        otrng_free(t);
         return otrng_false;
       }
 
@@ -1265,17 +1265,17 @@ tstatic otrng_bool verify_non_interactive_auth_message(
     }
   }
 
-  free(phi);
+  otrng_free(phi);
 
   /* Check mac */
   if (!otrng_dake_non_interactive_auth_message_authenticator(
           mac_tag, auth, t, t_len, otr->keys->tmp_key)) {
-    free(t);
+    otrng_free(t);
     /* here no warning should be passed */
     return otrng_false;
   }
 
-  free(t);
+  otrng_free(t);
 
   /* here no warning should be passed */
   if (0 != otrl_mem_differ(mac_tag, auth->auth_mac, DATA_MSG_MAC_BYTES)) {
@@ -1491,7 +1491,7 @@ tstatic otrng_result receive_identity_message(string_p *dst,
 
   if (!otrng_dake_identity_message_deserialize(&msg, buffer, buff_len)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
-    free(msg.profile);
+    otrng_free(msg.profile);
     return result;
   }
 
@@ -1541,7 +1541,7 @@ tstatic otrng_result serialize_and_encode_auth_i(string_p *dst,
 
   *dst = otrl_base64_otr_encode(buffer, len);
 
-  free(buffer);
+  otrng_free(buffer);
   return OTRNG_SUCCESS;
 }
 
@@ -1579,11 +1579,11 @@ tstatic otrng_result reply_with_auth_i_message(
                                their_client_profile->forging_pub_key, /* F_a */
                                their_ecdh(otr),                       /* X */
                                t, t_len)) {
-    free(t);
+    otrng_free(t);
     return OTRNG_ERROR;
   }
 
-  free(t);
+  otrng_free(t);
 
   result = serialize_and_encode_auth_i(dst, &msg);
   otrng_dake_auth_i_destroy(&msg);
@@ -1621,7 +1621,7 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
                           our_ecdh(otr),                          /* Y */
                           t, t_len);
 
-  free(t);
+  otrng_free(t);
   return err;
 }
 
@@ -1719,7 +1719,7 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
       our_ecdh(otr),                                             /* X */
       t, t_len);
 
-  free(t);
+  otrng_free(t);
 
   return err;
 }
@@ -1792,7 +1792,7 @@ INTERNAL otrng_result otrng_expire_session(string_p *to_send, otrng_s *otr) {
 
   disconnected = otrng_tlv_list_one(
       otrng_tlv_new(OTRNG_TLV_DISCONNECTED, ser_len, ser_mac_keys));
-  free(ser_mac_keys);
+  otrng_free(ser_mac_keys);
 
   if (!disconnected) {
     return OTRNG_ERROR;
@@ -1846,7 +1846,7 @@ tstatic otrng_result decrypt_data_message(otrng_response_s *response,
                           enc_key);
 
   if (err) {
-    free(plain);
+    otrng_secure_free(plain);
     return OTRNG_ERROR;
   }
 
@@ -1856,8 +1856,7 @@ tstatic otrng_result decrypt_data_message(otrng_response_s *response,
   }
 
   response->tlvs = deserialize_received_tlvs(plain, msg->enc_msg_len);
-  otrng_secure_wipe(plain, msg->enc_msg_len);
-  free(plain);
+  otrng_secure_free(plain);
   return OTRNG_SUCCESS;
 }
 
@@ -2196,7 +2195,7 @@ tstatic otrng_result receive_encoded_message(otrng_response_s *response,
   }
 
   result = receive_decoded_message(response, warn, decoded, dec_len, otr);
-  free(decoded);
+  otrng_free(decoded);
 
   return result;
 }
@@ -2309,7 +2308,7 @@ INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
   }
 
   ret = receive_defragmented_message(response, warn, defrag, otr);
-  free(defrag);
+  otrng_free(defrag);
   return ret;
 }
 
@@ -2349,7 +2348,7 @@ tstatic otrng_result otrng_close_v4(string_p *to_send, otrng_s *otr) {
 
   disconnected = otrng_tlv_list_one(
       otrng_tlv_new(OTRNG_TLV_DISCONNECTED, ser_len, ser_mac_keys));
-  free(ser_mac_keys);
+  otrng_free(ser_mac_keys);
 
   if (!disconnected) {
     return OTRNG_ERROR;
@@ -2419,7 +2418,7 @@ tstatic otrng_result otrng_send_symkey_message_v4(
 
   tlvs = otrng_tlv_list_one(
       otrng_tlv_new(OTRNG_TLV_SYM_KEY, use_data_len + 4, tlv_data));
-  free(tlv_data);
+  otrng_free(tlv_data);
 
   // TODO: @freeing Should not extra_key be zeroed if any error happens from
   // here on?

@@ -143,20 +143,20 @@ otrng_client_profile_destroy(otrng_client_profile_s *client_profile) {
 
   otrng_ec_point_destroy(client_profile->forging_pub_key);
 
-  free(client_profile->versions);
+  otrng_free(client_profile->versions);
   client_profile->versions = NULL;
 
-  free(client_profile->dsa_key);
+  otrng_free(client_profile->dsa_key);
   client_profile->dsa_key = NULL;
 
-  free(client_profile->transitional_signature);
+  otrng_free(client_profile->transitional_signature);
   client_profile->transitional_signature = NULL;
 }
 
 INTERNAL void
 otrng_client_profile_free(otrng_client_profile_s *client_profile) {
   otrng_client_profile_destroy(client_profile);
-  free(client_profile);
+  otrng_free(client_profile);
 }
 
 tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
@@ -252,7 +252,7 @@ tstatic otrng_result client_profile_body_serialize_into(
   uint8_t *buffer = otrng_xmalloc_z(s);
 
   if (!client_profile_body_serialize(buffer, s, &written, client_profile)) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -275,7 +275,7 @@ INTERNAL otrng_result otrng_client_profile_serialize_with_metadata(
   uint8_t *buffer = otrng_xmalloc_z(s);
 
   if (!client_profile_body_serialize(buffer, s, &written, client_profile)) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -304,12 +304,12 @@ otrng_client_profile_serialize(uint8_t **dst, size_t *nbytes,
   uint8_t *buffer = otrng_xmalloc_z(s);
 
   if (!client_profile_body_serialize(buffer, s, &written, client_profile)) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
   if (s - written < ED448_SIGNATURE_BYTES) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
@@ -408,7 +408,7 @@ tstatic otrng_result deserialize_field(otrng_client_profile_s *target,
     }
     target->versions = otrng_xmalloc_z(versions_len + 1);
     memcpy(target->versions, versions, versions_len);
-    free(versions);
+    otrng_free(versions);
   } break;
   case OTRNG_CLIENT_PROFILE_FIELD_EXPIRATION: /* Expiration */
     if (!otrng_deserialize_uint64(&target->expires, buffer + w, buff_len - w,
@@ -526,7 +526,7 @@ tstatic otrng_result client_profile_sign(otrng_client_profile_s *client_profile,
 
   otrng_ec_sign_simple(client_profile->signature, keypair->sym, body, bodylen);
 
-  free(body);
+  otrng_free(body);
   return OTRNG_SUCCESS;
 }
 
@@ -557,7 +557,7 @@ client_profile_verify_signature(const otrng_client_profile_s *client_profile) {
 
   valid = otrng_ec_verify(client_profile->signature, pubkey, body, bodylen);
 
-  free(body);
+  otrng_free(body);
   return valid;
 }
 
@@ -691,7 +691,7 @@ tstatic otrng_result client_profile_verify_transitional_signature(
 
   if (client_profile_body_serialize_pre_transitional_signature(
           data, size, &data_len, client_profile) < 5) {
-    free(data);
+    otrng_free(data);
     gcry_sexp_release(pubs);
     return OTRNG_ERROR;
   }
@@ -700,7 +700,7 @@ tstatic otrng_result client_profile_verify_transitional_signature(
                             OTRv3_DSA_SIG_BYTES, OTRL_PUBKEY_TYPE_DSA, pubs,
                             data, data_len);
 
-  free(data);
+  otrng_free(data);
   gcry_sexp_release(pubs);
 
   if (err) {
@@ -828,21 +828,21 @@ INTERNAL otrng_result otrng_client_profile_transitional_sign(
 
   if (client_profile_body_serialize_pre_transitional_signature(
           data, size, &data_len, client_profile) < 5) {
-    free(data);
+    otrng_free(data);
     return OTRNG_ERROR;
   }
 
   written = 0;
   err = otrl_privkey_sign(&client_profile->transitional_signature, &written,
                           privkey, data, data_len);
-  free(data);
+  otrng_free(data);
 
   if (err) {
     return OTRNG_ERROR;
   }
 
   if (written != OTRv3_DSA_SIG_BYTES) {
-    free(client_profile->transitional_signature);
+    otrng_free(client_profile->transitional_signature);
     client_profile->transitional_signature = NULL;
     return OTRNG_ERROR;
   }

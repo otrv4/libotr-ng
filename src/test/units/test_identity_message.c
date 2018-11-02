@@ -72,7 +72,7 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
   otrng_assert_is_success(otrng_client_profile_serialize(
       &client_profile_ser, &client_profile_len, identity_msg->profile));
   otrng_assert_cmpmem(cursor, client_profile_ser, client_profile_len);
-  free(client_profile_ser);
+  otrng_free(client_profile_ser);
   cursor += client_profile_len;
 
   uint8_t ser_y[PUB_KEY_SER_BYTES] = {0};
@@ -91,7 +91,7 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
   otrng_dh_keypair_destroy(&dh);
   otrng_ecdh_keypair_destroy(&ecdh);
   otrng_dake_identity_message_free(identity_msg);
-  free(ser);
+  otrng_free(ser);
 }
 
 static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
@@ -135,7 +135,7 @@ static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
   otrng_ecdh_keypair_destroy(&ecdh);
   otrng_dake_identity_message_free(identity_msg);
   otrng_dake_identity_message_free(deser);
-  free(ser);
+  otrng_free(ser);
 }
 
 static void test_dake_identity_message_valid(dake_fixture_s *f,

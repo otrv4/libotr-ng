@@ -105,7 +105,7 @@ static void test_prekey_profile_serialize() {
   char expected_signature[ED448_SIGNATURE_BYTES] = {0};
   otrng_assert_cmpmem(expected_signature, cursor, ED448_SIGNATURE_BYTES);
 
-  free(ser);
+  otrng_free(ser);
   otrng_prekey_profile_free(profile);
   otrng_shared_prekey_pair_free(shared_prekey);
 }
@@ -136,7 +136,7 @@ static void test_prekey_profile_deserialize() {
       otrng_prekey_profile_deserialize(deser, ser, written, NULL));
   otrng_assert_prekey_profile_eq(deser, profile);
 
-  free(ser);
+  otrng_free(ser);
   otrng_prekey_profile_free(profile);
   otrng_prekey_profile_free(deser);
   otrng_shared_prekey_pair_free(shared_prekey);

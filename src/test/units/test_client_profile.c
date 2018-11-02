@@ -52,7 +52,7 @@ static void test_client_profile_serializes_body() {
   const uint8_t forging_sym[ED448_PRIVATE_BYTES] = {3};
   otrng_public_key *forging_key = create_forging_key_from(forging_sym);
   otrng_ec_point_copy(profile->forging_pub_key, *forging_key);
-  free(forging_key);
+  otrng_free(forging_key);
 
   uint8_t expected_pubkey[ED448_PUBKEY_BYTES] = {0};
   otrng_serialize_public_key(expected_pubkey, keypair.pub);
@@ -89,7 +89,7 @@ static void test_client_profile_serializes_body() {
 
   otrng_assert_cmpmem(expected, pos, sizeof(expected));
 
-  free(ser);
+  otrng_free(ser);
   otrng_client_profile_free(profile);
 }
 
@@ -106,7 +106,7 @@ static void test_client_profile_serializes() {
   const uint8_t forging_sym[ED448_PRIVATE_BYTES] = {3};
   otrng_public_key *forging_key = create_forging_key_from(forging_sym);
   otrng_ec_point_copy(profile->forging_pub_key, *forging_key);
-  free(forging_key);
+  otrng_free(forging_key);
 
   client_profile_sign(profile, &keypair);
   profile->transitional_signature = otrng_xmalloc_z(OTRv3_DSA_SIG_BYTES);
@@ -128,7 +128,7 @@ static void test_client_profile_serializes() {
                       ser + (written - sizeof(expected_transitional_signature)),
                       sizeof(expected_transitional_signature));
 
-  free(ser);
+  otrng_free(ser);
   otrng_client_profile_free(profile);
 }
 
@@ -143,7 +143,7 @@ static void test_otrng_client_profile_deserializes() {
   const uint8_t forging_sym[ED448_PRIVATE_BYTES] = {3};
   otrng_public_key *forging_key = create_forging_key_from(forging_sym);
   otrng_ec_point_copy(profile->forging_pub_key, *forging_key);
-  free(forging_key);
+  otrng_free(forging_key);
 
   profile->sender_instance_tag = 4;
   client_profile_sign(profile, &keypair);
@@ -159,7 +159,7 @@ static void test_otrng_client_profile_deserializes() {
       otrng_client_profile_deserialize(&deser, ser, written, NULL));
   otrng_assert_client_profile_eq(&deser, profile);
 
-  free(ser);
+  otrng_free(ser);
   otrng_client_profile_free(profile);
   otrng_client_profile_destroy(&deser);
 }
@@ -174,7 +174,7 @@ static void test_client_profile_signs_and_verify() {
   const uint8_t forging_sym[ED448_PRIVATE_BYTES] = {3};
   otrng_public_key *forging_key = create_forging_key_from(forging_sym);
   otrng_ec_point_copy(profile->forging_pub_key, *forging_key);
-  free(forging_key);
+  otrng_free(forging_key);
 
   otrng_assert(profile != NULL);
   client_profile_sign(profile, &keypair);

@@ -21,6 +21,8 @@
 #include "smp.h"
 #include "messaging.h"
 
+#include "alloc.h"
+
 tstatic void handle_smp_event_cb_v4(const otrng_smp_event event,
                                     const uint8_t progress_percent,
                                     const uint8_t *question, const size_t q_len,
@@ -211,7 +213,7 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
 
     tlv = otrng_tlv_new(OTRNG_TLV_SMP_MSG_1, len, to_send);
     otrng_smp_message_1_destroy(&msg);
-    free(to_send);
+    otrng_free(to_send);
     return tlv;
   } while (0);
 

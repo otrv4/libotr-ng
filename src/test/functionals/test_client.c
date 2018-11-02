@@ -93,7 +93,7 @@ static void test_client_api() {
   // Bob receives query message, sends the identity message
   otrng_client_receive(&from_bob, &to_display, query_message_to_bob,
                        ALICE_ACCOUNT, bob, &ignore);
-  free(query_message_to_bob);
+  otrng_free(query_message_to_bob);
   query_message_to_bob = NULL;
 
   otrng_assert(!ignore);
@@ -102,7 +102,7 @@ static void test_client_api() {
   // Charlie receives query message, sends identity message
   otrng_client_receive(&from_charlie, &to_display, query_message_to_charlie,
                        ALICE_ACCOUNT, charlie, &ignore);
-  free(query_message_to_charlie);
+  otrng_free(query_message_to_charlie);
   query_message_to_charlie = NULL;
 
   otrng_assert(!ignore);
@@ -119,7 +119,7 @@ static void test_client_api() {
   // Alice receives identity message (from Bob), sends Auth-R message
   otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_ACCOUNT,
                        alice, &ignore);
-  free(from_bob);
+  otrng_free(from_bob);
   from_bob = NULL;
 
   otrng_assert(from_alice_to_bob);
@@ -129,7 +129,7 @@ static void test_client_api() {
   // Alice receives identity message (from Charlie), sends Auth-R message
   otrng_client_receive(&from_alice_to_charlie, &to_display, from_charlie,
                        CHARLIE_ACCOUNT, alice, &ignore);
-  free(from_charlie);
+  otrng_free(from_charlie);
   from_charlie = NULL;
 
   otrng_assert(!ignore);
@@ -138,7 +138,7 @@ static void test_client_api() {
   // Bob receives Auth-R message, sends Auth-I message
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   otrng_assert(!ignore);
@@ -148,7 +148,7 @@ static void test_client_api() {
   // Charlie receives Auth-R message, sends Auth-I message
   otrng_client_receive(&from_charlie, &to_display, from_alice_to_charlie,
                        ALICE_ACCOUNT, charlie, &ignore);
-  free(from_alice_to_charlie);
+  otrng_free(from_alice_to_charlie);
   from_alice_to_charlie = NULL;
 
   otrng_assert(!ignore);
@@ -158,7 +158,7 @@ static void test_client_api() {
   // Alice receives Auth-I message (from Bob), sends initial data message
   otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_ACCOUNT,
                        alice, &ignore);
-  free(from_bob);
+  otrng_free(from_bob);
   from_bob = NULL;
 
   otrng_assert(from_alice_to_bob);
@@ -168,7 +168,7 @@ static void test_client_api() {
   // Bob receives initial data message.
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   otrng_assert(!from_bob);
@@ -178,7 +178,7 @@ static void test_client_api() {
   // Alice receives Auth-I message (from Charlie), sends initial data message
   otrng_client_receive(&from_alice_to_charlie, &to_display, from_charlie,
                        CHARLIE_ACCOUNT, alice, &ignore);
-  free(from_charlie);
+  otrng_free(from_charlie);
   from_charlie = NULL;
 
   otrng_assert(from_alice_to_charlie);
@@ -188,7 +188,7 @@ static void test_client_api() {
   // Charlie receives initial data message.
   otrng_client_receive(&from_charlie, &to_display, from_alice_to_charlie,
                        ALICE_ACCOUNT, charlie, &ignore);
-  free(from_alice_to_charlie);
+  otrng_free(from_alice_to_charlie);
   from_alice_to_charlie = NULL;
 
   otrng_assert(!from_charlie);
@@ -211,7 +211,7 @@ static void test_client_api() {
   // Bob receives the disconnected from Alice
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   otrng_assert(!ignore);
@@ -242,30 +242,30 @@ static void test_conversation_with_multiple_locations() {
   // Bob receives query message, sends identity message
   otrng_client_receive(&from_bob, &to_display, query_message, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(query_message);
+  otrng_free(query_message);
 
   // Alice receives identity message (from Bob), sends Auth-R message
   otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_ACCOUNT,
                        alice, &ignore);
-  free(from_bob);
+  otrng_free(from_bob);
   from_bob = NULL;
 
   // Bob receives Auth-R message, sends Auth-I message
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   // Alice receives Auth-I message (from Bob), sends initial data message
   otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_ACCOUNT,
                        alice, &ignore);
-  free(from_bob);
+  otrng_free(from_bob);
   from_bob = NULL;
 
   // Bob receives the message.
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   // Alice sends a message with original instance tag
@@ -275,14 +275,14 @@ static void test_conversation_with_multiple_locations() {
   // Bob receives the message.
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   otrng_assert(!ignore);
   otrng_assert(!from_bob);
   otrng_assert(to_display);
 
-  free(to_display);
+  otrng_free(to_display);
   to_display = NULL;
 
   // Alice sends a message with a different instance tag
@@ -294,14 +294,14 @@ static void test_conversation_with_multiple_locations() {
   // Bob receives and ignores the message.
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   otrng_assert(!ignore);
   otrng_assert(!to_display);
 
   // Free the ignored reply
-  free(from_bob);
+  otrng_free(from_bob);
   from_bob = NULL;
 
   // Bob sends a disconnected to Alice
@@ -310,11 +310,11 @@ static void test_conversation_with_multiple_locations() {
   // Alice receives the disconnected from Alice
   otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_ACCOUNT,
                        alice, &ignore);
-  free(from_bob);
+  otrng_free(from_bob);
   from_bob = NULL;
 
   // Free the ignored reply
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   // Free memory
@@ -368,16 +368,16 @@ static void test_valid_identity_message_in_waiting_auth_i() {
   dh_public_key stored_their_dh;
   stored_their_dh = otrng_dh_mpi_copy(alice_to_bob->conn->keys->their_dh);
 
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
-  free(bobs_id);
+  otrng_free(bobs_id);
   bobs_id = NULL;
 
   // Bob generates an identity message again
   otrng_client_receive(&bobs_id, &to_display, query_message_to_bob,
                        ALICE_ACCOUNT, bob, &ignore);
-  free(query_message_to_bob);
+  otrng_free(query_message_to_bob);
   query_message_to_bob = NULL;
 
   otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_AUTH_R);
@@ -385,7 +385,7 @@ static void test_valid_identity_message_in_waiting_auth_i() {
   // Alice receives identity message (from Bob) again, sends Auth-R message
   otrng_client_receive(&from_alice_to_bob, &to_display, bobs_id, BOB_ACCOUNT,
                        alice, &ignore);
-  free(bobs_id);
+  otrng_free(bobs_id);
   bobs_id = NULL;
 
   ec_point new_their_ecdh;
@@ -414,7 +414,7 @@ static void test_valid_identity_message_in_waiting_auth_i() {
   // Bob receives Auth-R message, sends Auth-I message
   otrng_client_receive(&bobs_auth_i, &to_display, from_alice_to_bob,
                        ALICE_ACCOUNT, bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   otrng_assert(!ignore);
@@ -427,7 +427,7 @@ static void test_valid_identity_message_in_waiting_auth_i() {
   // Alice receives auth-i message (from Bob)
   otrng_client_receive(&from_alice_to_bob, &to_display, bobs_auth_i,
                        BOB_ACCOUNT, alice, &ignore);
-  free(bobs_auth_i);
+  otrng_free(bobs_auth_i);
   bobs_auth_i = NULL;
 
   otrng_assert(from_alice_to_bob);
@@ -440,7 +440,7 @@ static void test_valid_identity_message_in_waiting_auth_i() {
   // Bob receives the initial data message
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   otrng_assert(!ignore);
@@ -460,7 +460,7 @@ static void test_valid_identity_message_in_waiting_auth_i() {
   // Bob receives the disconnected from Alice
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   otrng_assert(!ignore);
@@ -492,7 +492,7 @@ static void test_invalid_auth_r_message_in_not_waiting_auth_r() {
   // Bob receives query message, sends identity message
   otrng_client_receive(&bobs_id, &to_display, query_message_to_bob,
                        ALICE_ACCOUNT, bob, &ignore);
-  free(query_message_to_bob);
+  otrng_free(query_message_to_bob);
   query_message_to_bob = NULL;
 
   otrng_assert(!ignore);
@@ -516,7 +516,7 @@ static void test_invalid_auth_r_message_in_not_waiting_auth_r() {
   otrng_assert(!to_display);
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_WAITING_AUTH_I);
 
-  free(bobs_id);
+  otrng_free(bobs_id);
   bobs_id = NULL;
 
   // Bob receives Auth-R message, sends Auth-I message
@@ -532,7 +532,7 @@ static void test_invalid_auth_r_message_in_not_waiting_auth_r() {
   // Bob receives again Auth-R message, ignores
   otrng_client_receive(&ignore_message, &to_display, alices_auth_r,
                        ALICE_ACCOUNT, bob, &ignore);
-  free(alices_auth_r);
+  otrng_free(alices_auth_r);
   alices_auth_r = NULL;
 
   otrng_assert(!ignore);
@@ -545,7 +545,7 @@ static void test_invalid_auth_r_message_in_not_waiting_auth_r() {
   // Alice receives Auth-I message, sends initial data message
   otrng_client_receive(&alice_last, &to_display, bobs_auth_i, BOB_ACCOUNT,
                        alice, &ignore);
-  free(bobs_auth_i);
+  otrng_free(bobs_auth_i);
   bobs_auth_i = NULL;
 
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
@@ -557,7 +557,7 @@ static void test_invalid_auth_r_message_in_not_waiting_auth_r() {
   // Bob receives the initial data message
   otrng_client_receive(&bob_last, &to_display, alice_last, ALICE_ACCOUNT, bob,
                        &ignore);
-  free(alice_last);
+  otrng_free(alice_last);
   alice_last = NULL;
 
   otrng_assert(!ignore);
@@ -576,14 +576,14 @@ static void test_invalid_auth_r_message_in_not_waiting_auth_r() {
   // Bob receives the disconnected from Alice
   otrng_client_receive(&bob_last, &to_display, alice_last, ALICE_ACCOUNT, bob,
                        &ignore);
-  free(alice_last);
+  otrng_free(alice_last);
   alice_last = NULL;
 
   otrng_assert(!ignore);
   otrng_assert(!bob_last);
   otrng_assert(!to_display);
 
-  free(bob_last);
+  otrng_free(bob_last);
   bob_last = NULL;
 
   // Free memory
@@ -635,7 +635,7 @@ static void test_valid_identity_message_in_waiting_auth_r() {
   otrng_assert(alices_id);
   otrng_assert(!to_display);
 
-  free(query_message_to_alice);
+  otrng_free(query_message_to_alice);
   query_message_to_alice = NULL;
 
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_WAITING_AUTH_R);
@@ -661,7 +661,7 @@ static void test_valid_identity_message_in_waiting_auth_r() {
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_WAITING_AUTH_R);
   otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_AUTH_R);
 
-  free(query_message_to_bob);
+  otrng_free(query_message_to_bob);
   query_message_to_bob = NULL;
 
   // Alice receives identity message. At this point, she can either:
@@ -672,10 +672,10 @@ static void test_valid_identity_message_in_waiting_auth_r() {
 
   // 2. Alice sends and Auth-R message
   if (alices_auth_r) {
-    free(alices_id);
+    otrng_free(alices_id);
     alices_id = NULL;
 
-    free(bobs_id);
+    otrng_free(bobs_id);
     bobs_id = NULL;
 
     otrng_assert(!ignore);
@@ -684,7 +684,7 @@ static void test_valid_identity_message_in_waiting_auth_r() {
     // Bob receives and Auth-R message. He sends and Auth-I message.
     otrng_client_receive(&bobs_auth_i, &to_display, alices_auth_r,
                          ALICE_ACCOUNT, bob, &ignore);
-    free(alices_auth_r);
+    otrng_free(alices_auth_r);
     alices_auth_r = NULL;
 
     otrng_assert(bobs_auth_i);
@@ -694,7 +694,7 @@ static void test_valid_identity_message_in_waiting_auth_r() {
     // Alice receives Auth-I message, sends initial data message
     otrng_client_receive(&alice_last, &to_display, bobs_auth_i, BOB_ACCOUNT,
                          alice, &ignore);
-    free(bobs_auth_i);
+    otrng_free(bobs_auth_i);
     bobs_auth_i = NULL;
 
     g_assert_cmpstr(bob_to_alice->conn->sending_init_message, ==,
@@ -709,7 +709,7 @@ static void test_valid_identity_message_in_waiting_auth_r() {
     // Bob receives initial data message
     otrng_client_receive(&bob_last, &to_display, alice_last, ALICE_ACCOUNT, bob,
                          &ignore);
-    free(alice_last);
+    otrng_free(alice_last);
     alice_last = NULL;
 
     otrng_assert(!ignore);
@@ -729,7 +729,7 @@ static void test_valid_identity_message_in_waiting_auth_r() {
     // Bob receives the disconnected from Alice
     otrng_client_receive(&bob_last, &to_display, alice_last, ALICE_ACCOUNT, bob,
                          &ignore);
-    free(alice_last);
+    otrng_free(alice_last);
     alice_last = NULL;
 
     otrng_assert(!ignore);
@@ -742,14 +742,14 @@ static void test_valid_identity_message_in_waiting_auth_r() {
     otrng_assert(!alices_auth_r);
     otrng_assert(!to_display);
 
-    free(bobs_id);
+    otrng_free(bobs_id);
     bobs_id = NULL;
 
     // Bob receives an identity message on state
     // OTRNG_WAITING_FOR_AUTH-R. He is now the lower side
     otrng_client_receive(&bobs_auth_r, &to_display, alices_id, ALICE_ACCOUNT,
                          bob, &ignore);
-    free(alices_id);
+    otrng_free(alices_id);
     alices_id = NULL;
 
     otrng_assert(bobs_auth_r);
@@ -759,7 +759,7 @@ static void test_valid_identity_message_in_waiting_auth_r() {
     // Alice receives Auth-R, sends Auth-I
     otrng_client_receive(&alices_auth_i, &to_display, bobs_auth_r, BOB_ACCOUNT,
                          alice, &ignore);
-    free(bobs_auth_r);
+    otrng_free(bobs_auth_r);
     bobs_auth_r = NULL;
 
     otrng_assert(!ignore);
@@ -769,7 +769,7 @@ static void test_valid_identity_message_in_waiting_auth_r() {
     // Bob receives Auth-I message, sends initial data message
     otrng_client_receive(&bob_last, &to_display, alices_auth_i, ALICE_ACCOUNT,
                          bob, &ignore);
-    free(alices_auth_i);
+    otrng_free(alices_auth_i);
     alices_auth_i = NULL;
 
     otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
@@ -790,7 +790,7 @@ static void test_valid_identity_message_in_waiting_auth_r() {
     // Alice receives initial data message
     otrng_client_receive(&alice_last, &to_display, bob_last, BOB_ACCOUNT, alice,
                          &ignore);
-    free(bob_last);
+    otrng_free(bob_last);
     bob_last = NULL;
 
     otrng_assert(!ignore);
@@ -814,7 +814,7 @@ static void test_valid_identity_message_in_waiting_auth_r() {
 
     otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_FINISHED);
 
-    free(bob_last);
+    otrng_free(bob_last);
     bob_last = NULL;
 
     otrng_assert(!ignore);
@@ -845,7 +845,7 @@ static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
   // Bob receives query message, sends identity message
   otrng_client_receive(&bobs_id, &to_display, query_message_to_bob,
                        ALICE_ACCOUNT, bob, &ignore);
-  free(query_message_to_bob);
+  otrng_free(query_message_to_bob);
   query_message_to_bob = NULL;
 
   otrng_assert(!ignore);
@@ -871,7 +871,7 @@ static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
   otrng_client_receive(&alices_auth_r, &to_display, bobs_id, BOB_ACCOUNT, alice,
                        &ignore);
 
-  free(bobs_id);
+  otrng_free(bobs_id);
   bobs_id = NULL;
 
   otrng_assert(!ignore);
@@ -883,7 +883,7 @@ static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
   // Bob receives Auth-R message, sends Auth-I message
   otrng_client_receive(&bobs_auth_i, &to_display, alices_auth_r, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(alices_auth_r);
+  otrng_free(alices_auth_r);
   alices_auth_r = NULL;
 
   otrng_assert(!ignore);
@@ -909,7 +909,7 @@ static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
   // Bob receives the initial data message
   otrng_client_receive(&bob_last, &to_display, alice_last, ALICE_ACCOUNT, bob,
                        &ignore);
-  free(alice_last);
+  otrng_free(alice_last);
   alice_last = NULL;
 
   otrng_assert(!ignore);
@@ -926,7 +926,7 @@ static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
   otrng_assert(!alice_last);
   otrng_assert(!to_display);
 
-  free(bobs_auth_i);
+  otrng_free(bobs_auth_i);
   bobs_auth_i = NULL;
 
   // Alice sends a disconnected to Bob
@@ -943,14 +943,14 @@ static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
   // Bob receives the disconnected from Alice
   otrng_client_receive(&bob_last, &to_display, alice_last, ALICE_ACCOUNT, bob,
                        &ignore);
-  free(alice_last);
+  otrng_free(alice_last);
   alice_last = NULL;
 
   otrng_assert(!ignore);
   otrng_assert(!bob_last);
   otrng_assert(!to_display);
 
-  free(bob_last);
+  otrng_free(bob_last);
   bob_last = NULL;
 
   // Free memory
@@ -980,7 +980,7 @@ static void test_client_receives_fragmented_message(void) {
 
   g_assert_cmpstr(to_display, ==, "Receiving fragmented plaintext");
 
-  free(to_display);
+  otrng_free(to_display);
   to_display = NULL;
 
   otrng_message_free(fmessage);
@@ -1015,7 +1015,7 @@ static void test_client_expires_old_fragments(void) {
 
   g_assert_cmpint(otrng_list_len(conv->conn->pending_fragments), ==, 0);
 
-  free(to_display);
+  otrng_free(to_display);
   otrng_message_free(fmessage);
   otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
@@ -1038,31 +1038,31 @@ static void test_client_sends_fragmented_message(void) {
   /* Bob receives query message, sends identity message */
   otrng_client_receive(&from_bob, &to_display, query_message_to_bob,
                        ALICE_ACCOUNT, bob, &ignore);
-  free(query_message_to_bob);
+  otrng_free(query_message_to_bob);
   query_message_to_bob = NULL;
 
   /* Alice receives identity message (from Bob), sends Auth-R message */
   otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_ACCOUNT,
                        alice, &ignore);
-  free(from_bob);
+  otrng_free(from_bob);
   from_bob = NULL;
 
   /* Bob receives Auth-R message, sends Auth-I message */
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   /* Alice receives Auth-I message (from Bob) */
   otrng_client_receive(&from_alice_to_bob, &to_display, from_bob, BOB_ACCOUNT,
                        alice, &ignore);
-  free(from_bob);
+  otrng_free(from_bob);
   from_bob = NULL;
 
   /* Bob receives the initial data message */
   otrng_client_receive(&from_bob, &to_display, from_alice_to_bob, ALICE_ACCOUNT,
                        bob, &ignore);
-  free(from_alice_to_bob);
+  otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
   otrng_assert(!ignore);
@@ -1086,10 +1086,10 @@ static void test_client_sends_fragmented_message(void) {
     }
   }
 
-  free(from_bob);
+  otrng_free(from_bob);
   from_bob = NULL;
 
-  free(to_display);
+  otrng_free(to_display);
   to_display = NULL;
 
   otrng_message_free(to_send);

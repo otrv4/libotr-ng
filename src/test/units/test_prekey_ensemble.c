@@ -47,7 +47,7 @@ static void test_prekey_ensemble_validate(void) {
   ensemble->client_profile->dsa_key = NULL;
   otrng_public_key *fk = create_forging_key_from(sym3);
   otrng_ec_point_copy(ensemble->client_profile->forging_pub_key, *fk);
-  free(fk);
+  otrng_free(fk);
 
   otrng_assert_is_success(
       client_profile_sign(ensemble->client_profile, keypair));
@@ -106,7 +106,7 @@ static void test_prekey_ensemble_validate(void) {
   char *old = ensemble->client_profile->versions;
   ensemble->client_profile->versions = otrng_xstrdup("3");
   otrng_assert_is_error(otrng_prekey_ensemble_validate(ensemble));
-  free(ensemble->client_profile->versions);
+  otrng_free(ensemble->client_profile->versions);
   ensemble->client_profile->versions = old;
 
   otrng_keypair_free(keypair);

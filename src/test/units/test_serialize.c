@@ -76,7 +76,7 @@ static void test_serialize_otrng_deserialize_data() {
   uint8_t *dst = otrng_xmalloc_z(9);
   otrng_assert(dst);
   g_assert_cmpint(9, ==, otrng_serialize_data(dst, src, 5));
-  free(dst);
+  otrng_free(dst);
 }
 
 static void test_ser_des_otrng_public_key() {
@@ -132,7 +132,7 @@ static void test_serialize_otrng_symmetric_key() {
   g_assert_cmpint(strlen(expected), ==, buffer_size); /* 76 of length*/
   otrng_assert_cmpmem(expected, buffer, buffer_size);
 
-  free(buffer);
+  otrng_free(buffer);
 }
 
 static void test_otrng_serialize_dh_public_key() {

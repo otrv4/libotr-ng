@@ -49,7 +49,7 @@ tstatic void ratchet_free(ratchet_s *ratchet) {
   otrng_secure_wipe(ratchet->chain_s, CHAIN_KEY_BYTES);
   otrng_secure_wipe(ratchet->chain_r, CHAIN_KEY_BYTES);
 
-  free(ratchet);
+  otrng_secure_free(ratchet);
 }
 
 INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
@@ -68,12 +68,10 @@ INTERNAL key_manager_s *otrng_key_manager_new(void) {
 
 INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   otrng_ecdh_keypair_destroy(manager->our_ecdh);
-  otrng_secure_wipe(manager->our_ecdh, sizeof(ecdh_keypair_s));
-  free(manager->our_ecdh);
+  otrng_secure_free(manager->our_ecdh);
 
   otrng_dh_keypair_destroy(manager->our_dh);
-  otrng_secure_wipe(manager->our_dh, sizeof(dh_keypair_s));
-  free(manager->our_dh);
+  otrng_secure_free(manager->our_dh);
 
   otrng_ec_point_destroy(manager->their_ecdh);
 
@@ -105,7 +103,7 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
 
 INTERNAL void otrng_key_manager_free(key_manager_s *manager) {
   otrng_key_manager_destroy(manager);
-  free(manager);
+  otrng_secure_free(manager);
 }
 
 INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager) {
@@ -195,8 +193,7 @@ INTERNAL void otrng_receiving_ratchet_destroy(receiving_ratchet_s *ratchet) {
   otrng_secure_wipe(ratchet->chain_r, CHAIN_KEY_BYTES);
   otrng_secure_wipe(ratchet->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
-  otrng_secure_wipe(ratchet, sizeof(receiving_ratchet_s));
-  free(ratchet);
+  otrng_secure_free(ratchet);
 }
 
 INTERNAL void otrng_key_manager_set_their_tmp_keys(
@@ -234,12 +231,11 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   */
   if (!otrng_ecdh_keypair_generate(manager->our_ecdh, sym)) {
     otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-    free(sym);
+    otrng_free(sym);
     return OTRNG_ERROR;
   }
 
-  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-  free(sym);
+  otrng_secure_free(sym);
 
   manager->last_generated = now;
 
@@ -361,8 +357,7 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
     if (!shake_256_kdf1(random_buffer, ED448_PRIVATE_BYTES,
                         usage_ECDH_first_ephemeral, manager->shared_secret,
                         SHARED_SECRET_BYTES)) {
-      otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
-      free(random_buffer);
+      otrng_secure_free(random_buffer);
       return OTRNG_ERROR;
     }
 
@@ -370,13 +365,11 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
     /* @secret this will be deleted once sent a new data message in a new
      * ratchet */
     if (!otrng_ecdh_keypair_generate(manager->our_ecdh, random_buffer)) {
-      otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
-      free(random_buffer);
+      otrng_secure_free(random_buffer);
       return OTRNG_ERROR;
     }
 
-    otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
-    free(random_buffer);
+    otrng_secure_free(random_buffer);
 
     otrng_dh_keypair_destroy(manager->our_dh);
     /* @secret this will be deleted once sent a new data message in a new
@@ -392,8 +385,7 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
     if (!shake_256_kdf1(random_buffer, ED448_PRIVATE_BYTES,
                         usage_ECDH_first_ephemeral, manager->shared_secret,
                         SHARED_SECRET_BYTES)) {
-      otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
-      free(random_buffer);
+      otrng_secure_free(random_buffer);
       return OTRNG_ERROR;
     }
 
@@ -402,13 +394,11 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
      * ratchet */
     if (!otrng_ecdh_keypair_generate_their(manager->their_ecdh,
                                            random_buffer)) {
-      otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
-      free(random_buffer);
+      otrng_secure_free(random_buffer);
       return OTRNG_ERROR;
     }
 
-    otrng_secure_wipe(random_buffer, ED448_PRIVATE_BYTES);
-    free(random_buffer);
+    otrng_secure_free(random_buffer);
 
     gcry_mpi_release(manager->their_dh);
     manager->their_dh = NULL;
@@ -899,15 +889,13 @@ tstatic otrng_result calculate_extra_key(
   uint8_t magic[1] = {0xFF};
 
   if (!hash_init_with_usage(hd, usage_extra_symm_key)) {
-    otrng_secure_wipe(extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
-    free(extra_key_buffer);
+    otrng_secure_free(extra_key_buffer);
     return OTRNG_ERROR;
   }
 
   if (hash_update(hd, magic, 1) == GOLDILOCKS_FAILURE) {
     hash_destroy(hd);
-    otrng_secure_wipe(extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
-    free(extra_key_buffer);
+    otrng_secure_free(extra_key_buffer);
     return OTRNG_ERROR;
   }
 
@@ -918,8 +906,7 @@ tstatic otrng_result calculate_extra_key(
     if (hash_update(hd, manager->current->chain_s, CHAIN_KEY_BYTES) ==
         GOLDILOCKS_FAILURE) {
       hash_destroy(hd);
-      otrng_secure_wipe(extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
-      free(extra_key_buffer);
+      otrng_secure_free(extra_key_buffer);
       return OTRNG_ERROR;
     }
 
@@ -933,7 +920,7 @@ tstatic otrng_result calculate_extra_key(
         GOLDILOCKS_FAILURE) {
       hash_destroy(hd);
       otrng_secure_wipe(extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
-      free(extra_key_buffer);
+      otrng_free(extra_key_buffer);
       return OTRNG_ERROR;
     }
 
@@ -943,8 +930,7 @@ tstatic otrng_result calculate_extra_key(
     memcpy(tmp_receiving_ratchet->extra_symmetric_key, extra_key_buffer,
            EXTRA_SYMMETRIC_KEY_BYTES);
   }
-  otrng_secure_wipe(extra_key_buffer, EXTRA_SYMMETRIC_KEY_BYTES);
-  free(extra_key_buffer);
+  otrng_secure_free(extra_key_buffer);
 
 // TODO: add to tmp
 #ifdef DEBUG
@@ -979,7 +965,7 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
     if (warn) {
       *warn = OTRNG_WARN_STORAGE_FULL;
     }
-    free(extra_key);
+    otrng_secure_free(extra_key);
     // TODO: should we really return success here?
     return OTRNG_SUCCESS;
   }
@@ -989,25 +975,25 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
     while (tmp_receiving_ratchet->k < until) {
       if (!shake_256_kdf1(enc_key, ENC_KEY_BYTES, usage_message_key,
                           tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES)) {
-        free(extra_key);
+        otrng_secure_free(extra_key);
         return OTRNG_ERROR;
       }
 
       if (!hash_init_with_usage(hd, usage_extra_symm_key)) {
-        free(extra_key);
+        otrng_secure_free(extra_key);
         return OTRNG_ERROR;
       }
 
       if (hash_update(hd, magic, 1) == GOLDILOCKS_FAILURE) {
         hash_destroy(hd);
-        free(extra_key);
+        otrng_secure_free(extra_key);
         return OTRNG_ERROR;
       }
 
       if (hash_update(hd, tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES) ==
           GOLDILOCKS_FAILURE) {
         hash_destroy(hd);
-        free(extra_key);
+        otrng_secure_free(extra_key);
         return OTRNG_ERROR;
       }
 
@@ -1017,7 +1003,7 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
       if (!shake_256_kdf1(tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES,
                           usage_next_chain_key, tmp_receiving_ratchet->chain_r,
                           CHAIN_KEY_BYTES)) {
-        free(extra_key);
+        otrng_secure_free(extra_key);
         return OTRNG_ERROR;
       }
 
@@ -1048,8 +1034,7 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
       tmp_receiving_ratchet->k++;
     }
   }
-  otrng_secure_wipe(extra_key, EXTRA_SYMMETRIC_KEY_BYTES);
-  free(extra_key);
+  otrng_secure_free(extra_key);
 
   return OTRNG_SUCCESS;
 }
@@ -1187,7 +1172,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
 
       if (!shake_256_kdf1(mac_key, MAC_KEY_BYTES, usage_mac_key, enc_key,
                           ENC_KEY_BYTES)) {
-        free(ser_mac_keys);
+        otrng_secure_free(ser_mac_keys);
         return NULL; // TODO: is this the best to do in this case?
       }
 

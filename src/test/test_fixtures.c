@@ -155,7 +155,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
       2}; /* Non-random forging key on purpose */
   otrng_public_key *forging_key = create_forging_key_from(sym2);
   otrng_client_add_forging_key(otrng_fixture->client, *forging_key);
-  free(forging_key);
+  otrng_free(forging_key);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
   otrng_fixture->otr = otrng_new(otrng_fixture->client, policy);
@@ -193,13 +193,13 @@ void otrng_fixture_teardown(otrng_fixture_s *otrng_fixture,
   otrng_client_free(otrng_fixture->client);
   otrng_fixture->client = NULL;
 
-  otrng_free(otrng_fixture->otr);
+  otrng_conn_free(otrng_fixture->otr);
   otrng_fixture->otr = NULL;
 
-  otrng_free(otrng_fixture->v3);
+  otrng_conn_free(otrng_fixture->v3);
   otrng_fixture->v3 = NULL;
 
-  otrng_free(otrng_fixture->v34);
+  otrng_conn_free(otrng_fixture->v34);
   otrng_fixture->v34 = NULL;
 }
 
@@ -222,7 +222,7 @@ void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data) {
   const uint8_t forging_sym[ED448_PRIVATE_BYTES] = {3};
   otrng_public_key *forging_key = create_forging_key_from(forging_sym);
   otrng_ec_point_copy(f->profile->forging_pub_key, *forging_key);
-  free(forging_key);
+  otrng_free(forging_key);
 
   otrng_assert(f->profile != NULL);
   f->profile->expires = time(NULL) + 60 * 60;
@@ -258,7 +258,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   /* Bob receives a Query Message */
   otrng_assert_is_success(
       otrng_receive_message(response_to_alice, &warn, query_message, bob));
-  free(query_message);
+  otrng_free(query_message);
 
   /* Bob replies with an Identity Message */
   otrng_assert(bob->state == OTRNG_STATE_WAITING_AUTH_R);
@@ -269,7 +269,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   /* Alice receives an Identity Message */
   otrng_assert_is_success(otrng_receive_message(
       response_to_bob, &warn, response_to_alice->to_send, alice));
-  free(response_to_alice->to_send);
+  otrng_free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
   /* Alice has Bob's ephemeral keys */
@@ -288,7 +288,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   /* Bob receives an Auth-R message */
   otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
                                                 response_to_bob->to_send, bob));
-  free(response_to_bob->to_send);
+  otrng_free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
   /* Bob has Alice's ephemeral keys */
@@ -315,7 +315,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   /* Alice receives an Auth-I message */
   otrng_assert_is_success(otrng_receive_message(
       response_to_bob, &warn, response_to_alice->to_send, alice));
-  free(response_to_alice->to_send);
+  otrng_free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
   /* The double ratchet is initialized */
@@ -337,7 +337,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   /* Bob receives the initial data message */
   otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
                                                 response_to_bob->to_send, bob));
-  free(response_to_bob->to_send);
+  otrng_free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
   otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
@@ -371,7 +371,7 @@ void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
   otrng_client_add_private_key_v4(client, long_term_priv);
   otrng_public_key *forging_key = create_forging_key_from(forging_sym);
   otrng_client_add_forging_key(client, *forging_key);
-  free(forging_key);
+  otrng_free(forging_key);
   otrng_client_add_instance_tag(client, 0x100 + byte);
 
   client->client_profile = otrng_client_build_default_client_profile(client);
@@ -381,7 +381,7 @@ void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
 
 void free_message_and_response(otrng_response_s *response, string_p *message) {
   otrng_response_free(response);
-  free(*message);
+  otrng_free(*message);
   *message = NULL;
 }
 

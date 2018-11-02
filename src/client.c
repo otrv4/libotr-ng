@@ -58,10 +58,10 @@ tstatic otrng_conversation_s *new_conversation_with(const char *recipient,
 tstatic void conversation_free(void *data) {
   otrng_conversation_s *conv = data;
 
-  free(conv->recipient);
-  otrng_free(conv->conn);
+  otrng_free(conv->recipient);
+  otrng_conn_free(conv->conn);
 
-  free(conv);
+  otrng_free(conv);
 }
 
 tstatic otrng_bool should_heartbeat(int last_sent) {
@@ -107,7 +107,7 @@ API void otrng_client_free(otrng_client_s *client) {
   if (client->forging_key) {
     otrng_ec_point_destroy(*client->forging_key);
   }
-  free(client->forging_key);
+  otrng_free(client->forging_key);
   otrng_list_free(client->our_prekeys, prekey_message_free_from_list);
   otrng_client_profile_free(client->client_profile);
   otrng_client_profile_free(client->exp_client_profile);
@@ -116,7 +116,7 @@ API void otrng_client_free(otrng_client_s *client) {
   otrng_list_free(client->conversations, conversation_free);
   otrng_prekey_client_free(client->prekey_client);
 
-  free(client);
+  otrng_free(client);
 }
 
 // TODO: @instance_tag There may be multiple conversations with the same
@@ -220,7 +220,7 @@ get_or_create_conversation_with(const char *recipient, otrng_client_s *client) {
 
   conv = new_conversation_with(recipient, conn);
   if (!conv) {
-    free(conn);
+    otrng_free(conn);
     return NULL;
   }
 
@@ -318,7 +318,7 @@ API otrng_result otrng_client_send_fragment(otrng_message_to_send_s **new_msg,
   }
 
   if (otrng_failed(send_message(&to_send, msg, recipient, client))) {
-    free(to_send);
+    otrng_free(to_send);
     return OTRNG_ERROR;
   }
 
@@ -326,7 +326,7 @@ API otrng_result otrng_client_send_fragment(otrng_message_to_send_s **new_msg,
   their_tag = conv->conn->their_instance_tag;
 
   ret = otrng_fragment_message(mms, *new_msg, our_tag, their_tag, to_send);
-  free(to_send);
+  otrng_free(to_send);
 
   return ret;
 }
@@ -577,7 +577,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
     ecdh_keypair_s ecdh;
     dh_keypair_s dh;
     if (!otrng_generate_ephemeral_keys(&ecdh, &dh)) {
-      free(messages);
+      otrng_free(messages);
       return NULL;
     }
 
@@ -588,7 +588,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
       for (j = 0; j < i; j++) {
         otrng_prekey_message_free(messages[j]);
       }
-      free(messages);
+      otrng_free(messages);
       return NULL;
     }
 

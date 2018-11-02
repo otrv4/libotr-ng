@@ -89,8 +89,8 @@
     else                                                                       \
       g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC,         \
                           __message);                                          \
-    free(__s1);                                                                \
-    free(__s2);                                                                \
+    otrng_free(__s1);                                                                \
+    otrng_free(__s2);                                                                \
     g_free(__message);                                                         \
   } while (0)
 
@@ -162,7 +162,7 @@
     else                                                                       \
       g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC,         \
                           __message);                                          \
-    free(__s);                                                                 \
+    otrng_free(__s);                                                                 \
     g_free(__message);                                                         \
   } while (0)
 
@@ -199,7 +199,7 @@
       fn(list[i]);                                                             \
   }
 
-#define otrng_free_all(...) fn_apply(otrng_free, __VA_ARGS__);
+#define otrng_conn_free_all(...) fn_apply(otrng_conn_free, __VA_ARGS__);
 
 #define otrng_response_free_all(...) fn_apply(otrng_response_free, __VA_ARGS__);
 

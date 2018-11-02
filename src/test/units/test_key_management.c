@@ -60,7 +60,7 @@ static void test_derive_ratchet_keys() {
   hash_destroy(hd2);
 
   otrng_key_manager_destroy(manager);
-  free(manager);
+  otrng_free(manager);
 }
 
 static void test_calculate_ssid() {
@@ -148,7 +148,7 @@ static void test_calculate_brace_key() {
                       BRACE_KEY_BYTES);
 
   otrng_key_manager_destroy(manager);
-  free(manager);
+  otrng_free(manager);
 }
 
 void units_key_management_add_tests(void) {

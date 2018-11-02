@@ -173,8 +173,7 @@ INTERNAL otrng_result otrng_dh_keypair_generate(dh_keypair_s *keypair) {
   }
 
   err = gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, hash, DH_KEY_SIZE, NULL);
-  otrng_secure_wipe(hash, DH_KEY_SIZE);
-  free(hash);
+  otrng_secure_free(hash);
   otrng_secure_wipe(sec_buffer, DH_KEY_SIZE);
   gcry_free(sec_buffer);
 
@@ -199,16 +198,14 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
 
   if (!shake_256_kdf1(random_buffer, DH_KEY_SIZE, usage_DH_first_ephemeral,
                       shared_secret, SHARED_SECRET_BYTES)) {
-    otrng_secure_wipe(random_buffer, DH_KEY_SIZE);
-    free(random_buffer);
+    otrng_secure_free(random_buffer);
     return OTRNG_ERROR;
   }
 
   err = gcry_mpi_scan(&privkey, GCRYMPI_FMT_USG, random_buffer, DH_KEY_SIZE,
                       NULL);
 
-  otrng_secure_wipe(random_buffer, DH_KEY_SIZE);
-  free(random_buffer);
+  otrng_secure_free(random_buffer);
 
   if (err) {
     return OTRNG_ERROR;

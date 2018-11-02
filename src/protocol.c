@@ -128,7 +128,7 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
 
   err = crypto_stream_xor(c, msg, msg_len, data_msg->nonce, enc_key);
   if (err) {
-    free(c);
+    otrng_free(c);
     return OTRNG_ERROR;
   }
 
@@ -183,11 +183,11 @@ tstatic otrng_result serialize_and_encode_data_message(
   ser = otrng_xmalloc_z(ser_len);
 
   memcpy(ser, body, body_len);
-  free(body);
+  otrng_free(body);
 
   if (otrng_failed(otrng_data_message_authenticator(
           ser + body_len, MAC_KEY_BYTES, mac_key, ser, body_len))) {
-    free(ser);
+    otrng_free(ser);
     return OTRNG_ERROR;
   }
 
@@ -195,14 +195,14 @@ tstatic otrng_result serialize_and_encode_data_message(
     if (otrng_serialize_bytes_array(ser + body_len + DATA_MSG_MAC_BYTES,
                                     to_reveal_mac_keys,
                                     to_reveal_mac_keys_len) == 0) {
-      free(ser);
+      otrng_free(ser);
       return OTRNG_ERROR;
     }
   }
 
   *dst = otrl_base64_otr_encode(ser, ser_len);
 
-  free(ser);
+  otrng_free(ser);
   return OTRNG_SUCCESS;
 }
 
@@ -265,12 +265,12 @@ tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
     if (!serialize_and_encode_data_message(to_send, mac_key, ser_mac_keys,
                                            ser_mac_keys_len, data_msg)) {
       otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
-      free(ser_mac_keys);
+      otrng_free(ser_mac_keys);
       otrng_data_message_free(data_msg);
 
       return OTRNG_ERROR;
     }
-    free(ser_mac_keys);
+    otrng_free(ser_mac_keys);
   } else {
     if (!serialize_and_encode_data_message(to_send, mac_key, NULL, 0,
                                            data_msg)) {
@@ -331,7 +331,7 @@ tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
   // Append padding
   msg_len = strlen(msg) + 1 + len;
   if (!generate_padding(&padding, &padding_len, msg_len, otr)) {
-    free(ser);
+    otrng_free(ser);
     return OTRNG_ERROR;
   }
 
@@ -347,8 +347,8 @@ tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
     memcpy(*dst + msg_len, padding, padding_len);
   }
 
-  free(ser);
-  free(padding);
+  otrng_free(ser);
+  otrng_free(padding);
 
   return OTRNG_SUCCESS;
 }
@@ -379,7 +379,7 @@ INTERNAL otrng_result otrng_prepare_to_send_data_message(
 
   otr->last_sent = time(NULL);
 
-  free(msg2);
+  otrng_free(msg2);
 
   return result;
 }

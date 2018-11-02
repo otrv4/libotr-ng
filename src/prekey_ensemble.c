@@ -121,7 +121,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_deserialize(prekey_ensemble_s *dst,
 
 INTERNAL void otrng_prekey_ensemble_destroy(prekey_ensemble_s *dst) {
   otrng_client_profile_destroy(dst->client_profile);
-  free(dst->client_profile);
+  otrng_free(dst->client_profile);
   dst->client_profile = NULL;
 
   otrng_prekey_profile_free(dst->prekey_profile);
@@ -136,5 +136,5 @@ INTERNAL void otrng_prekey_ensemble_free(prekey_ensemble_s *dst) {
   }
 
   otrng_prekey_ensemble_destroy(dst);
-  free(dst);
+  otrng_free(dst);
 }

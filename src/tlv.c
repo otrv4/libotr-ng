@@ -136,8 +136,8 @@ INTERNAL void otrng_tlv_free(tlv_s *tlv) {
     return;
   }
 
-  free(tlv->data);
-  free(tlv);
+  otrng_free(tlv->data);
+  otrng_free(tlv);
 }
 
 INTERNAL void otrng_tlv_list_free(tlv_list_s *head) {
@@ -147,7 +147,7 @@ INTERNAL void otrng_tlv_list_free(tlv_list_s *head) {
 
     otrng_tlv_free(current->data);
     current->data = NULL;
-    free(current);
+    otrng_free(current);
     current = next;
   }
 }
@@ -181,7 +181,7 @@ INTERNAL tlv_s *otrng_tlv_padding_new(size_t len) {
   tlv_s *tlv;
 
   tlv = otrng_tlv_new(OTRNG_TLV_PADDING, len, data);
-  free(data);
+  otrng_free(data);
 
   return tlv;
 }

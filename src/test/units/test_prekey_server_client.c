@@ -87,7 +87,7 @@ static void test_prekey_dake1_message_serialize(void) {
   w += sizeof(ser_client_profile);
 
   otrng_assert_cmpmem(dst + w, ser_i, sizeof(ser_i));
-  free(dst);
+  otrng_free(dst);
 }
 
 static void test_prekey_dake2_message_deserialize(void) {
@@ -225,7 +225,7 @@ static void test_prekey_dake3_message_serialize(void) {
 
   // DATA (val)
   otrng_assert_cmpmem(dst + w, "hi", 3);
-  free(dst);
+  otrng_free(dst);
 }
 
 static void test_prekey_dake3_message_append_storage_info_req(void) {

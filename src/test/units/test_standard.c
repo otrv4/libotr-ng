@@ -36,8 +36,8 @@ static void test_otrng_stpcpy(void) {
   otrng_assert(dst[3] == 'd');
   otrng_assert(dst[4] == 0);
 
-  free(dst);
-  free(src);
+  otrng_free(dst);
+  otrng_free(src);
 }
 
 static void test_otrng_stpncpy(void) {
@@ -52,8 +52,8 @@ static void test_otrng_stpncpy(void) {
   otrng_assert(dst[3] == 'd');
   otrng_assert(dst[4] == 0);
 
-  free(dst);
-  free(src);
+  otrng_free(dst);
+  otrng_free(src);
 
   dst = otrng_xstrdup("abcde");
   src = otrng_xstrdup("12");
@@ -67,8 +67,8 @@ static void test_otrng_stpncpy(void) {
   otrng_assert(dst[4] == 'e');
   otrng_assert(dst[5] == 0);
 
-  free(dst);
-  free(src);
+  otrng_free(dst);
+  otrng_free(src);
 }
 
 static void test_otrng_strnlen(void) {

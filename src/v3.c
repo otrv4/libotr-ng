@@ -635,9 +635,9 @@ INTERNAL void otrng_v3_conn_free(otrng_v3_conn_s *conn) {
     return;
   }
 
-  free(conn->injected_message);
-  free(conn->peer);
-  free(conn);
+  otrng_free(conn->injected_message);
+  otrng_free(conn->peer);
+  otrng_free(conn);
 }
 
 INTERNAL otrng_result otrng_v3_send_message(char **new_msg, const char *msg,
@@ -797,7 +797,7 @@ tstatic void otrng_v3_store_injected_message(const char *msg,
   // TODO: @client This is where we should ADD a new element to the list.
   // We are just ignoring for now.
   if ((conn->injected_message != NULL) && (msg != NULL)) {
-    free(conn->injected_message);
+    otrng_free(conn->injected_message);
   }
 
   conn->injected_message = otrng_xstrdup(msg);

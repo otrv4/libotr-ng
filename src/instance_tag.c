@@ -32,6 +32,8 @@
 #include "instance_tag.h"
 #include "str.h"
 
+#include "alloc.h"
+
 API otrng_bool otrng_instag_get(otrng_instag_s *otrng_instag,
                                 const char *account, const char *protocol,
                                 FILE *filename) {
@@ -73,9 +75,9 @@ API void otrng_instag_free(otrng_instag_s *instag) {
     return;
   }
 
-  free(instag->account);
-  free(instag->protocol);
-  free(instag);
+  otrng_free(instag->account);
+  otrng_free(instag->protocol);
+  otrng_free(instag);
 }
 
 INTERNAL otrng_bool otrng_instance_tag_valid(uint32_t instance_tag) {

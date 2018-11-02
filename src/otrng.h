@@ -63,7 +63,7 @@ typedef struct otrng_header_s {
 INTERNAL otrng_s *otrng_new(struct otrng_client_s *client,
                             otrng_policy_s policy);
 
-INTERNAL void otrng_free(/*@only@ */ otrng_s *otr);
+INTERNAL void otrng_conn_free(/*@only@ */ otrng_s *otr);
 
 INTERNAL otrng_result otrng_build_query_message(string_p *dst,
                                                 const string_p msg,

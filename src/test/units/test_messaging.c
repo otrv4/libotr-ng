@@ -39,7 +39,7 @@ static otrng_client_id_s read_client_id_for_privf(FILE *privf) {
   if (line2 != NULL) {
     len = strlen(line2);
   }
-  free(line);
+  otrng_free(line);
 
   otrng_client_id_s result = {
       .protocol = NULL,
@@ -114,7 +114,7 @@ static void test_global_state_key_management(void) {
                          "pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA";
   otrng_assert_cmpmem(expected, buffer, s);
 
-  free(buffer);
+  otrng_free(buffer);
   otrng_global_state_free(state);
 }
 
@@ -131,13 +131,13 @@ static void test_global_state_client_profile_management(void) {
   otrng_public_key *fk = create_forging_key_from(alice_fsym);
   otrng_global_state_add_forging_key(
       state, create_client_id("otr", alice_account), fk);
-  free(fk);
+  otrng_free(fk);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", bob_account), bob_sym);
   fk = create_forging_key_from(bob_fsym);
   otrng_global_state_add_forging_key(state,
                                      create_client_id("otr", bob_account), fk);
-  free(fk);
+  otrng_free(fk);
 
   otrng_assert(otrng_global_state_get_private_key_v4(
       state, create_client_id("otr", alice_account)));
@@ -191,8 +191,8 @@ static void test_global_state_client_profile_management(void) {
 
   otrng_assert_cmpmem(expected, encoded, s);
 
-  free(encoded);
-  free(buffer);
+  otrng_free(encoded);
+  otrng_free(buffer);
   otrng_global_state_free(state);
 }
 
@@ -209,13 +209,13 @@ static void test_global_state_prekey_profile_management(void) {
   otrng_public_key *fk = create_forging_key_from(alice_fsym);
   otrng_global_state_add_forging_key(
       state, create_client_id("otr", alice_account), fk);
-  free(fk);
+  otrng_free(fk);
   otrng_global_state_add_private_key_v4(
       state, create_client_id("otr", bob_account), bob_sym);
   fk = create_forging_key_from(bob_fsym);
   otrng_global_state_add_forging_key(state,
                                      create_client_id("otr", bob_account), fk);
-  free(fk);
+  otrng_free(fk);
 
   otrng_assert(otrng_global_state_get_private_key_v4(
       state, create_client_id("otr", alice_account)));
@@ -262,8 +262,8 @@ static void test_global_state_prekey_profile_management(void) {
 
   otrng_assert_cmpmem(expected, encoded, s);
 
-  free(encoded);
-  free(buffer);
+  otrng_free(encoded);
+  otrng_free(buffer);
   otrng_global_state_free(state);
 }
 
@@ -333,7 +333,7 @@ static void test_global_state_prekey_message_management(void) {
       "6bNlEehFAaongvbmDVOz1XJwtl7gkH78QA4RhS4hzBSiRDnusC0=";
   otrng_assert_cmpmem(expected_ecdh, ecdh_symkey, 76);
 
-  free(ecdh_symkey);
+  otrng_free(ecdh_symkey);
 
   uint8_t dh_secret_k[DH_KEY_SIZE] = {0};
   size_t dh_secret_k_len = 0;
@@ -347,7 +347,7 @@ static void test_global_state_prekey_message_management(void) {
       "UZQ7w5lA8HY0VuOj9AGtu9jpTAgTFK6aEoC8Gc=";
   otrng_assert_cmpmem(expected_dh, dh_symkey, 108);
 
-  free(dh_symkey);
+  otrng_free(dh_symkey);
 
   otrng_global_state_free(state);
 }

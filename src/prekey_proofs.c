@@ -49,7 +49,7 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(
   curr = cbuf;
 
   if (!otrng_ec_point_encode(curr, ED448_POINT_BYTES, a)) {
-    free(cbuf);
+    otrng_free(cbuf);
     goldilocks_448_point_destroy(a);
     goldilocks_448_scalar_destroy(r);
     return OTRNG_ERROR;
@@ -61,7 +61,7 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(
   for (i = 0; i < values_len; i++) {
     if (!otrng_ec_point_encode(curr, ED448_POINT_BYTES, values_pub[i])) {
       goldilocks_448_scalar_destroy(r);
-      free(cbuf);
+      otrng_free(cbuf);
       return OTRNG_ERROR;
     }
     curr += ED448_POINT_BYTES;
@@ -72,18 +72,18 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(
   if (!shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf,
                                    cbuf_len)) {
     goldilocks_448_scalar_destroy(r);
-    free(cbuf);
+    otrng_free(cbuf);
     return OTRNG_ERROR;
   }
 
-  free(cbuf);
+  otrng_free(cbuf);
 
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
 
   if (!shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
                                    PROOF_C_SIZE)) {
     goldilocks_448_scalar_destroy(r);
-    free(p);
+    otrng_free(p);
     return OTRNG_ERROR;
   }
 
@@ -98,7 +98,7 @@ INTERNAL otrng_result otrng_ecdh_proof_generate(
     goldilocks_448_scalar_destroy(t);
   }
 
-  free(p);
+  otrng_free(p);
 
   return OTRNG_SUCCESS;
 }
@@ -122,7 +122,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
 
   if (!shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, px->c,
                                    PROOF_C_SIZE)) {
-    free(p);
+    otrng_free(p);
     return otrng_false;
   }
 
@@ -162,7 +162,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
     goldilocks_448_point_destroy(res);
   }
 
-  free(p);
+  otrng_free(p);
 
   goldilocks_448_point_sub(a, a, curr);
   goldilocks_448_point_destroy(curr);
@@ -171,7 +171,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
   cbuf_curr = cbuf;
 
   if (!otrng_ec_point_encode(cbuf_curr, ED448_POINT_BYTES, a)) {
-    free(cbuf);
+    otrng_free(cbuf);
     goldilocks_448_point_destroy(a);
     return otrng_false;
   }
@@ -181,7 +181,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
 
   for (i = 0; i < values_len; i++) {
     if (!otrng_ec_point_encode(cbuf_curr, ED448_POINT_BYTES, values_pub[i])) {
-      free(cbuf);
+      otrng_free(cbuf);
       return otrng_false;
     }
     cbuf_curr += ED448_POINT_BYTES;
@@ -190,11 +190,11 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
   memcpy(cbuf_curr, m, HASH_BYTES);
 
   if (!shake_256_prekey_server_kdf(c2, PROOF_C_SIZE, usage, cbuf, cbuf_len)) {
-    free(cbuf);
+    otrng_free(cbuf);
     return otrng_false;
   }
 
-  free(cbuf);
+  otrng_free(cbuf);
 
   if (goldilocks_memeq(px->c, c2, PROOF_C_SIZE)) {
     return otrng_true;
@@ -245,7 +245,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   rbuf = gen_random_data(DH_KEY_SIZE, gen);
   err = gcry_mpi_scan(&r, GCRYMPI_FMT_USG, rbuf, DH_KEY_SIZE, NULL);
   otrng_secure_wipe(rbuf, DH_KEY_SIZE);
-  free(rbuf);
+  otrng_free(rbuf);
 
   if (err) {
     otrng_dh_mpi_release(r);
@@ -259,7 +259,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   cbuf_curr = cbuf;
   if (otrng_failed(
           otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w, a))) {
-    free(cbuf);
+    otrng_free(cbuf);
     otrng_dh_mpi_release(r);
     otrng_dh_mpi_release(a);
     return OTRNG_ERROR;
@@ -270,7 +270,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   for (i = 0; i < values_len; i++) {
     if (otrng_failed(otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w,
                                                 values_pub[i]))) {
-      free(cbuf);
+      otrng_free(cbuf);
       otrng_dh_mpi_release(r);
       return OTRNG_ERROR;
     }
@@ -282,18 +282,18 @@ INTERNAL otrng_result otrng_dh_proof_generate(
 
   if (!shake_256_prekey_server_kdf(dst->c, PROOF_C_SIZE, usage, cbuf,
                                    cbuf_curr - cbuf)) {
-    free(cbuf);
+    otrng_free(cbuf);
     otrng_dh_mpi_release(r);
     return OTRNG_ERROR;
   }
 
-  free(cbuf);
+  otrng_free(cbuf);
 
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
   if (!shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, dst->c,
                                    PROOF_C_SIZE)) {
     otrng_dh_mpi_release(r);
-    free(p);
+    otrng_free(p);
     return OTRNG_ERROR;
   }
 
@@ -304,7 +304,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
   for (i = 0; i < values_len; i++) {
     gcry_mpi_t t = NULL;
     if (!otrng_dh_mpi_deserialize(&t, p_curr, PREKEY_PROOF_LAMBDA, &w)) {
-      free(p);
+      otrng_free(p);
       return OTRNG_ERROR;
     }
     p_curr += w;
@@ -312,7 +312,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
     gcry_mpi_addm(dst->v, dst->v, t, q);
     otrng_dh_mpi_release(t);
   }
-  free(p);
+  otrng_free(p);
 
   return OTRNG_SUCCESS;
 }
@@ -336,7 +336,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   p = otrng_xmalloc_z(p_len * sizeof(uint8_t));
   if (!shake_256_prekey_server_kdf(p, p_len, usage_proof_c_lambda, px->c,
                                    PROOF_C_SIZE)) {
-    free(p);
+    otrng_free(p);
     return otrng_false;
   }
 
@@ -352,7 +352,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   for (i = 0; i < values_len; i++) {
     gcry_mpi_t t;
     if (!otrng_dh_mpi_deserialize(&t, p_curr, PREKEY_PROOF_LAMBDA, &w)) {
-      free(p);
+      otrng_free(p);
       gcry_mpi_release(a);
       otrng_dh_mpi_release(curr);
       return otrng_false;
@@ -364,7 +364,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
     otrng_dh_mpi_release(t);
   }
 
-  free(p);
+  otrng_free(p);
   gcry_mpi_invm(curr, curr, mod);
   gcry_mpi_mulm(a, a, curr, mod);
   otrng_dh_mpi_release(curr);
@@ -373,7 +373,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   cbuf_curr = cbuf;
   if (otrng_failed(
           otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w, a))) {
-    free(cbuf);
+    otrng_free(cbuf);
     gcry_mpi_release(a);
     return otrng_false;
   }
@@ -385,7 +385,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
   for (i = 0; i < values_len; i++) {
     if (otrng_failed(otrng_serialize_dh_mpi_otr(cbuf_curr, DH_MPI_MAX_BYTES, &w,
                                                 values_pub[i]))) {
-      free(cbuf);
+      otrng_free(cbuf);
       return otrng_false;
     }
     cbuf_curr += w;
@@ -396,11 +396,11 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
 
   if (!shake_256_prekey_server_kdf(c2, PROOF_C_SIZE, usage, cbuf,
                                    cbuf_curr - cbuf)) {
-    free(cbuf);
+    otrng_free(cbuf);
     return otrng_false;
   }
 
-  free(cbuf);
+  otrng_free(cbuf);
 
   if (goldilocks_memeq(px->c, c2, PROOF_C_SIZE)) {
     return otrng_true;

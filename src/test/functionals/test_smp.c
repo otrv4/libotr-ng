@@ -137,7 +137,7 @@ static void test_smp_state_machine(void) {
   otrng_global_state_free(alice_state->global_state);
   otrng_global_state_free(bob_state->global_state);
   otrng_client_free_all(alice_state, bob_state);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 static void test_smp_state_machine_abort(void) {
@@ -232,7 +232,7 @@ static void test_smp_state_machine_abort(void) {
   otrng_global_state_free(alice_state->global_state);
   otrng_global_state_free(bob_state->global_state);
   otrng_client_free_all(alice_state, bob_state);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 static void test_otrng_generate_smp_secret(void) {
@@ -303,7 +303,7 @@ static void test_otrng_smp_message_1_serialize_null_question(void) {
   otrng_assert_is_success(
       otrng_smp_message_1_serialize(&buff, &writen, &message));
   g_assert_cmpint(writen, ==, expected_size);
-  free(buff);
+  otrng_free(buff);
 
   message.question = (uint8_t *)"something";
   message.q_len = 9;
@@ -312,7 +312,7 @@ static void test_otrng_smp_message_1_serialize_null_question(void) {
       otrng_smp_message_1_serialize(&buff, &writen, &message));
   g_assert_cmpint(writen, ==, expected_len);
 
-  free(buff);
+  otrng_free(buff);
 }
 
 void functionals_smp_add_tests(void) {

@@ -177,7 +177,7 @@ static void test_api_interactive_conversation(void) {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 /* Specifies the behavior of the API for offline messages */
@@ -230,7 +230,7 @@ static void test_otrng_send_offline_message() {
   // Bob receives an offline message
   otrng_response_s *response = otrng_response_new();
   otrng_assert_is_success(otrng_receive_message(response, &warn, to_bob, bob));
-  free(to_bob);
+  otrng_free(to_bob);
 
   otrng_assert(!response->to_display);
   otrng_assert(!response->to_send);
@@ -336,7 +336,7 @@ static void test_otrng_send_offline_message() {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 static void test_otrng_incorrect_offline_dake() {
@@ -388,7 +388,7 @@ static void test_otrng_incorrect_offline_dake() {
   // Bob receives an offline message
   otrng_response_s *response = otrng_response_new();
   otrng_assert_is_success(otrng_receive_message(response, &warn, to_bob, bob));
-  free(to_bob);
+  otrng_free(to_bob);
 
   otrng_assert(!response->to_display);
   otrng_assert(!response->to_send);
@@ -427,7 +427,7 @@ static void test_otrng_incorrect_offline_dake() {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 static void test_api_conversation_errors_1(void) {
@@ -484,7 +484,7 @@ static void test_api_conversation_errors_1(void) {
 
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);
-  free(to_send);
+  otrng_free(to_send);
   to_send = NULL;
 
   // Alice sends another data message
@@ -499,11 +499,11 @@ static void test_api_conversation_errors_1(void) {
   size_t dec_len = 0;
   uint8_t *decoded = NULL;
   otrl_base64_otr_decode(to_send, &decoded, &dec_len);
-  free(to_send);
+  otrng_free(to_send);
 
   decoded[dec_len - 1] = decoded[dec_len - 1] + 3;
   to_send = otrl_base64_otr_encode(decoded, dec_len);
-  free(decoded);
+  otrng_free(decoded);
 
   // Bob receives a non valid data message
   response_to_alice = otrng_response_new();
@@ -517,7 +517,7 @@ static void test_api_conversation_errors_1(void) {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 static void test_api_conversation_errors_2(void) {
@@ -561,7 +561,7 @@ static void test_api_conversation_errors_2(void) {
   otrng_assert_is_success(otrng_receive_message(
       response_to_bob, &warn, response_to_alice->to_send, alice));
 
-  free(response_to_alice->to_send);
+  otrng_free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
   // Bob receives an error message
@@ -576,7 +576,7 @@ static void test_api_conversation_errors_2(void) {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
@@ -592,7 +592,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
   // Bob receives query message
   otrng_assert_is_success(
       otrng_receive_message(response_to_alice, &warn, query_message, bob));
-  free(query_message);
+  otrng_free(query_message);
   query_message = NULL;
 
   // Should reply with a DH-Commit
@@ -603,7 +603,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
   // Alice receives DH-Commit
   otrng_assert_is_success(otrng_receive_message(
       response_to_bob, &warn, response_to_alice->to_send, alice));
-  free(response_to_alice->to_send);
+  otrng_free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
   // Should reply with a DH Key
@@ -614,7 +614,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
   // Bob receives a DH Key
   otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
                                                 response_to_bob->to_send, bob));
-  free(response_to_bob->to_send);
+  otrng_free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
   // Bob should reply with a Reveal Sig
@@ -625,7 +625,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
   // Alice receives Reveal Sig
   otrng_assert_is_success(otrng_receive_message(
       response_to_bob, &warn, response_to_alice->to_send, alice));
-  free(response_to_alice->to_send);
+  otrng_free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
   // Should reply with a Sig
@@ -639,7 +639,7 @@ static void do_ake_v3(otrng_s *alice, otrng_s *bob) {
   // Bob receives a Sig
   otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
                                                 response_to_bob->to_send, bob));
-  free(response_to_bob->to_send);
+  otrng_free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
   // Bob should NOT reply
@@ -721,7 +721,7 @@ static void test_api_conversation_v3(void) {
 
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
   otrng_client_free_all(alice_client, bob_client);
 }
 
@@ -771,7 +771,7 @@ static void test_api_multiple_clients(void) {
   assert_rec_message_in_state(result, phone_to_alice, bob_phone,
                               OTRNG_STATE_WAITING_AUTH_R, send_response);
 
-  free(query_message);
+  otrng_free(query_message);
 
   // ALICE receives Identity message from PC and sends AUTH-R
   result =
@@ -863,7 +863,7 @@ static void test_api_multiple_clients(void) {
   otrng_global_state_free(bob_phone_state->global_state);
   otrng_global_state_free(bob_pc_state->global_state);
   otrng_client_free_all(alice_client, bob_pc_state, bob_phone_state);
-  otrng_free_all(alice, bob_pc, bob_phone);
+  otrng_conn_free_all(alice, bob_pc, bob_phone);
 }
 
 static void test_api_smp(void) {
@@ -917,7 +917,7 @@ static void test_api_smp(void) {
   otrng_assert(response_to_bob->to_send);
   otrng_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9); // SMP3
 
-  free(to_send);
+  otrng_free(to_send);
   to_send = NULL;
 
   // Bob receives SMP3
@@ -945,7 +945,7 @@ static void test_api_smp(void) {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 static void test_api_smp_abort(void) {
@@ -1004,12 +1004,12 @@ static void test_api_smp_abort(void) {
   otrng_assert_cmpmem("?OTR:AAQD", to_send, 9); // SMP1
   g_assert_cmpint(bob->smp->state_expect, ==, SMP_STATE_EXPECT_2);
 
-  free(to_send);
+  otrng_free(to_send);
 
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 static void test_api_extra_sym_key(void) {
@@ -1082,7 +1082,7 @@ static void test_api_extra_sym_key(void) {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 static void test_heartbeat_messages(void) {
@@ -1130,7 +1130,7 @@ static void test_heartbeat_messages(void) {
   g_assert_cmpint(bob->keys->j, ==, 1);
   g_assert_cmpint(bob->keys->k, ==, 2);
 
-  free(to_send);
+  otrng_free(to_send);
 
   // Alice receives the heatbeat message. Let's force this.
   response_to_bob = otrng_response_new();
@@ -1149,7 +1149,7 @@ static void test_heartbeat_messages(void) {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 void functionals_api_add_tests(void) {

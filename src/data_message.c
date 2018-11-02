@@ -46,10 +46,10 @@ INTERNAL void otrng_data_message_free(data_message_s *data_msg) {
   otrng_ec_point_destroy(data_msg->ecdh);
   otrng_dh_mpi_release(data_msg->dh);
   otrng_secure_wipe(data_msg->nonce, DATA_MSG_NONCE_BYTES);
-  free(data_msg->enc_msg);
+  otrng_free(data_msg->enc_msg);
   otrng_secure_wipe(data_msg->mac, DATA_MSG_MAC_BYTES);
 
-  free(data_msg);
+  otrng_free(data_msg);
 }
 
 INTERNAL otrng_result otrng_data_message_body_serialize(
@@ -73,7 +73,7 @@ INTERNAL otrng_result otrng_data_message_body_serialize(
   // TODO: @freeing @sanitizer This could be NULL. We need to test.
   if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - dst)), &len,
                                      data_msg->dh)) {
-    free(dst);
+    otrng_free(dst);
     return OTRNG_ERROR;
   }
   cursor += len;
@@ -245,13 +245,11 @@ INTERNAL otrng_result otrng_data_message_authenticator(uint8_t *dst,
   }
 
   if (!otrng_key_manager_calculate_authenticator(dst, mac_key, sections)) {
-    otrng_secure_wipe(sections, HASH_BYTES);
-    free(sections);
+    otrng_secure_free(sections);
     return OTRNG_ERROR;
   }
 
-  otrng_secure_wipe(sections, HASH_BYTES);
-  free(sections);
+  otrng_secure_free(sections);
 
   return OTRNG_SUCCESS;
 }
@@ -269,11 +267,11 @@ INTERNAL otrng_bool otrng_valid_data_message(k_msg_mac mac_key,
 
   if (!otrng_data_message_authenticator(mac_tag, DATA_MSG_MAC_BYTES, mac_key,
                                         body, body_len)) {
-    free(body);
+    otrng_free(body);
     return otrng_false;
   }
 
-  free(body);
+  otrng_free(body);
 
   if (otrl_mem_differ(mac_tag, data_msg->mac, DATA_MSG_MAC_BYTES) != 0) {
     otrng_secure_wipe(mac_tag, DATA_MSG_MAC_BYTES);

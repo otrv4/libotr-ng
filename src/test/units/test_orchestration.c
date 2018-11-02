@@ -209,9 +209,9 @@ static OtrlPrivKey *v3_create_new_key(otrng_client_s *client) {
 }
 
 static void v3_free_key(OtrlPrivKey *key) {
-  free(key->accountname);
-  free(key->protocol);
-  free(key);
+  otrng_free(key->accountname);
+  otrng_free(key->protocol);
+  otrng_free(key);
 }
 
 static void v3_remove_key(OtrlPrivKey *key) {
@@ -420,13 +420,13 @@ static void orchestration_fixture_teardown(orchestration_fixture_s *f,
                                            gconstpointer user_data) {
   (void)user_data;
 
-  free(f->callbacks);
+  otrng_free(f->callbacks);
   otrng_client_free(f->client);
   otrng_list_free_nodes(f->gs->clients);
   otrl_userstate_free(f->gs->user_state_v3);
-  free(f->gs);
-  free(f->long_term_key);
-  free(f->forging_key);
+  otrng_free(f->gs);
+  otrng_free(f->long_term_key);
+  otrng_free(f->forging_key);
   otrng_client_profile_free(f->client_profile);
   otrng_prekey_profile_free(f->prekey_profile);
   v3_free_key(f->v3_key);
@@ -437,7 +437,7 @@ create_client_profile_copy_from(const otrng_client_profile_s *src) {
   otrng_client_profile_s *result =
       otrng_xmalloc_z(sizeof(otrng_client_profile_s));
   if (!otrng_client_profile_copy(result, src)) {
-    free(result);
+    otrng_free(result);
     return NULL;
   }
 

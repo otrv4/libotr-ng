@@ -44,7 +44,7 @@ static inline void ed448_random_scalar(goldilocks_448_scalar_p priv) {
   // a less strict value "get a random x in Z_q" is required.
   otrng_ec_scalar_derive_from_secret(priv, sym);
   otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-  free(sym);
+  otrng_free(sym);
 }
 
 /**

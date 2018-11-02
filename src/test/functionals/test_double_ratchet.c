@@ -165,7 +165,7 @@ static void test_double_ratchet_new_sending_ratchet_in_order(void) {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 /* Test the out-of-order on the same DH ratchet */
@@ -285,7 +285,7 @@ static void test_double_ratchet_same_ratchet_out_of_order(void) {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 /* Test the out-of-order when a new DH ratchet has happened */
@@ -432,7 +432,7 @@ static void test_double_ratchet_new_ratchet_out_of_order(void) {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 /* Test the double ratchet when a corrupted message arrives */
@@ -514,7 +514,7 @@ static void test_double_ratchet_corrupted_ratchet(void) {
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_client_free_all(alice_client, bob_client);
-  otrng_free_all(alice, bob);
+  otrng_conn_free_all(alice, bob);
 }
 
 void functionals_double_ratchet_add_tests(void) {

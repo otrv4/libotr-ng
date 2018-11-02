@@ -407,7 +407,7 @@ static void test_build_interactive_rsign_tag() {
   otrng_assert(dst_len == 1083);
   otrng_assert_cmpmem(dst, expected_t1, dst_len);
 
-  free(dst);
+  otrng_free(dst);
 
   otrng_assert_is_success(build_interactive_rsign_tag(
       &dst, &dst_len, 'r', &initiator, &responder, phi, sizeof(phi)));
@@ -415,7 +415,7 @@ static void test_build_interactive_rsign_tag() {
   otrng_assert(dst_len == 1083);
   otrng_assert_cmpmem(dst, expected_t2, dst_len);
 
-  free(dst);
+  otrng_free(dst);
 
   otrng_dh_mpi_release(initiator_dh);
   otrng_dh_mpi_release(responder_dh);

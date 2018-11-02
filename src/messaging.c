@@ -66,7 +66,7 @@ API void otrng_global_state_free(otrng_global_state_s *gs) {
   otrng_list_free(gs->clients, free_client);
   otrl_userstate_free(gs->user_state_v3);
 
-  free(gs);
+  otrng_free(gs);
 }
 
 tstatic int find_client_by_client_id(const void *current, const void *wanted) {
@@ -140,8 +140,7 @@ API otrng_result otrng_global_state_generate_private_key(
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
   res = otrng_global_state_add_private_key_v4(gs, client_id, sym);
 
-  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-  free(sym);
+  otrng_secure_free(sym);
 
   return res;
 }
@@ -170,8 +169,7 @@ API otrng_result otrng_global_state_generate_forging_key(
   key_pair = otrng_keypair_new();
 
   if (!otrng_keypair_generate(key_pair, sym)) {
-    otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-    free(sym);
+    otrng_secure_free(sym);
     otrng_keypair_free(key_pair);
     return OTRNG_ERROR;
   }
@@ -180,8 +178,7 @@ API otrng_result otrng_global_state_generate_forging_key(
 
   // At this point you can add printing of the secret key material
   // if you ever need to use the forging key.
-  otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-  free(sym);
+  otrng_secure_free(sym);
   otrng_keypair_free(key_pair);
 
   return res;
@@ -349,7 +346,7 @@ static void sexp_write(FILE *fp, gcry_sexp_t sexp) {
   buf = otrng_xmalloc_z(buflen);
   gcry_sexp_sprint(sexp, GCRYSEXP_FMT_ADVANCED, buf, buflen);
   fprintf(fp, "%s", buf);
-  free(buf);
+  otrng_free(buf);
 }
 
 static gcry_error_t account_write(FILE *fp, const char *accountname,

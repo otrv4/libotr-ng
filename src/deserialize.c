@@ -365,18 +365,15 @@ INTERNAL otrng_result otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
 
   if (written == ED448_PRIVATE_BYTES) {
     if (!otrng_keypair_generate(pair, dec)) {
-      otrng_secure_wipe(dec, ((buff_len + 3) / 4) * 3);
-      free(dec);
+      otrng_secure_free(dec);
       return OTRNG_ERROR;
     }
 
-    otrng_secure_wipe(dec, ((buff_len + 3) / 4) * 3);
-    free(dec);
+    otrng_secure_free(dec);
     return OTRNG_SUCCESS;
   }
 
-  otrng_secure_wipe(dec, ((buff_len + 3) / 4) * 3);
-  free(dec);
+  otrng_secure_free(dec);
   return OTRNG_ERROR;
 }
 
@@ -390,18 +387,15 @@ INTERNAL otrng_result otrng_symmetric_shared_prekey_deserialize(
 
   if (written == ED448_PRIVATE_BYTES) {
     if (!otrng_shared_prekey_pair_generate(pair, dec)) {
-      otrng_secure_wipe(dec, ((buff_len + 3) / 4) * 3);
-      free(dec);
+      otrng_secure_free(dec);
       return OTRNG_ERROR;
     }
 
-    otrng_secure_wipe(dec, ((buff_len + 3) / 4) * 3);
-    free(dec);
+    otrng_secure_free(dec);
     return OTRNG_SUCCESS;
   }
 
-  otrng_secure_wipe(dec, ((buff_len + 3) / 4) * 3);
-  free(dec);
+  otrng_secure_free(dec);
 
   return OTRNG_ERROR;
 }

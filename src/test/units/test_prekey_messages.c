@@ -56,7 +56,7 @@ static void test_deserialize_prekey_success_message(void) {
 
   otrng_assert_cmpmem(dst.success_mac, expected_success_mac, HASH_BYTES);
 
-  free(decoded);
+  otrng_free(decoded);
 }
 
 void units_prekey_messages_add_tests(void) {

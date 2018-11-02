@@ -457,7 +457,7 @@ tstatic void create_new_prekey_messages(otrng_client_s *client) {
     for (ix = 0; ix < to_publish; ix++) {
       messages[ix]->should_publish = otrng_true;
     }
-    free(messages);
+    otrng_free(messages);
 
     otrng_debug_exit("create_new_prekey_messages > 0");
   }

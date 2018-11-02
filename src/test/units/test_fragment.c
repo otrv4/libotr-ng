@@ -94,7 +94,7 @@ static void test_defragment_valid_message(void) {
   otrng_assert(otrng_list_len(list) == 0);
   g_assert_cmpstr(unfrag, ==, "one more");
 
-  free(unfrag);
+  otrng_free(unfrag);
   otrng_list_free_nodes(list);
 }
 
@@ -110,7 +110,7 @@ static void test_defragment_single_fragment(void) {
   otrng_assert(otrng_list_len(list) == 0);
   g_assert_cmpstr(unfrag, ==, "small lol");
 
-  free(unfrag);
+  otrng_free(unfrag);
   otrng_list_free_nodes(list);
 }
 
@@ -125,7 +125,7 @@ static void test_defragment_without_comma_fails(void) {
   otrng_assert(list == NULL);
   g_assert_cmpstr(unfrag, ==, NULL);
 
-  free(unfrag);
+  otrng_free(unfrag);
   otrng_list_free_nodes(list);
 }
 
@@ -216,7 +216,7 @@ static void test_defragment_out_of_order_message(void) {
 
   otrng_assert(otrng_list_len(list) == 0);
 
-  free(unfrag);
+  otrng_free(unfrag);
   otrng_list_free_nodes(list);
 }
 
@@ -246,7 +246,7 @@ static void test_defragment_regular_otr_message(void) {
   otrng_assert(list == NULL);
   g_assert_cmpstr(unfrag, ==, message);
 
-  free(unfrag);
+  otrng_free(unfrag);
   otrng_list_free_nodes(list);
 }
 
@@ -280,7 +280,7 @@ static void test_defragment_two_messages(void) {
   g_assert_cmpstr(unfrag, ==, "second message");
   otrng_assert(otrng_list_len(list) == 1);
 
-  free(unfrag);
+  otrng_free(unfrag);
   unfrag = NULL;
 
   otrng_assert_is_success(
@@ -288,7 +288,7 @@ static void test_defragment_two_messages(void) {
   g_assert_cmpstr(unfrag, ==, "first message");
   otrng_assert(otrng_list_len(list) == 0);
 
-  free(unfrag);
+  otrng_free(unfrag);
   otrng_list_free_nodes(list);
 }
 

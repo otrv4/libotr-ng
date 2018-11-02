@@ -39,7 +39,7 @@ static char *otrng_client_get_storage_id(const otrng_client_s *client) {
                      client->client_id.account);
 
   if (res < 0) {
-    free(key);
+    otrng_free(key);
     return NULL;
   }
 
@@ -79,12 +79,12 @@ API otrng_result otrng_client_private_key_v4_write_to_buffer(
   keylen = strlen(key);
 
   if (s + keylen + 1 > buflen) {
-    free(key);
+    otrng_free(key);
     return OTRNG_ERROR;
   }
 
   memcpy(buf + s, key, keylen);
-  free(key);
+  otrng_free(key);
   s += keylen;
 
   *(buf + s) = '\n';
@@ -115,18 +115,18 @@ otrng_client_private_key_v4_write_to(const otrng_client_s *client, FILE *fp) {
   int err;
 
   if (!fp) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
   if (otrng_failed(otrng_client_private_key_v4_write_to_buffer(client, buffer,
                                                                buflen, &w))) {
-    free(buffer);
+    otrng_free(buffer);
     return OTRNG_ERROR;
   }
 
   err = fwrite(buffer, 1, w, fp);
-  free(buffer);
+  otrng_free(buffer);
 
   if (err != 1) {
     return OTRNG_ERROR;
@@ -159,7 +159,7 @@ INTERNAL otrng_result otrng_client_forging_key_write_to(
 
   encoded = otrng_base64_encode(buffer, size);
   otrng_secure_wipe(buffer, (2 + ED448_POINT_BYTES) * sizeof(uint8_t));
-  free(buffer);
+  otrng_free(buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }
@@ -167,20 +167,20 @@ INTERNAL otrng_result otrng_client_forging_key_write_to(
   storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
     otrng_secure_wipe(encoded, strlen(encoded));
-    free(encoded);
+    otrng_free(encoded);
     return OTRNG_ERROR;
   }
 
   if (fprintf(forgingf, "%s\n%s\n", storage_id, encoded) < 0) {
-    free(storage_id);
+    otrng_free(storage_id);
     otrng_secure_wipe(encoded, strlen(encoded));
-    free(encoded);
+    otrng_free(encoded);
     return OTRNG_ERROR;
   }
 
-  free(storage_id);
+  otrng_free(storage_id);
   otrng_secure_wipe(encoded, strlen(encoded));
-  free(encoded);
+  otrng_free(encoded);
 
   return OTRNG_SUCCESS;
 }
@@ -196,7 +196,7 @@ static int get_limited_line(char **buf, FILE *f) {
 
   res = fgets(*buf, MAX_LINE_LENGTH, f);
   if (res == NULL) {
-    free(*buf);
+    otrng_free(*buf);
     *buf = NULL;
     return -1;
   }
@@ -220,7 +220,7 @@ tstatic otrng_result otrng_client_read_from_prefix(FILE *fp, uint8_t **dec,
 
   *dec = otrng_xmalloc_z(OTRNG_BASE64_DECODE_LEN(len));
   *dec_len = otrl_base64_decode(*dec, line, len);
-  free(line);
+  otrng_free(line);
 
   return OTRNG_SUCCESS;
 }
@@ -255,12 +255,12 @@ otrng_client_private_key_v4_read_from(otrng_client_s *client, FILE *privf) {
   }
 
   if (!otrng_symmetric_key_deserialize(keypair, line, len)) {
-    free(line);
+    otrng_free(line);
     otrng_keypair_free(keypair);
     return OTRNG_ERROR;
   }
 
-  free(line);
+  otrng_free(line);
 
   client->keypair = keypair;
 
@@ -279,7 +279,7 @@ INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
   }
 
   result = otrng_deserialize_forging_key(key, dec, dec_len, NULL);
-  free(dec);
+  otrng_free(dec);
 
   if (otrng_failed(result)) {
     return result;
@@ -287,7 +287,7 @@ INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
 
   if (client->forging_key) {
     otrng_ec_point_destroy(*client->forging_key);
-    free(client->forging_key);
+    otrng_free(client->forging_key);
     client->forging_key = NULL;
   }
 
@@ -349,7 +349,7 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *fp) {
   memset(&profile, 0, sizeof(otrng_client_profile_s));
   result = otrng_client_profile_deserialize_with_metadata(&profile, dec,
                                                           dec_len, NULL);
-  free(dec);
+  otrng_free(dec);
 
   if (result == OTRNG_ERROR) {
     return result;
@@ -377,7 +377,7 @@ INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
 
   memset(&exp_profile, 0, sizeof(otrng_client_profile_s));
   result = otrng_client_profile_deserialize(&exp_profile, dec, dec_len, NULL);
-  free(dec);
+  otrng_free(dec);
 
   if (result == OTRNG_ERROR) {
     return result;
@@ -414,25 +414,25 @@ INTERNAL otrng_result otrng_client_client_profile_write_to(
   }
 
   encoded = otrng_base64_encode(buffer, s);
-  free(buffer);
+  otrng_free(buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }
 
   storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
-    free(encoded);
+    otrng_free(encoded);
     return OTRNG_ERROR;
   }
 
   if (fprintf(profilef, "%s\n%s\n", storage_id, encoded) < 0) {
-    free(storage_id);
-    free(encoded);
+    otrng_free(storage_id);
+    otrng_free(encoded);
     return OTRNG_ERROR;
   }
 
-  free(storage_id);
-  free(encoded);
+  otrng_free(storage_id);
+  otrng_free(encoded);
 
   return OTRNG_SUCCESS;
 }
@@ -458,25 +458,25 @@ INTERNAL otrng_result otrng_client_expired_client_profile_write_to(
   }
 
   encoded = otrng_base64_encode(buffer, s);
-  free(buffer);
+  otrng_free(buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }
 
   storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
-    free(encoded);
+    otrng_free(encoded);
     return OTRNG_ERROR;
   }
 
   if (fprintf(profilef, "%s\n%s\n", storage_id, encoded) < 0) {
-    free(storage_id);
-    free(encoded);
+    otrng_free(storage_id);
+    otrng_free(encoded);
     return OTRNG_ERROR;
   }
 
-  free(storage_id);
-  free(encoded);
+  otrng_free(storage_id);
+  otrng_free(encoded);
 
   return OTRNG_SUCCESS;
 }
@@ -499,13 +499,13 @@ static otrng_result serialize_and_store_prekey(const prekey_message_s *prekey,
       tmp_buffer, PRE_KEY_WITH_METADATA_MAX_BYTES, &w, prekey);
   if (otrng_failed(result)) {
     otrng_secure_wipe(tmp_buffer, PRE_KEY_WITH_METADATA_MAX_BYTES);
-    free(tmp_buffer);
+    otrng_free(tmp_buffer);
     return result;
   }
 
   encoded = otrng_base64_encode(tmp_buffer, w);
   otrng_secure_wipe(tmp_buffer, PRE_KEY_WITH_METADATA_MAX_BYTES);
-  free(tmp_buffer);
+  otrng_free(tmp_buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }
@@ -541,14 +541,14 @@ otrng_client_prekeys_write_to(const otrng_client_s *client, FILE *prekeyf) {
   current = client->our_prekeys;
   while (current) {
     if (!serialize_and_store_prekey(current->data, storage_id, prekeyf)) {
-      free(storage_id);
+      otrng_free(storage_id);
       return OTRNG_ERROR;
     }
 
     current = current->next;
   }
 
-  free(storage_id);
+  otrng_free(storage_id);
   return OTRNG_SUCCESS;
 }
 
@@ -568,9 +568,9 @@ static otrng_result read_and_deserialize_prekey(otrng_client_s *client,
   result = otrng_prekey_message_deserialize_with_metadata(prekey_msg, dec,
                                                           dec_len, NULL);
   otrng_secure_wipe(dec, dec_len);
-  free(dec);
+  otrng_free(dec);
   if (otrng_failed(result)) {
-    free(prekey_msg);
+    otrng_free(prekey_msg);
     return result;
   }
 
@@ -613,25 +613,25 @@ otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *profilef) {
   }
 
   encoded = otrng_base64_encode(buffer, s);
-  free(buffer);
+  otrng_free(buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }
 
   storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
-    free(encoded);
+    otrng_free(encoded);
     return OTRNG_ERROR;
   }
 
   if (fprintf(profilef, "%s\n%s\n", storage_id, encoded) < 0) {
-    free(encoded);
-    free(storage_id);
+    otrng_free(encoded);
+    otrng_free(storage_id);
     return OTRNG_ERROR;
   }
 
-  free(encoded);
-  free(storage_id);
+  otrng_free(encoded);
+  otrng_free(storage_id);
 
   return OTRNG_SUCCESS;
 }
@@ -657,25 +657,25 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_write_to(
   }
 
   encoded = otrng_base64_encode(buffer, s);
-  free(buffer);
+  otrng_free(buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }
 
   storage_id = otrng_client_get_storage_id(client);
   if (!storage_id) {
-    free(encoded);
+    otrng_free(encoded);
     return OTRNG_ERROR;
   }
 
   if (fprintf(profilef, "%s\n%s\n", storage_id, encoded) < 0) {
-    free(encoded);
-    free(storage_id);
+    otrng_free(encoded);
+    otrng_free(storage_id);
     return OTRNG_ERROR;
   }
 
-  free(encoded);
-  free(storage_id);
+  otrng_free(encoded);
+  otrng_free(storage_id);
 
   return OTRNG_SUCCESS;
 }
@@ -694,7 +694,7 @@ otrng_client_prekey_profile_read_from(otrng_client_s *client, FILE *fp) {
   memset(&profile, 0, sizeof(otrng_prekey_profile_s));
   result = otrng_prekey_profile_deserialize_with_metadata(&profile, dec,
                                                           dec_len, NULL);
-  free(dec);
+  otrng_free(dec);
 
   if (result == OTRNG_ERROR) {
     return result;
@@ -722,7 +722,7 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
 
   memset(&exp_profile, 0, sizeof(otrng_prekey_profile_s));
   result = otrng_prekey_profile_deserialize(&exp_profile, dec, dec_len, NULL);
-  free(dec);
+  otrng_free(dec);
 
   if (otrng_failed(result)) {
     return result;

@@ -104,12 +104,12 @@ static void otrng_prekey_message_destroy(prekey_message_s *prekey_msg) {
 
   if (prekey_msg->y) {
     otrng_ecdh_keypair_destroy(prekey_msg->y);
-    free(prekey_msg->y);
+    otrng_free(prekey_msg->y);
   }
 
   if (prekey_msg->b) {
     otrng_dh_keypair_destroy(prekey_msg->b);
-    free(prekey_msg->b);
+    otrng_free(prekey_msg->b);
   }
 }
 
@@ -119,7 +119,7 @@ INTERNAL void otrng_prekey_message_free(prekey_message_s *prekey_msg) {
   }
 
   otrng_prekey_message_destroy(prekey_msg);
-  free(prekey_msg);
+  otrng_free(prekey_msg);
 }
 
 INTERNAL otrng_result otrng_prekey_message_serialize_into(

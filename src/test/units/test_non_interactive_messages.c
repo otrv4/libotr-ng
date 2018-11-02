@@ -82,7 +82,7 @@ static void test_prekey_message_serializes() {
   /* Skip first 4 because they are the size (mpi_len) */
   otrng_assert_cmpmem(cursor + 4, ser_b, mpi_len);
 
-  free(ser);
+  otrng_free(ser);
   otrng_dh_keypair_destroy(&dh);
   otrng_ecdh_keypair_destroy(&ecdh);
   otrng_prekey_message_free(prekey_msg);
@@ -115,7 +115,7 @@ static void test_otrng_prekey_message_deserializes() {
   otrng_assert_ec_public_key_eq(deser->Y, prekey_msg->Y);
   otrng_assert_dh_public_key_eq(deser->B, prekey_msg->B);
 
-  free(ser);
+  otrng_free(ser);
   otrng_dh_keypair_destroy(&dh);
   otrng_ecdh_keypair_destroy(&ecdh);
   otrng_prekey_message_free(prekey_msg);
@@ -222,7 +222,7 @@ test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
   otrng_assert_is_success(otrng_client_profile_serialize(
       &client_profile_ser, &client_profile_len, msg.profile));
   otrng_assert_cmpmem(cursor, client_profile_ser, client_profile_len);
-  free(client_profile_ser);
+  otrng_free(client_profile_ser);
   cursor += client_profile_len;
 
   uint8_t ser_x[PUB_KEY_SER_BYTES];
@@ -253,7 +253,7 @@ test_dake_non_interactive_auth_message_serializes(dake_fixture_s *f,
 
   otrng_assert_cmpmem(cursor, mac_tag, HASH_BYTES);
 
-  free(ser);
+  otrng_free(ser);
   otrng_dake_non_interactive_auth_message_destroy(&msg);
 }
 
@@ -274,7 +274,7 @@ test_otrng_dake_non_interactive_auth_message_deserializes(dake_fixture_s *f,
   otrng_dake_non_interactive_auth_message_init(&deser);
   otrng_assert_is_success(
       otrng_dake_non_interactive_auth_message_deserialize(&deser, ser, len));
-  free(ser);
+  otrng_free(ser);
 
   g_assert_cmpuint(deser.sender_instance_tag, ==, expected.sender_instance_tag);
   g_assert_cmpuint(deser.receiver_instance_tag, ==,
