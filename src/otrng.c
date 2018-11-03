@@ -2504,6 +2504,13 @@ API otrng_result otrng_init(otrng_bool die) {
     }
   }
 
+  if (sodium_init() == -1) {
+    if (die) {
+      exit(EXIT_FAILURE);
+    }
+    return OTRNG_ERROR;
+  }
+
   r = otrng_v3_init(die);
 
   if (otrng_failed(r)) {

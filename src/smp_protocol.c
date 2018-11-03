@@ -110,7 +110,7 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
-  *secret = otrng_secure_alloc(HASH_BYTES);
+  *secret = otrng_secure_allocx(HASH_BYTES);
 
   memcpy(*secret, hash, HASH_BYTES);
   otrng_secure_free(hash);

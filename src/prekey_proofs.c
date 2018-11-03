@@ -207,7 +207,7 @@ tstatic void *gen_random_data(size_t n, random_generator gen) {
   if (gen == NULL) {
     void *rhash, *rbuf;
     rbuf = gcry_random_bytes_secure(n, GCRY_STRONG_RANDOM);
-    rhash = otrng_secure_alloc(n * sizeof(uint8_t));
+    rhash = otrng_secure_allocx(n * sizeof(uint8_t));
 
     if (!shake_256_hash(rhash, n * sizeof(uint8_t), rbuf, n)) {
       otrng_secure_wipe(rbuf, n);

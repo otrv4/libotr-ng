@@ -33,7 +33,10 @@ API void otrng_register_out_of_memory_handler(
   oom_handler = handler;
 }
 
-INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc(size_t size) {
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc_(size_t size, const char *file, int line, const char *fn) {
+  (void)file;
+  (void)line;
+  (void)fn;
   void *result = malloc(size);
   if (result == NULL) {
     if (oom_handler != NULL) {
@@ -43,11 +46,13 @@ INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc(size_t size) {
     exit(EXIT_FAILURE);
   }
 
+  /* fprintf(stderr, "xmalloc(%s, %d, %s) = %p\n", file, line, fn, result); */
+
   return result;
 }
 
-INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc_z(size_t size) {
-  void *result = otrng_xmalloc(size);
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_xmalloc_z_(size_t size, const char *file, int line, const char *fn) {
+  void *result = otrng_xmalloc_(size, file, line, fn);
   memset(result, 0, size);
   return result;
 }
@@ -66,28 +71,40 @@ otrng_xrealloc(/*@only@*/ /*@null@*/ void *ptr, size_t size) {
   return result;
 }
 
-INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc(size_t size) {
-  // TODO: this should be implemented
-  // more properly
-  void *result = otrng_xmalloc(size);
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_allocx(size_t size) {
+  return otrng_xmalloc_z(size);
+}
+
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc_(size_t size, const char *file, int line, const char *fn) {
+  (void)file;
+  (void)line;
+  (void)fn;
+  void *result = sodium_malloc(size);
   memset(result, 0, size);
+  /* fprintf(stderr, "secure_malloc(%s, %d, %s) = %p\n", file, line, fn, result); */
   return result;
 }
 
-INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc_array(size_t count,
-                                                                 size_t size) {
-  // TODO: this should be implemented
-  // more properly
-  return otrng_secure_alloc(count * size);
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc_array(size_t count, size_t size) {
+  return sodium_allocarray(count, size);
 }
 
-INTERNAL void otrng_free(/*@notnull@*/ /*@only@*/ void *p) /*@modifies p@*/ {
+INTERNAL void otrng_free_(/*@notnull@*/ /*@only@*/ void *p, const char *file, int line, const char *fn) /*@modifies p@*/ {
+  /* (void)file; */
+  /* (void)line; */
+  /* (void)fn; */
+  fprintf(stderr, "otrng_free(%s, %d, %s)\n", file, line, fn);
+  /* fprintf(stderr, "  (%p)\n", p); */
   free(p);
 }
 
-INTERNAL void
-otrng_secure_free(/*@notnull@*/ /*@only@*/ void *p) /*@modifies p@*/ {
-  free(p);
+INTERNAL void otrng_secure_free_(/*@notnull@*/ /*@only@*/ void *p, const char *file, int line, const char *fn) /*@modifies p@*/ {
+  /* (void)file; */
+  /* (void)line; */
+  /* (void)fn; */
+  fprintf(stderr, "otrng_secure_free(%s, %d, %s)\n", file, line, fn);
+  /* fprintf(stderr, "  (%p)\n", p); */
+  sodium_free(p);
 }
 
 INTERNAL void otrng_secure_wipe(/*@notnull@*/ /*@only@*/ void *p,

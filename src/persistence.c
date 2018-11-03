@@ -150,7 +150,7 @@ INTERNAL otrng_result otrng_client_forging_key_write_to(
     return OTRNG_ERROR;
   }
 
-  buffer = otrng_secure_alloc((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
+  buffer = otrng_secure_allocx((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
 
   size = otrng_serialize_forging_key(buffer, *client->forging_key);
   if (size == 0) {
@@ -494,7 +494,7 @@ static otrng_result serialize_and_store_prekey(const prekey_message_s *prekey,
     return OTRNG_ERROR;
   }
 
-  tmp_buffer = otrng_secure_alloc(PRE_KEY_WITH_METADATA_MAX_BYTES);
+  tmp_buffer = otrng_secure_allocx(PRE_KEY_WITH_METADATA_MAX_BYTES);
   result = otrng_prekey_message_serialize_with_metadata(
       tmp_buffer, PRE_KEY_WITH_METADATA_MAX_BYTES, &w, prekey);
   if (otrng_failed(result)) {

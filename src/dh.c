@@ -227,14 +227,21 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
 }
 
 INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_s *keypair) {
+  fprintf(stderr, "gu.1: %p\n", (void *)keypair);
   gcry_mpi_release(keypair->priv);
+  fprintf(stderr, "gu.2\n");
   keypair->priv = NULL;
+  fprintf(stderr, "gu.3\n");
 }
 
 INTERNAL void otrng_dh_keypair_destroy(dh_keypair_s *keypair) {
+  fprintf(stderr, "ug.1\n");
   otrng_dh_priv_key_destroy(keypair);
+  fprintf(stderr, "ug.2\n");
   gcry_mpi_release(keypair->pub);
+  fprintf(stderr, "ug.3\n");
   keypair->pub = NULL;
+  fprintf(stderr, "ug.4\n");
 }
 
 INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret buffer,

@@ -58,6 +58,8 @@ INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
   manager->ssid_half_first = otrng_false;
   manager->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
   manager->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
+  manager->our_dh->pub = NULL;
+  manager->our_dh->priv = NULL;
 }
 
 INTERNAL key_manager_s *otrng_key_manager_new(void) {
@@ -83,22 +85,27 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   manager->k = 0;
   manager->pn = 0;
 
+  fprintf(stderr, "flim.4\n");
   ratchet_free(manager->current);
   manager->current = NULL;
 
+  fprintf(stderr, "flim.5\n");
   otrng_secure_wipe(manager->brace_key, BRACE_KEY_BYTES);
   otrng_secure_wipe(manager->shared_secret, SHARED_SECRET_BYTES);
   otrng_secure_wipe(manager->ssid, SSID_BYTES);
   manager->ssid_half_first = otrng_false;
   otrng_secure_wipe(manager->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
+  fprintf(stderr, "flim.6\n");
   otrng_list_free_full(manager->skipped_keys);
   manager->skipped_keys = NULL;
 
   otrng_list_free_full(manager->old_mac_keys);
   manager->old_mac_keys = NULL;
 
+  fprintf(stderr, "flim.7\n");
   otrng_secure_wipe(manager, sizeof(key_manager_s));
+  fprintf(stderr, "flim.8\n");
 }
 
 INTERNAL void otrng_key_manager_free(key_manager_s *manager) {
@@ -230,8 +237,7 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
      2. when receiving a new dh ratchet
   */
   if (!otrng_ecdh_keypair_generate(manager->our_ecdh, sym)) {
-    otrng_secure_wipe(sym, ED448_PRIVATE_BYTES);
-    otrng_free(sym);
+    otrng_secure_free(sym);
     return OTRNG_ERROR;
   }
 
@@ -1007,7 +1013,7 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
         return OTRNG_ERROR;
       }
 
-      skipped_msg_enc_key = otrng_secure_alloc(sizeof(skipped_keys_s));
+      skipped_msg_enc_key = otrng_secure_allocx(sizeof(skipped_keys_s));
 
       assert(ratchet_type == 'd' || ratchet_type == 'c');
       if (ratchet_type == 'd') {
@@ -1143,7 +1149,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
 
 INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
                                                k_msg_mac mac_key) {
-  uint8_t *to_store_mac = otrng_secure_alloc(MAC_KEY_BYTES);
+  uint8_t *to_store_mac = otrng_secure_allocx(MAC_KEY_BYTES);
 
   memcpy(to_store_mac, mac_key, ENC_KEY_BYTES);
   manager->old_mac_keys = otrng_list_add(to_store_mac, manager->old_mac_keys);
@@ -1160,7 +1166,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   size_t i;
 
   if (serlen != 0) {
-    ser_mac_keys = otrng_secure_alloc(serlen);
+    ser_mac_keys = otrng_secure_allocx(serlen);
 
     memset(enc_key, 0, ENC_KEY_BYTES);
     memset(mac_key, 0, MAC_KEY_BYTES);

@@ -37,7 +37,7 @@
 #include "shake.h"
 
 INTERNAL otrng_keypair_s *otrng_keypair_new(void) {
-  otrng_keypair_s *ret = otrng_secure_alloc(sizeof(otrng_keypair_s));
+  otrng_keypair_s *ret = otrng_secure_allocx(sizeof(otrng_keypair_s));
 
   return ret;
 }
@@ -67,12 +67,13 @@ INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
   otrng_secure_wipe(keypair->sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_destroy(keypair->priv);
   otrng_ec_point_destroy(keypair->pub);
-  otrng_secure_free(keypair);
+  // TODO: olabini this is incorrect
+  otrng_free(keypair);
 }
 
 INTERNAL otrng_result otrng_symmetric_key_serialize(
     char **buffer, size_t *written, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  *buffer = otrng_secure_alloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
+  *buffer = otrng_secure_allocx((ED448_PRIVATE_BYTES + 2) / 3 * 4);
   *written = otrl_base64_encode(*buffer, sym, ED448_PRIVATE_BYTES);
 
   return OTRNG_SUCCESS;
@@ -80,7 +81,7 @@ INTERNAL otrng_result otrng_symmetric_key_serialize(
 
 INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void) {
   otrng_shared_prekey_pair_s *ret =
-      otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
+      otrng_secure_allocx(sizeof(otrng_shared_prekey_pair_s));
 
   return ret;
 }
@@ -137,14 +138,15 @@ otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair) {
   }
 
   shared_prekey_pair_destroy(prekey_pair);
-  otrng_secure_free(prekey_pair);
+  // TODO: olabini - this is wrong
+  otrng_free(prekey_pair);
 }
 
 INTERNAL uint8_t *otrng_derive_key_from_extra_symm_key(
     uint8_t usage, const unsigned char *use_data, size_t use_data_len,
     const unsigned char *extra_symm_key) {
   goldilocks_shake256_ctx_p hd;
-  uint8_t *derived_key = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
+  uint8_t *derived_key = otrng_secure_allocx(EXTRA_SYMMETRIC_KEY_BYTES);
 
   if (!hash_init_with_usage(hd, usage)) {
     otrng_secure_free(derived_key);

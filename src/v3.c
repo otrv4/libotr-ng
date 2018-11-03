@@ -932,7 +932,8 @@ API otrng_result otrng_v3_create_private_key(otrng_client_s *client) {
     return OTRNG_ERROR;
   }
 
-  p = otrng_secure_alloc(sizeof(OtrlPrivKey));
+  /* Since we don't control how this key is free, we can't use the better secure memory arena for it */
+  p = otrng_xmalloc_z(sizeof(OtrlPrivKey));
 
   p->privkey = gcry_sexp_find_token(key, "private-key", 0);
   gcry_sexp_release(key);

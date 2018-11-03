@@ -62,7 +62,7 @@ INTERNAL void otrng_prekey_profile_copy(otrng_prekey_profile_s *dst,
   }
 
   if (src->keys != NULL) {
-    dst->keys = otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
+    dst->keys = otrng_secure_allocx(sizeof(otrng_shared_prekey_pair_s));
     memcpy(dst->keys, src->keys, sizeof(otrng_shared_prekey_pair_s));
   }
 
@@ -165,7 +165,7 @@ INTERNAL otrng_result otrng_prekey_profile_deserialize_with_metadata(
 
   w += read;
 
-  target->keys = otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
+  target->keys = otrng_secure_allocx(sizeof(otrng_shared_prekey_pair_s));
   result = otrng_deserialize_bytes_array(target->keys->sym, ED448_PRIVATE_BYTES,
                                          buffer + w, buff_len - w);
   if (otrng_failed(result)) {
