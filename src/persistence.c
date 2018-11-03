@@ -60,9 +60,10 @@ client_private_key_v4_get_max_length(const otrng_client_s *client) {
          BASE64_ENCODED_SYMMETRIC_SECRET_LENGTH + 1;
 }
 
-static otrng_result client_private_key_v4_write_to_buffer(
-    const otrng_client_s *client, uint8_t *buf, size_t buflen,
-    size_t *written) {
+static otrng_result
+client_private_key_v4_write_to_buffer(const otrng_client_s *client,
+                                      uint8_t *buf, size_t buflen,
+                                      size_t *written) {
   char *key;
   size_t s = 0;
   size_t keylen = 0;
@@ -119,8 +120,8 @@ otrng_client_private_key_v4_write_to(const otrng_client_s *client, FILE *fp) {
     return OTRNG_ERROR;
   }
 
-  if (otrng_failed(client_private_key_v4_write_to_buffer(client, buffer,
-                                                               buflen, &w))) {
+  if (otrng_failed(
+          client_private_key_v4_write_to_buffer(client, buffer, buflen, &w))) {
     otrng_free(buffer);
     return OTRNG_ERROR;
   }

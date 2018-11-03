@@ -373,7 +373,7 @@ static otrng_bool prekey_profile_expired(time_t expires) {
 }
 
 static otrng_bool prekey_profile_invalid(time_t expires,
-                                                 uint64_t extra_valid_time) {
+                                         uint64_t extra_valid_time) {
   return difftime(expires + extra_valid_time, time(NULL)) <= 0;
 }
 

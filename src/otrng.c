@@ -2506,6 +2506,13 @@ API otrng_result otrng_init(otrng_bool die) {
     }
   }
 
+  if (!gcry_control(GCRYCTL_INITIALIZATION_FINISHED_P)) {
+    gcry_control(GCRYCTL_SUSPEND_SECMEM_WARN);
+    gcry_control(GCRYCTL_INIT_SECMEM, 16384, 0);
+    gcry_control(GCRYCTL_RESUME_SECMEM_WARN);
+    gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0);
+  }
+
   if (sodium_init() == -1) {
     if (die) {
       exit(EXIT_FAILURE);

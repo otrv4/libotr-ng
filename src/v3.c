@@ -268,8 +268,8 @@ tstatic int op_max_message_size(void *opdata, ConnContext *context) {
 
 /* Return a newly allocated string containing a human-friendly
  * representation for the given account */
-tstatic /*@observer@*/ const char *op_account_name(void *opdata, const char *account,
-                                    const char *protocol) {
+tstatic /*@observer@*/ const char *
+op_account_name(void *opdata, const char *account, const char *protocol) {
   (void)opdata;
   (void)account;
   (void)protocol;
@@ -316,8 +316,9 @@ tstatic void op_received_symkey(void *opdata, ConnContext *context,
  *		sent an unreadable encrypted message
  * - OTRL_ERRCODE_MSG_MALFORMED
  * 		message sent is malformed */
-tstatic /*@observer@*/ const char *op_otr_error_message(void *opdata, ConnContext *context,
-                                         OtrlErrorCode err_code) {
+tstatic /*@observer@*/ const char *
+op_otr_error_message(void *opdata, ConnContext *context,
+                     OtrlErrorCode err_code) {
   (void)opdata;
   (void)context;
   (void)err_code;
