@@ -425,8 +425,8 @@ static void orchestration_fixture_teardown(orchestration_fixture_s *f,
   otrng_list_free_nodes(f->gs->clients);
   otrl_userstate_free(f->gs->user_state_v3);
   otrng_free(f->gs);
-  otrng_free(f->long_term_key);
-  otrng_free(f->forging_key);
+  otrng_secure_free(f->long_term_key);
+  otrng_secure_free(f->forging_key);
   otrng_client_profile_free(f->client_profile);
   otrng_prekey_profile_free(f->prekey_profile);
   v3_free_key(f->v3_key);

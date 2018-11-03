@@ -37,7 +37,7 @@
 #include "shake.h"
 
 INTERNAL otrng_keypair_s *otrng_keypair_new(void) {
-  otrng_keypair_s *ret = otrng_secure_allocx(sizeof(otrng_keypair_s));
+  otrng_keypair_s *ret = otrng_secure_alloc(sizeof(otrng_keypair_s));
 
   return ret;
 }
@@ -67,8 +67,7 @@ INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
   otrng_secure_wipe(keypair->sym, ED448_PRIVATE_BYTES);
   otrng_ec_scalar_destroy(keypair->priv);
   otrng_ec_point_destroy(keypair->pub);
-  // TODO: olabini this is incorrect
-  otrng_free(keypair);
+  otrng_secure_free(keypair);
 }
 
 INTERNAL otrng_result otrng_symmetric_key_serialize(
