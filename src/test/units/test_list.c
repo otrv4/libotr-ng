@@ -75,51 +75,6 @@ static void test_otrng_list_copy() {
   otrng_list_free_nodes(cpy_list);
 }
 
-static void test_otrng_list_insert_at_n() {
-  int one = 1, two = 2;
-  list_element_s *list = NULL;
-
-  list_element_s *result = otrng_list_insert_at_position_n(&two, 0, list);
-
-  otrng_assert(result);
-  otrng_assert(!result->next);
-  g_assert_cmpint(two, ==, *((int *)result->data));
-  otrng_free(result);
-
-  list = otrng_list_add(&one, list);
-
-  otrng_assert(list);
-  g_assert_cmpint(one, ==, *((int *)list->data));
-
-  list = otrng_list_add(&two, list);
-  otrng_assert(list);
-  g_assert_cmpint(one, ==, *((int *)list->data));
-  otrng_assert(list->next);
-  g_assert_cmpint(two, ==, *((int *)list->next->data));
-
-  int three = 3;
-  list = otrng_list_insert_at_position_n(&three, 2, list);
-  g_assert_cmpint(one, ==, *((int *)list->data));
-  otrng_assert(list->next);
-  g_assert_cmpint(two, ==, *((int *)list->next->data));
-  otrng_assert(list->next->next);
-  g_assert_cmpint(three, ==, *((int *)list->next->next->data));
-
-  otrng_list_free_nodes(list);
-
-  list_element_s *list_2 = list_new();
-
-  int four = 4, five = 5, six = 6;
-  list_2 = otrng_list_insert_at_position_n(&four, 0, list_2);
-  g_assert_cmpint(four, ==, *((int *)list_2->data));
-  list_2 = otrng_list_insert_at_position_n(&six, 2, list_2);
-  g_assert_cmpint(six, ==, *((int *)list_2->next->next->data));
-  list_2 = otrng_list_insert_at_position_n(&five, 1, list_2);
-  g_assert_cmpint(five, ==, *((int *)list_2->next->data));
-
-  otrng_list_free_nodes(list_2);
-}
-
 static void test_otrng_list_get_last() {
   int one = 1, two = 2;
   list_element_s *list = NULL;
@@ -204,7 +159,6 @@ static void test_list_empty_size() {
 void units_list_add_tests(void) {
   g_test_add_func("/list/add", test_otrng_list_add);
   g_test_add_func("/list/copy", test_otrng_list_copy);
-  g_test_add_func("/list/insert_at_n", test_otrng_list_insert_at_n);
   g_test_add_func("/list/get", test_otrng_list_get_last);
   g_test_add_func("/list/get_by_value", test_otrng_list_get_by_value);
   g_test_add_func("/list/length", test_otrng_list_len);

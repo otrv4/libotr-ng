@@ -114,38 +114,6 @@ INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head) {
   return head;
 }
 
-INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data, size_t pos,
-                                                         list_element_s *head) {
-  list_element_s *tmp;
-  list_element_s *n = list_new();
-  size_t i;
-
-  n->data = data;
-  n->next = NULL;
-
-  if (!head) {
-    return n;
-  }
-
-  tmp = head;
-
-  if (pos == 0) {
-    n->next = tmp;
-    head = n;
-
-    return head;
-  }
-
-  for (i = 0; i < pos - 1; i++) {
-    tmp = tmp->next;
-  }
-
-  n->next = tmp->next;
-  tmp->next = n;
-
-  return head;
-}
-
 INTERNAL list_element_s *otrng_list_get_last(list_element_s *head) {
   list_element_s *cursor;
 

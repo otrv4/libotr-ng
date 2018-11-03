@@ -268,7 +268,7 @@ tstatic int op_max_message_size(void *opdata, ConnContext *context) {
 
 /* Return a newly allocated string containing a human-friendly
  * representation for the given account */
-tstatic const char *op_account_name(void *opdata, const char *account,
+tstatic /*@observer@*/ const char *op_account_name(void *opdata, const char *account,
                                     const char *protocol) {
   (void)opdata;
   (void)account;
@@ -316,7 +316,7 @@ tstatic void op_received_symkey(void *opdata, ConnContext *context,
  *		sent an unreadable encrypted message
  * - OTRL_ERRCODE_MSG_MALFORMED
  * 		message sent is malformed */
-tstatic const char *op_otr_error_message(void *opdata, ConnContext *context,
+tstatic /*@observer@*/ const char *op_otr_error_message(void *opdata, ConnContext *context,
                                          OtrlErrorCode err_code) {
   (void)opdata;
   (void)context;
@@ -854,7 +854,7 @@ static gcry_error_t make_pubkey(unsigned char **pubbufp, size_t *publenp,
   gs = gcry_sexp_find_token(dsas, "g", 0);
   ys = gcry_sexp_find_token(dsas, "y", 0);
   gcry_sexp_release(dsas);
-  if (!ps || !qs || !gs || !ys) {
+  if (ps == NULL || qs == NULL || gs == NULL || ys == NULL) {
     gcry_sexp_release(ps);
     gcry_sexp_release(qs);
     gcry_sexp_release(gs);
@@ -919,7 +919,7 @@ API otrng_result otrng_v3_create_private_key(otrng_client_s *client) {
   gcry_sexp_t key, parms;
   OtrlPrivKey *p = NULL;
   OtrlUserState us = client->global_state->user_state_v3;
-  static const char *parmstr = "(genkey (dsa (nbits 4:1024)))";
+  /*@observer@*/ static const char *parmstr = "(genkey (dsa (nbits 4:1024)))";
 
   err = gcry_sexp_new(&parms, parmstr, strlen(parmstr), 0);
   if (err) {

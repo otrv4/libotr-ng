@@ -52,11 +52,6 @@ INTERNAL otrng_prekey_profile_s *
 otrng_prekey_profile_build(uint32_t instance_tag,
                            const otrng_keypair_s *longterm_pair);
 
-INTERNAL otrng_bool otrng_prekey_profile_expired(time_t expires);
-
-INTERNAL otrng_bool otrng_prekey_profile_invalid(time_t expires,
-                                                 uint64_t extra_valid_time);
-
 INTERNAL otrng_bool otrng_prekey_profile_is_close_to_expiry(
     const otrng_prekey_profile_s *profile, uint64_t buffer_time);
 

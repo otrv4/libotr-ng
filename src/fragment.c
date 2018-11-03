@@ -87,7 +87,7 @@ tstatic void reset_fragment_context(fragment_context_s *context) {
   initialize_fragment_context(context);
 }
 
-tstatic /*@null@*/ fragment_context_s *otrng_fragment_context_new(void) {
+tstatic /*@notnull@*/ fragment_context_s *otrng_fragment_context_new(void) {
   fragment_context_s *context = otrng_xmalloc_z(sizeof(fragment_context_s));
   initialize_fragment_context(context);
   return context;

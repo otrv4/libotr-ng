@@ -49,7 +49,7 @@ typedef struct otrng_v3_conn_s {
   char *injected_message;
   void *opdata; // v4 conn for use in callbacks
 
-  OtrlMessageAppOps *ops;
+  /*@owned@*/ OtrlMessageAppOps *ops;
   ConnContext *ctx;
 } otrng_v3_conn_s;
 

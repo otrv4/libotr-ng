@@ -115,9 +115,6 @@ INTERNAL otrng_client_profile_s *otrng_client_profile_build(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
     const otrng_public_key forging_key, unsigned int expiration_time);
 
-INTERNAL otrng_bool otrng_client_profile_invalid(time_t expires,
-                                                 uint64_t extra_valid_time);
-
 INTERNAL otrng_bool otrng_client_profile_is_close_to_expiry(
     const otrng_client_profile_s *profile, uint64_t buffer_time);
 

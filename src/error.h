@@ -43,25 +43,25 @@ typedef enum {
   OTRNG_ERROR = 0,
 } otrng_result;
 
-static inline int otrng_succeeded(otrng_result v) { return v == OTRNG_SUCCESS; }
+/*@unused@*/ static inline int otrng_succeeded(otrng_result v) { return v == OTRNG_SUCCESS; }
 
-static inline int otrng_failed(otrng_result v) { return v == OTRNG_ERROR; }
+/*@unused@*/ static inline int otrng_failed(otrng_result v) { return v == OTRNG_ERROR; }
 
-static inline otrng_bool otrng_result_to_bool(otrng_result v) {
+/*@unused@*/ static inline otrng_bool otrng_result_to_bool(otrng_result v) {
   if (v == OTRNG_SUCCESS) {
     return otrng_true;
   }
   return otrng_false;
 }
 
-static inline int otrng_bool_is_true(otrng_bool v) {
+/*@unused@*/ static inline int otrng_bool_is_true(otrng_bool v) {
   if (v == OTRNG_SUCCESS) {
     return 1;
   }
   return 0;
 }
 
-static inline otrng_bool c_bool_to_otrng_bool(int v) {
+/*@unused@*/ static inline otrng_bool c_bool_to_otrng_bool(int v) {
   if (v) {
     return otrng_true;
   }

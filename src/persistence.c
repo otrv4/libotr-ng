@@ -54,13 +54,13 @@ static char *otrng_client_get_storage_id(const otrng_client_s *client) {
    so the calculation can't be used for another client. It assumes
    everything is correct about the client id - the result is undefined if not.
  */
-INTERNAL size_t
-otrng_client_private_key_v4_get_max_length(const otrng_client_s *client) {
+static size_t
+client_private_key_v4_get_max_length(const otrng_client_s *client) {
   return otrng_client_get_storage_id_len(client) + 1 +
          BASE64_ENCODED_SYMMETRIC_SECRET_LENGTH + 1;
 }
 
-API otrng_result otrng_client_private_key_v4_write_to_buffer(
+static otrng_result client_private_key_v4_write_to_buffer(
     const otrng_client_s *client, uint8_t *buf, size_t buflen,
     size_t *written) {
   char *key;
@@ -110,7 +110,7 @@ API otrng_result otrng_client_private_key_v4_write_to_buffer(
 INTERNAL otrng_result
 otrng_client_private_key_v4_write_to(const otrng_client_s *client, FILE *fp) {
   size_t w = 0;
-  size_t buflen = otrng_client_private_key_v4_get_max_length(client);
+  size_t buflen = client_private_key_v4_get_max_length(client);
   uint8_t *buffer = otrng_xmalloc_z(buflen * sizeof(uint8_t));
   int err;
 
@@ -119,7 +119,7 @@ otrng_client_private_key_v4_write_to(const otrng_client_s *client, FILE *fp) {
     return OTRNG_ERROR;
   }
 
-  if (otrng_failed(otrng_client_private_key_v4_write_to_buffer(client, buffer,
+  if (otrng_failed(client_private_key_v4_write_to_buffer(client, buffer,
                                                                buflen, &w))) {
     otrng_free(buffer);
     return OTRNG_ERROR;

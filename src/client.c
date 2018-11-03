@@ -179,7 +179,7 @@ API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv) {
   return otrng_false;
 }
 
-tstatic otrng_s *create_connection_for(const char *recipient,
+tstatic /*@temp@*/ otrng_s *create_connection_for(const char *recipient,
                                        otrng_client_s *client) {
   otrng_v3_conn_s *v3_conn = NULL;
   otrng_s *conn = NULL;

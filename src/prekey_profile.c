@@ -368,11 +368,11 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
   return valid;
 }
 
-INTERNAL otrng_bool otrng_prekey_profile_expired(time_t expires) {
+static otrng_bool prekey_profile_expired(time_t expires) {
   return (difftime(expires, time(NULL)) <= 0);
 }
 
-INTERNAL otrng_bool otrng_prekey_profile_invalid(time_t expires,
+static otrng_bool prekey_profile_invalid(time_t expires,
                                                  uint64_t extra_valid_time) {
   return difftime(expires + extra_valid_time, time(NULL)) <= 0;
 }
@@ -409,7 +409,7 @@ INTERNAL otrng_bool otrng_prekey_profile_valid(
     return otrng_false;
   }
 
-  return !otrng_prekey_profile_expired(profile->expires);
+  return !prekey_profile_expired(profile->expires);
 }
 
 INTERNAL otrng_bool otrng_prekey_profile_fast_valid(
@@ -417,7 +417,7 @@ INTERNAL otrng_bool otrng_prekey_profile_fast_valid(
     const otrng_public_key pub) {
   if (profile->has_validated) {
     return profile->validation_result &&
-           !otrng_prekey_profile_expired(profile->expires);
+           !prekey_profile_expired(profile->expires);
   }
 
   profile->validation_result =
@@ -431,7 +431,7 @@ INTERNAL otrng_bool otrng_prekey_profile_fast_valid(
    assumes this, and doesn't verify it. */
 INTERNAL otrng_bool otrng_prekey_profile_is_close_to_expiry(
     const otrng_prekey_profile_s *profile, uint64_t buffer_time) {
-  return otrng_prekey_profile_expired(profile->expires - buffer_time);
+  return prekey_profile_expired(profile->expires - buffer_time);
 }
 
 INTERNAL otrng_bool otrng_prekey_profile_is_expired_but_valid(
@@ -439,8 +439,8 @@ INTERNAL otrng_bool otrng_prekey_profile_is_expired_but_valid(
     uint64_t extra_valid_time, const otrng_public_key pub) {
   return otrng_prekey_profile_valid_without_expiry(profile, sender_instance_tag,
                                                    pub) &&
-         otrng_prekey_profile_expired(profile->expires) &&
-         !otrng_prekey_profile_invalid(profile->expires, extra_valid_time);
+         prekey_profile_expired(profile->expires) &&
+         !prekey_profile_invalid(profile->expires, extra_valid_time);
 }
 
 API void

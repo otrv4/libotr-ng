@@ -593,7 +593,7 @@ static otrng_bool client_profile_expired(time_t expires) {
   return difftime(expires, time(NULL)) <= 0;
 }
 
-INTERNAL otrng_bool otrng_client_profile_invalid(time_t expires,
+static otrng_bool client_profile_invalid(time_t expires,
                                                  uint64_t extra_valid_time) {
   return difftime(expires + extra_valid_time, time(NULL)) <= 0;
 }
@@ -795,7 +795,7 @@ INTERNAL otrng_bool otrng_client_profile_is_expired_but_valid(
     uint64_t extra_valid_time) {
   return client_profile_valid_without_expiry(profile, itag) &&
          client_profile_expired(profile->expires) &&
-         !otrng_client_profile_invalid(profile->expires, extra_valid_time);
+         !client_profile_invalid(profile->expires, extra_valid_time);
 }
 
 INTERNAL otrng_result otrng_client_profile_transitional_sign(

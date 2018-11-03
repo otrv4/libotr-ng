@@ -48,9 +48,6 @@ INTERNAL list_element_s *otrng_list_copy(list_element_s *head);
 
 INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head);
 
-INTERNAL list_element_s *otrng_list_insert_at_position_n(void *data, size_t pos,
-                                                         list_element_s *head);
-
 INTERNAL list_element_s *otrng_list_get_last(list_element_s *head);
 
 INTERNAL list_element_s *
@@ -67,7 +64,7 @@ INTERNAL size_t otrng_list_len(list_element_s *head);
 
 #ifdef OTRNG_LIST_PRIVATE
 
-tstatic list_element_s *list_new(void);
+tstatic /*@only@*/ /*@notnull@*/ list_element_s *list_new(void);
 
 #endif
 
