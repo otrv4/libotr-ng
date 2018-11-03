@@ -150,7 +150,7 @@ INTERNAL otrng_result otrng_client_forging_key_write_to(
     return OTRNG_ERROR;
   }
 
-  buffer = otrng_secure_allocx((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
+  buffer = otrng_secure_alloc((2 + ED448_POINT_BYTES) * sizeof(uint8_t));
 
   size = otrng_serialize_forging_key(buffer, *client->forging_key);
   if (size == 0) {
@@ -158,8 +158,7 @@ INTERNAL otrng_result otrng_client_forging_key_write_to(
   }
 
   encoded = otrng_base64_encode(buffer, size);
-  otrng_secure_wipe(buffer, (2 + ED448_POINT_BYTES) * sizeof(uint8_t));
-  otrng_free(buffer);
+  otrng_secure_free(buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }

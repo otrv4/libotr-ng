@@ -380,7 +380,7 @@ INTERNAL otrng_result otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
 INTERNAL otrng_result otrng_symmetric_shared_prekey_deserialize(
     otrng_shared_prekey_pair_s *pair, const char *buffer, size_t buff_len) {
   /* (((base64len+3) / 4) * 3) */
-  uint8_t *dec = otrng_secure_allocx(((buff_len + 3) / 4) * 3);
+  uint8_t *dec = otrng_secure_alloc(((buff_len + 3) / 4) * 3);
   size_t written;
 
   written = otrl_base64_decode(dec, buffer, buff_len);
