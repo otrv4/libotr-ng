@@ -40,7 +40,7 @@ INTERNAL void otrng_smp_protocol_init(smp_protocol_s *smp) {
 }
 
 INTERNAL void otrng_smp_destroy(smp_protocol_s *smp) {
-  otrng_free(smp->secret);
+  otrng_secure_free(smp->secret);
   smp->secret = NULL;
 
   otrng_smp_message_1_destroy(smp->message1);
@@ -110,7 +110,7 @@ INTERNAL otrng_result otrng_generate_smp_secret(unsigned char **secret,
   hash_final(hd, hash, HASH_BYTES);
   hash_destroy(hd);
 
-  *secret = otrng_secure_allocx(HASH_BYTES);
+  *secret = otrng_secure_alloc(HASH_BYTES);
 
   memcpy(*secret, hash, HASH_BYTES);
   otrng_secure_free(hash);
