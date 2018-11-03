@@ -207,7 +207,7 @@ tstatic void *gen_random_data(size_t n, random_generator gen) {
   if (gen == NULL) {
     void *rhash, *rbuf;
     rbuf = gcry_random_bytes_secure(n, GCRY_STRONG_RANDOM);
-    rhash = otrng_secure_allocx(n * sizeof(uint8_t));
+    rhash = otrng_secure_alloc(n * sizeof(uint8_t));
 
     if (!shake_256_hash(rhash, n * sizeof(uint8_t), rbuf, n)) {
       otrng_secure_wipe(rbuf, n);
@@ -244,8 +244,7 @@ INTERNAL otrng_result otrng_dh_proof_generate(
 
   rbuf = gen_random_data(DH_KEY_SIZE, gen);
   err = gcry_mpi_scan(&r, GCRYMPI_FMT_USG, rbuf, DH_KEY_SIZE, NULL);
-  otrng_secure_wipe(rbuf, DH_KEY_SIZE);
-  otrng_free(rbuf);
+  otrng_secure_free(rbuf);
 
   if (err) {
     otrng_dh_mpi_release(r);
