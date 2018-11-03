@@ -68,6 +68,10 @@ INTERNAL key_manager_s *otrng_key_manager_new(void) {
   return manager;
 }
 
+static void sec_free(void *p) {
+  otrng_secure_free(p);
+}
+
 INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   otrng_ecdh_keypair_destroy(manager->our_ecdh);
   otrng_secure_free(manager->our_ecdh);
@@ -97,7 +101,7 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   otrng_secure_wipe(manager->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
   fprintf(stderr, "flim.6\n");
-  otrng_list_free_full(manager->skipped_keys);
+  otrng_list_free(manager->skipped_keys, sec_free);
   manager->skipped_keys = NULL;
 
   otrng_list_free_full(manager->old_mac_keys);
@@ -948,11 +952,6 @@ tstatic otrng_result calculate_extra_key(
   return OTRNG_SUCCESS;
 }
 
-// tstatic void delete_stored_enc_keys(key_manager_s *manager) {
-//  otrng_list_free_full(manager->skipped_keys);
-//  manager->skipped_keys = NULL;
-//}
-
 tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
                                     receiving_ratchet_s *tmp_receiving_ratchet,
                                     const uint32_t until,
@@ -1013,7 +1012,7 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
         return OTRNG_ERROR;
       }
 
-      skipped_msg_enc_key = otrng_secure_allocx(sizeof(skipped_keys_s));
+      skipped_msg_enc_key = otrng_secure_alloc(sizeof(skipped_keys_s));
 
       assert(ratchet_type == 'd' || ratchet_type == 'c');
       if (ratchet_type == 'd') {
@@ -1071,7 +1070,7 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
 
       tmp_receiving_ratchet->skipped_keys = otrng_list_remove_element(
           current, tmp_receiving_ratchet->skipped_keys);
-      otrng_list_free_full(current);
+      otrng_list_free(current, sec_free);
 
       return OTRNG_SUCCESS;
     }
@@ -1185,7 +1184,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
       memcpy(ser_mac_keys + i * MAC_KEY_BYTES, mac_key, MAC_KEY_BYTES);
       manager->skipped_keys =
           otrng_list_remove_element(last, manager->skipped_keys);
-      otrng_list_free_full(last);
+      otrng_list_free(last, sec_free);
     }
     otrng_list_free_nodes(manager->skipped_keys);
 
