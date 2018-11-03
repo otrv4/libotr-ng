@@ -72,7 +72,8 @@ INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc(size_t size) {
   return result;
 }
 
-INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc_array(size_t count, size_t size) {
+INTERNAL /*@only@*/ /*@notnull@*/ void *otrng_secure_alloc_array(size_t count,
+                                                                 size_t size) {
   return sodium_allocarray(count, size);
 }
 
@@ -80,7 +81,8 @@ INTERNAL void otrng_free(/*@notnull@*/ /*@only@*/ void *p) /*@modifies p@*/ {
   free(p);
 }
 
-INTERNAL void otrng_secure_free(/*@notnull@*/ /*@only@*/ void *p) /*@modifies p@*/ {
+INTERNAL void
+otrng_secure_free(/*@notnull@*/ /*@only@*/ void *p) /*@modifies p@*/ {
   sodium_free(p);
 }
 

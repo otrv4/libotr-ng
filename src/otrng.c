@@ -2029,7 +2029,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
         otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
 
         if (tmp_receiving_ratchet->skipped_keys) {
-          otrng_list_free(tmp_receiving_ratchet->skipped_keys, otrng_secure_free);
+          otrng_list_free(tmp_receiving_ratchet->skipped_keys,
+                          otrng_secure_free);
         }
         otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
@@ -2041,7 +2042,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
         otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
         otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
         if (tmp_receiving_ratchet->skipped_keys) {
-          otrng_list_free(tmp_receiving_ratchet->skipped_keys, otrng_secure_free);
+          otrng_list_free(tmp_receiving_ratchet->skipped_keys,
+                          otrng_secure_free);
         }
         otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
         otrng_data_message_free(msg);
