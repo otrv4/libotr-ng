@@ -48,7 +48,7 @@ otrng_prekey_message_create_copy(const prekey_message_s *src) {
   dst->B = otrng_dh_mpi_copy(src->B);
 
   if (src->y) {
-    dst->y = otrng_secure_allocx(sizeof(ecdh_keypair_s));
+    dst->y = otrng_secure_alloc(sizeof(ecdh_keypair_s));
     otrng_ec_scalar_copy(dst->y->priv, src->y->priv);
     otrng_ec_point_copy(dst->y->pub, src->y->pub);
   } else {
@@ -77,7 +77,7 @@ INTERNAL prekey_message_s *otrng_prekey_message_build(uint32_t instance_tag,
 
   msg->sender_instance_tag = instance_tag;
 
-  msg->y = otrng_secure_allocx(sizeof(ecdh_keypair_s));
+  msg->y = otrng_secure_alloc(sizeof(ecdh_keypair_s));
   otrng_ec_scalar_copy(msg->y->priv, y->priv);
   otrng_ec_point_copy(msg->y->pub, y->pub);
 
@@ -104,7 +104,7 @@ static void otrng_prekey_message_destroy(prekey_message_s *prekey_msg) {
 
   if (prekey_msg->y) {
     otrng_ecdh_keypair_destroy(prekey_msg->y);
-    otrng_free(prekey_msg->y);
+    otrng_secure_free(prekey_msg->y);
   }
 
   if (prekey_msg->b) {
@@ -273,7 +273,7 @@ INTERNAL otrng_result otrng_prekey_message_deserialize_with_metadata(
   w += read;
 
   dst->b = otrng_secure_allocx(sizeof(dh_keypair_s));
-  dst->y = otrng_secure_allocx(sizeof(ecdh_keypair_s));
+  dst->y = otrng_secure_alloc(sizeof(ecdh_keypair_s));
 
   result = otrng_deserialize_ec_scalar(dst->y->priv, src + w, src_len - w);
   if (otrng_failed(result)) {

@@ -493,18 +493,16 @@ static otrng_result serialize_and_store_prekey(const prekey_message_s *prekey,
     return OTRNG_ERROR;
   }
 
-  tmp_buffer = otrng_secure_allocx(PRE_KEY_WITH_METADATA_MAX_BYTES);
+  tmp_buffer = otrng_secure_alloc(PRE_KEY_WITH_METADATA_MAX_BYTES);
   result = otrng_prekey_message_serialize_with_metadata(
       tmp_buffer, PRE_KEY_WITH_METADATA_MAX_BYTES, &w, prekey);
   if (otrng_failed(result)) {
-    otrng_secure_wipe(tmp_buffer, PRE_KEY_WITH_METADATA_MAX_BYTES);
-    otrng_free(tmp_buffer);
+    otrng_secure_free(tmp_buffer);
     return result;
   }
 
   encoded = otrng_base64_encode(tmp_buffer, w);
-  otrng_secure_wipe(tmp_buffer, PRE_KEY_WITH_METADATA_MAX_BYTES);
-  otrng_free(tmp_buffer);
+  otrng_secure_free(tmp_buffer);
   if (!encoded) {
     return OTRNG_ERROR;
   }
