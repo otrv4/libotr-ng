@@ -114,7 +114,7 @@ static void test_global_state_key_management(void) {
                          "pLryYcPUYGIODpKqfEtrRH2d6fgbpBGmhA";
   otrng_assert_cmpmem(expected, buffer, s);
 
-  otrng_free(buffer);
+  otrng_secure_free(buffer);
   otrng_global_state_free(state);
 }
 

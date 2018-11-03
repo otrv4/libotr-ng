@@ -73,7 +73,7 @@ INTERNAL void otrng_keypair_free(otrng_keypair_s *keypair) {
 
 INTERNAL otrng_result otrng_symmetric_key_serialize(
     char **buffer, size_t *written, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  *buffer = otrng_secure_allocx((ED448_PRIVATE_BYTES + 2) / 3 * 4);
+  *buffer = otrng_secure_alloc((ED448_PRIVATE_BYTES + 2) / 3 * 4);
   *written = otrl_base64_encode(*buffer, sym, ED448_PRIVATE_BYTES);
 
   return OTRNG_SUCCESS;

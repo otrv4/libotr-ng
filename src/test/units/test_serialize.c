@@ -132,7 +132,7 @@ static void test_serialize_otrng_symmetric_key() {
   g_assert_cmpint(strlen(expected), ==, buffer_size); /* 76 of length*/
   otrng_assert_cmpmem(expected, buffer, buffer_size);
 
-  otrng_free(buffer);
+  otrng_secure_free(buffer);
 }
 
 static void test_otrng_serialize_dh_public_key() {
