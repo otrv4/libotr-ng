@@ -135,7 +135,7 @@ otrng_global_state_get_private_key_v4(otrng_global_state_s *gs,
 API otrng_result otrng_global_state_generate_private_key(
     otrng_global_state_s *gs, const otrng_client_id_s client_id) {
   otrng_result res;
-  uint8_t *sym = otrng_secure_allocx(ED448_PRIVATE_BYTES);
+  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
 
   gcry_randomize(sym, ED448_PRIVATE_BYTES, GCRY_VERY_STRONG_RANDOM);
   res = otrng_global_state_add_private_key_v4(gs, client_id, sym);
@@ -161,7 +161,7 @@ API otrng_result otrng_global_state_generate_forging_key(
   /* This function generates the forging key by
      generating a full keypair and then deleting the secret material
      A better way would be to just generate the public material directly */
-  uint8_t *sym = otrng_secure_allocx(ED448_PRIVATE_BYTES);
+  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   otrng_keypair_s *key_pair;
   otrng_result res;
 
