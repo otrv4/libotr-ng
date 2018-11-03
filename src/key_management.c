@@ -104,7 +104,7 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   otrng_list_free(manager->skipped_keys, sec_free);
   manager->skipped_keys = NULL;
 
-  otrng_list_free_full(manager->old_mac_keys);
+  otrng_list_free(manager->old_mac_keys, sec_free);
   manager->old_mac_keys = NULL;
 
   fprintf(stderr, "flim.7\n");
@@ -1148,7 +1148,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
 
 INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
                                                k_msg_mac mac_key) {
-  uint8_t *to_store_mac = otrng_secure_allocx(MAC_KEY_BYTES);
+  uint8_t *to_store_mac = otrng_secure_alloc(MAC_KEY_BYTES);
 
   memcpy(to_store_mac, mac_key, ENC_KEY_BYTES);
   manager->old_mac_keys = otrng_list_add(to_store_mac, manager->old_mac_keys);
@@ -1165,7 +1165,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   size_t i;
 
   if (serlen != 0) {
-    ser_mac_keys = otrng_secure_allocx(serlen);
+    ser_mac_keys = otrng_secure_alloc(serlen);
 
     memset(enc_key, 0, ENC_KEY_BYTES);
     memset(mac_key, 0, MAC_KEY_BYTES);

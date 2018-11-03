@@ -1796,7 +1796,7 @@ INTERNAL otrng_result otrng_expire_session(string_p *to_send, otrng_s *otr) {
 
   disconnected = otrng_tlv_list_one(
       otrng_tlv_new(OTRNG_TLV_DISCONNECTED, ser_len, ser_mac_keys));
-  otrng_free(ser_mac_keys);
+  otrng_secure_free(ser_mac_keys);
 
   if (!disconnected) {
     return OTRNG_ERROR;
@@ -2352,7 +2352,7 @@ tstatic otrng_result otrng_close_v4(string_p *to_send, otrng_s *otr) {
 
   disconnected = otrng_tlv_list_one(
       otrng_tlv_new(OTRNG_TLV_DISCONNECTED, ser_len, ser_mac_keys));
-  otrng_free(ser_mac_keys);
+  otrng_secure_free(ser_mac_keys);
 
   if (!disconnected) {
     return OTRNG_ERROR;
