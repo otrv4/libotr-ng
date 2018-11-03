@@ -89,8 +89,8 @@
     else                                                                       \
       g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC,         \
                           __message);                                          \
-    otrng_free(__s1);                                                                \
-    otrng_free(__s2);                                                                \
+    otrng_free(__s1);                                                          \
+    otrng_free(__s2);                                                          \
     g_free(__message);                                                         \
   } while (0)
 
@@ -162,7 +162,7 @@
     else                                                                       \
       g_assertion_message(G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC,         \
                           __message);                                          \
-    otrng_free(__s);                                                                 \
+    otrng_free(__s);                                                           \
     g_free(__message);                                                         \
   } while (0)
 

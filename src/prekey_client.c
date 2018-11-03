@@ -715,15 +715,15 @@ otrng_prekey_dake3_message_append_prekey_publication_message(
   }
 
   if (pub_msg->num_prekey_messages > 0) {
-    values_priv_ecdh =
-      otrng_secure_alloc_array(pub_msg->num_prekey_messages, sizeof(ec_scalar));
+    values_priv_ecdh = otrng_secure_alloc_array(pub_msg->num_prekey_messages,
+                                                sizeof(ec_scalar));
     values_pub_ecdh =
-      otrng_xmalloc_z(pub_msg->num_prekey_messages * sizeof(ec_point));
+        otrng_xmalloc_z(pub_msg->num_prekey_messages * sizeof(ec_point));
 
     values_priv_dh =
-      otrng_secure_alloc_array(pub_msg->num_prekey_messages, sizeof(dh_mpi));
+        otrng_secure_alloc_array(pub_msg->num_prekey_messages, sizeof(dh_mpi));
     values_pub_dh =
-      otrng_xmalloc_z(pub_msg->num_prekey_messages * sizeof(dh_mpi));
+        otrng_xmalloc_z(pub_msg->num_prekey_messages * sizeof(dh_mpi));
 
     for (i = 0; i < pub_msg->num_prekey_messages; i++) {
       *values_pub_ecdh[i] = *pub_msg->prekey_messages[i]->y->pub;
