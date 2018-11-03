@@ -68,10 +68,6 @@ INTERNAL key_manager_s *otrng_key_manager_new(void) {
   return manager;
 }
 
-static void sec_free(void *p) {
-  otrng_secure_free(p);
-}
-
 INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   otrng_ecdh_keypair_destroy(manager->our_ecdh);
   otrng_secure_free(manager->our_ecdh);
@@ -89,27 +85,22 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   manager->k = 0;
   manager->pn = 0;
 
-  fprintf(stderr, "flim.4\n");
   ratchet_free(manager->current);
   manager->current = NULL;
 
-  fprintf(stderr, "flim.5\n");
   otrng_secure_wipe(manager->brace_key, BRACE_KEY_BYTES);
   otrng_secure_wipe(manager->shared_secret, SHARED_SECRET_BYTES);
   otrng_secure_wipe(manager->ssid, SSID_BYTES);
   manager->ssid_half_first = otrng_false;
   otrng_secure_wipe(manager->extra_symmetric_key, EXTRA_SYMMETRIC_KEY_BYTES);
 
-  fprintf(stderr, "flim.6\n");
-  otrng_list_free(manager->skipped_keys, sec_free);
+  otrng_list_free(manager->skipped_keys, otrng_secure_free);
   manager->skipped_keys = NULL;
 
-  otrng_list_free(manager->old_mac_keys, sec_free);
+  otrng_list_free(manager->old_mac_keys, otrng_secure_free);
   manager->old_mac_keys = NULL;
 
-  fprintf(stderr, "flim.7\n");
   otrng_secure_wipe(manager, sizeof(key_manager_s));
-  fprintf(stderr, "flim.8\n");
 }
 
 INTERNAL void otrng_key_manager_free(key_manager_s *manager) {
@@ -1070,7 +1061,7 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
 
       tmp_receiving_ratchet->skipped_keys = otrng_list_remove_element(
           current, tmp_receiving_ratchet->skipped_keys);
-      otrng_list_free(current, sec_free);
+      otrng_list_free(current, otrng_secure_free);
 
       return OTRNG_SUCCESS;
     }
@@ -1184,7 +1175,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
       memcpy(ser_mac_keys + i * MAC_KEY_BYTES, mac_key, MAC_KEY_BYTES);
       manager->skipped_keys =
           otrng_list_remove_element(last, manager->skipped_keys);
-      otrng_list_free(last, sec_free);
+      otrng_list_free(last, otrng_secure_free);
     }
     otrng_list_free_nodes(manager->skipped_keys);
 

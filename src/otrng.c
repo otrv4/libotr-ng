@@ -73,10 +73,6 @@ static const string_p query_header = "?OTRv";
 static const string_p otr_error_header = "?OTR Error:";
 static const string_p otr_header = "?OTR:";
 
-static void sec_free(void *p) {
-  otrng_secure_free(p);
-}
-
 tstatic void gone_secure_cb_v4(const otrng_s *conv) {
   otrng_client_callbacks_gone_secure(conv->client->global_state->callbacks,
                                      conv);
@@ -2013,7 +2009,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       otrng_data_message_free(msg);
 
       if (tmp_receiving_ratchet->skipped_keys) {
-        otrng_list_free(tmp_receiving_ratchet->skipped_keys, sec_free);
+        otrng_list_free(tmp_receiving_ratchet->skipped_keys, otrng_secure_free);
       }
       otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
@@ -2033,7 +2029,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
         otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
 
         if (tmp_receiving_ratchet->skipped_keys) {
-          otrng_list_free(tmp_receiving_ratchet->skipped_keys, sec_free);
+          otrng_list_free(tmp_receiving_ratchet->skipped_keys, otrng_secure_free);
         }
         otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
@@ -2045,7 +2041,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
         otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
         otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
         if (tmp_receiving_ratchet->skipped_keys) {
-          otrng_list_free(tmp_receiving_ratchet->skipped_keys, sec_free);
+          otrng_list_free(tmp_receiving_ratchet->skipped_keys, otrng_secure_free);
         }
         otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
         otrng_data_message_free(msg);
