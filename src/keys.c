@@ -81,7 +81,7 @@ INTERNAL otrng_result otrng_symmetric_key_serialize(
 
 INTERNAL otrng_shared_prekey_pair_s *otrng_shared_prekey_pair_new(void) {
   otrng_shared_prekey_pair_s *ret =
-      otrng_secure_allocx(sizeof(otrng_shared_prekey_pair_s));
+      otrng_secure_alloc(sizeof(otrng_shared_prekey_pair_s));
 
   return ret;
 }
@@ -138,8 +138,7 @@ otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair) {
   }
 
   shared_prekey_pair_destroy(prekey_pair);
-  // TODO: olabini - this is wrong
-  otrng_free(prekey_pair);
+  otrng_secure_free(prekey_pair);
 }
 
 /* This returns a buffer in the secure memory area - it's important to free it using otrng_secure_free */
