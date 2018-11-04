@@ -200,7 +200,9 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
     }
 
     msg.q_len = q_len;
-    msg.question = otrng_xmemdup(question, q_len);
+    if (question != NULL) {
+      msg.question = otrng_xmemdup(question, q_len);
+    }
 
     if (!otrng_smp_message_1_serialize(&to_send, &len, &msg)) {
       continue;
