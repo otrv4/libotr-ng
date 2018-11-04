@@ -180,7 +180,7 @@ script:
   - |
       if [ "$T" = "sanitizer" ]; then
            ./autogen.sh
-           ./configure --with-sanitizers=address,undefined
+           ./configure --with-sanitizers=address,undefined,integer
            export LSAN_OPTIONS=suppressions=lsan.supp
            make -j
            make -j check

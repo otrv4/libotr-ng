@@ -36,8 +36,8 @@
 # If it REALLY should be suppressed, put it somewhere else in this file
 +boolint
 +charint
-+matchanyintegral
 +voidabstract
++matchanyintegral
 -branchstate
 -compdef
 -compdestroy
