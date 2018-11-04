@@ -42,7 +42,7 @@ test: test-units test-functional
 
 # I am not sure if we need "-- -std=c99" to be strict with c99
 # TODO remove the "-*" after fixing the issues
-CLANG_TIDY_ARGS = -p $(top_builddir) \
+CLANG_TIDY_ARGS = -p $(top_builddir) -checks="clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-valist.Uninitialized"\
 	-warnings-as-errors="readability-*,hicpp-*,clang-analyzer-*,clang-diagnostic-*,cert-*,-*"
 
 code-check: check
