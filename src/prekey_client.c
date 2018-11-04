@@ -1805,6 +1805,8 @@ API void otrng_prekey_client_add_prekey_messages_for_publication(
 
   // Since we are shrinking the array, there is no way this can fail, so no need
   // to check the result
-  msg->prekey_messages = realloc(msg_list, real * sizeof(prekey_message_s *));
+  if (real != 0) {
+    msg->prekey_messages = realloc(msg_list, real * sizeof(prekey_message_s *));
+  }
   msg->num_prekey_messages = real;
 }

@@ -243,7 +243,6 @@ INTERNAL otrng_result otrng_prekey_message_deserialize(prekey_message_s *dst,
   ret = otrng_deserialize_dh_mpi_otr(&dst->B, cursor, len, &read);
 
   cursor += read;
-  len -= read;
 
   if (nread) {
     *nread = cursor - src;
