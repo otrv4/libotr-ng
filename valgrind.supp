@@ -481,7 +481,7 @@
    ...
    fun:g_test_run_suite_internal
    fun:g_test_run_suite
-   fun:g_test_run
+   ...
 }
 {
    initializer_timing_1
