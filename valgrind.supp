@@ -457,10 +457,10 @@
    Memcheck:Cond
    fun:generate_block
    ...
-   fun:arc4_init
    fun:arc4random
    ...
    fun:g_test_run_suite_internal
+   ...
 }
 {
    opt_random_2
