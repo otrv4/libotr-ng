@@ -532,6 +532,44 @@ tstatic otrng_bool ensure_valid_long_term_key_v3(otrng_client_s *client) {
   return otrng_false;
 }
 
+tstatic otrng_bool verify_valid_fingerprints(otrng_client_s *client) {
+  if (client->fingerprints != NULL) {
+    return otrng_true;
+  }
+  return otrng_false;
+}
+
+tstatic void load_fingerprints_from_storage(otrng_client_s *client) {
+  otrng_debug_enter("load_fingerprints_from_storage");
+  client->global_state->callbacks->load_fingerprints_v4(client);
+  otrng_debug_exit("load_fingerprints_from_storage");
+}
+
+tstatic void create_fingerprints(otrng_client_s *client) {
+  client->fingerprints = otrng_xmalloc_z(sizeof(otrng_known_fingerprints_s));
+}
+
+tstatic void ensure_loaded_fingerprints(otrng_client_s *client) {
+  if (verify_valid_fingerprints(client)) {
+    return;
+  }
+
+  load_fingerprints_from_storage(client);
+
+  if (verify_valid_fingerprints(client)) {
+    return;
+  }
+
+  create_fingerprints(client);
+
+  if (verify_valid_fingerprints(client)) {
+    client->global_state->callbacks->store_fingerprints_v4(client);
+    return;
+  }
+
+  signal_error_in_state_management(client, "Couldn't load fingerprints");
+}
+
 /* Note, the ensure_ family of functions will check whether the
    values are there and correct, and try to fix them if not.
    The verify_ family of functions will just check that the values
@@ -576,6 +614,8 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
     otrng_debug_exit("otrng_client_ensure_correct_state");
     return;
   }
+
+  ensure_loaded_fingerprints(client);
 
   otrng_debug_exit("otrng_client_ensure_correct_state");
 }

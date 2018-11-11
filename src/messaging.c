@@ -494,6 +494,41 @@ API otrng_result otrng_global_state_prekeys_read_from(
                                 otrng_client_prekey_messages_read_from);
 }
 
+tstatic void free_fingerprints_from(list_element_s *node, void *ignored) {
+  otrng_client_s *client = node->data;
+  (void)ignored;
+  otrng_known_fingerprints_free(client->fingerprints);
+  client->fingerprints = NULL;
+}
+
+API otrng_result otrng_global_state_fingerprints_v4_read_from(
+    otrng_global_state_s *gs, FILE *f, otrng_client_id_s (*ignored)(FILE *)) {
+  (void)ignored;
+
+  otrng_list_foreach(gs->clients, free_fingerprints_from, NULL);
+
+  if (!f) {
+    return OTRNG_ERROR;
+  }
+
+  while (!feof(f)) {
+    otrng_client_fingerprint_v4_read_from(gs, f, get_client);
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+static void add_fingerprints_v4_to(list_element_s *node, void *fp) {
+  if (!otrng_client_fingerprints_v4_write_to(node->data, fp)) {
+    return;
+  }
+}
+
+API otrng_result otrng_global_state_fingerprints_v4_write_to(
+    const otrng_global_state_s *gs, FILE *fp) {
+  return global_state_write_to(gs, fp, add_fingerprints_v4_to);
+}
+
 #ifdef DEBUG_API
 
 #include "debug.h"

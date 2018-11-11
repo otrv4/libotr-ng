@@ -77,6 +77,14 @@ otrng_client_prekey_profile_write_to(otrng_client_s *client, FILE *profilef);
 INTERNAL otrng_result otrng_client_expired_prekey_profile_write_to(
     otrng_client_s *client, FILE *profilef);
 
+INTERNAL otrng_result otrng_client_fingerprint_v4_read_from(
+    otrng_global_state_s *gs, FILE *fp,
+    otrng_client_s *(*get_client)(otrng_global_state_s *,
+                                  const otrng_client_id_s));
+
+INTERNAL otrng_result
+otrng_client_fingerprints_v4_write_to(const otrng_client_s *client, FILE *fp);
+
 #endif
 
 #endif

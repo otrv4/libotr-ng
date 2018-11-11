@@ -21,6 +21,7 @@
 #define OTRNG_FINGERPRINT_PRIVATE
 
 #include "fingerprint.h"
+#include "alloc.h"
 #include "serialize.h"
 #include "shake.h"
 
@@ -77,4 +78,15 @@ INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
   hash_destroy(hd);
 
   return OTRNG_SUCCESS;
+}
+
+API void otrng_known_fingerprint_free(otrng_known_fingerprint_s *kf) {
+  otrng_free(kf->username);
+}
+
+static void free_fp_proxy(void *kf) { otrng_known_fingerprint_free(kf); }
+
+API void otrng_known_fingerprints_free(otrng_known_fingerprints_s *kf) {
+  otrng_list_free(kf->fps, free_fp_proxy);
+  otrng_free(kf);
 }

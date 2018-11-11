@@ -89,6 +89,8 @@ typedef struct otrng_client_s {
   // OtrlPrivKey *privkeyv3; // ???
   // otrng_instag_s *instag; // TODO: @client Store the instance tag here rather
   // than use v3 User State as a store for instance tags
+
+  otrng_known_fingerprints_s *fingerprints;
 } otrng_client_s;
 
 API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id);

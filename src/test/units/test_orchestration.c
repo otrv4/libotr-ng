@@ -197,6 +197,20 @@ static void load_expired_prekey_profile(otrng_client_s *client) {
   client->exp_prekey_profile = load_expired_prekey_profile__assign;
 }
 
+static int load_fingerprints__called = 0;
+static otrng_client_s *load_fingerprints__called_with;
+static void load_fingerprints(otrng_client_s *client) {
+  load_fingerprints__called++;
+  load_fingerprints__called_with = client;
+}
+
+static int store_fingerprints__called = 0;
+static otrng_client_s *store_fingerprints__called_with;
+static void store_fingerprints(otrng_client_s *client) {
+  store_fingerprints__called++;
+  store_fingerprints__called_with = client;
+}
+
 static void create_instag(otrng_client_s *client) {
   otrng_client_add_instance_tag(client, 1234);
 }
@@ -325,6 +339,8 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   f->callbacks->create_privkey_v3 = create_privkey_v3;
   f->callbacks->store_privkey_v3 = store_privkey_v3;
   f->callbacks->load_privkey_v3 = load_privkey_v3;
+  f->callbacks->store_fingerprints_v4 = store_fingerprints;
+  f->callbacks->load_fingerprints_v4 = load_fingerprints;
 
   f->long_term_key = otrng_keypair_new();
   otrng_assert_is_success(otrng_keypair_generate(f->long_term_key, sym1));
@@ -414,6 +430,12 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
 
   store_privkey_v3__called = 0;
   store_privkey_v3__called_with = NULL;
+
+  store_fingerprints__called = 0;
+  store_fingerprints__called_with = NULL;
+
+  load_fingerprints__called = 0;
+  load_fingerprints__called_with = NULL;
 }
 
 static void orchestration_fixture_teardown(orchestration_fixture_s *f,

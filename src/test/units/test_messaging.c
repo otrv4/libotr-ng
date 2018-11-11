@@ -352,6 +352,104 @@ static void test_global_state_prekey_message_management(void) {
   otrng_global_state_free(state);
 }
 
+static void test_global_state_fingerprint_reading(void) {
+  const uint8_t expected1[FPRINT_LEN_BYTES] = {
+      0xc1, 0x88, 0xf4, 0xa2, 0x41, 0xb2, 0x1f, 0xa0, 0xd5, 0xa0, 0xa1, 0x5e,
+      0xd6, 0x3b, 0xca, 0xaa, 0xf0, 0x62, 0xf4, 0x7f, 0xc1, 0x88, 0xf4, 0xa2,
+      0x41, 0xb2, 0x1f, 0xa0, 0xd5, 0xa0, 0xa1, 0x5e, 0xd6, 0x3b, 0xca, 0xaa,
+      0xf0, 0x62, 0xf4, 0x7f, 0xc1, 0x88, 0xf4, 0xa2, 0x41, 0xb2, 0x1f, 0xa0,
+      0xd5, 0xa0, 0xa1, 0x5e, 0xd6, 0x3b, 0xcA, 0xAA};
+  const uint8_t expected2[FPRINT_LEN_BYTES] = {
+      0xc1, 0x88, 0xf4, 0xa2, 0x41, 0xb2, 0x1f, 0xa0, 0xd5, 0xa0, 0xa1, 0x5e,
+      0xd6, 0x3b, 0xca, 0xaa, 0xf0, 0x62, 0xf4, 0x7f, 0xc1, 0x88, 0xf4, 0xa2,
+      0x41, 0xb2, 0x1f, 0xa0, 0xd5, 0xa0, 0xa1, 0x5e, 0xd6, 0x3b, 0xca, 0xaa,
+      0xf0, 0x62, 0xf4, 0x7f, 0xc1, 0x88, 0xf4, 0xa2, 0x41, 0xb2, 0x1f, 0xa0,
+      0xd5, 0xa0, 0xa1, 0x5e, 0xd6, 0x3b, 0xcd, 0xdd};
+  const uint8_t expected3[FPRINT_LEN_BYTES] = {
+      0xc1, 0x88, 0xf4, 0xa2, 0x41, 0xb2, 0x1f, 0xa0, 0xd5, 0xa0, 0xa1, 0x5e,
+      0xd6, 0x3b, 0xca, 0xaa, 0xf0, 0x62, 0xf4, 0x7f, 0xc1, 0x88, 0xf4, 0xa2,
+      0x41, 0xb2, 0x1f, 0xa0, 0xd5, 0xa0, 0xa1, 0x5e, 0xd6, 0x3b, 0xca, 0xaa,
+      0xf0, 0x62, 0xf4, 0x7f, 0xc1, 0x88, 0xf4, 0xa2, 0x41, 0xb2, 0x1f, 0xa0,
+      0xd5, 0xa0, 0xa1, 0x5e, 0xd6, 0x3b, 0xce, 0xef};
+  const uint8_t expected4[FPRINT_LEN_BYTES] = {
+      0xd3, 0x88, 0xf4, 0xa2, 0x41, 0xb2, 0x1f, 0xa0, 0xd5, 0xa0, 0xa1, 0x5e,
+      0xd6, 0x3b, 0xca, 0xaa, 0xf0, 0x62, 0xf4, 0x7f, 0xc1, 0x88, 0xf4, 0xa2,
+      0x41, 0xb2, 0x1f, 0xa0, 0xd5, 0xa0, 0xa1, 0x5e, 0xd6, 0x3b, 0xca, 0xaa,
+      0xf0, 0x62, 0xf4, 0x7f, 0xc1, 0x88, 0xf4, 0xa2, 0x41, 0xb2, 0x1f, 0xa0,
+      0xd5, 0xa0, 0xa1, 0x5e, 0xd6, 0x3b, 0xce, 0xef};
+
+  FILE *fp = tmpfile();
+  otrng_global_state_s *state =
+      otrng_global_state_new(empty_callbacks, otrng_false);
+
+  fputs("foo@example.org\talice@otr.im\tprpl-"
+        "jabber\tc188f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a1"
+        "5ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bcAAA\r\n"
+        "foo2@example.org\talice@otr.im\tprpl-"
+        "msn\tc188f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed"
+        "63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bcDDD\tsmp\n"
+        "foo2@example.org\talice@otr.im\tMALFORMED\n"
+        "foo3@example.org\talice@otr.im\tprpl-jabber\tc188f4a241b21fa0\n"
+        "foo4@example.org\tbob@otr.im\tprpl-"
+        "jabber\tc188f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a1"
+        "5ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bcEEF\n"
+        "foo5@example.org\tbob@otr.im\tprpl-"
+        "jabber\td388f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a1"
+        "5ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bcEEF\tfingerprint\n",
+        fp);
+  rewind(fp);
+
+  otrng_result result = otrng_global_state_fingerprints_v4_read_from(
+      state, fp, read_client_id_for_privf);
+  fclose(fp);
+  otrng_assert_is_success(result);
+
+  g_assert_cmpint(otrng_list_len(state->clients), ==, 3);
+
+  otrng_client_s *client1 = state->clients->data;
+
+  g_assert_cmpstr(client1->client_id.account, ==, "alice@otr.im");
+  g_assert_cmpstr(client1->client_id.protocol, ==, "prpl-jabber");
+
+  g_assert_cmpint(otrng_list_len(client1->fingerprints->fps), ==, 1);
+
+  otrng_known_fingerprint_s *fp1 = client1->fingerprints->fps->data;
+  g_assert_cmpstr(fp1->username, ==, "foo@example.org");
+  g_assert(fp1->trusted == otrng_false);
+  otrng_assert_cmpmem(fp1->fp, expected1, FPRINT_LEN_BYTES);
+
+  otrng_client_s *client2 = state->clients->next->data;
+
+  g_assert_cmpstr(client2->client_id.account, ==, "alice@otr.im");
+  g_assert_cmpstr(client2->client_id.protocol, ==, "prpl-msn");
+
+  g_assert_cmpint(otrng_list_len(client2->fingerprints->fps), ==, 1);
+
+  otrng_known_fingerprint_s *fp2 = client2->fingerprints->fps->data;
+  g_assert_cmpstr(fp2->username, ==, "foo2@example.org");
+  g_assert(fp2->trusted == otrng_true);
+  otrng_assert_cmpmem(fp2->fp, expected2, FPRINT_LEN_BYTES);
+
+  otrng_client_s *client3 = state->clients->next->next->data;
+
+  g_assert_cmpstr(client3->client_id.account, ==, "bob@otr.im");
+  g_assert_cmpstr(client3->client_id.protocol, ==, "prpl-jabber");
+
+  g_assert_cmpint(otrng_list_len(client3->fingerprints->fps), ==, 2);
+
+  otrng_known_fingerprint_s *fp3 = client3->fingerprints->fps->data;
+  g_assert_cmpstr(fp3->username, ==, "foo4@example.org");
+  g_assert(fp3->trusted == otrng_false);
+  otrng_assert_cmpmem(fp3->fp, expected3, FPRINT_LEN_BYTES);
+
+  otrng_known_fingerprint_s *fp4 = client3->fingerprints->fps->next->data;
+  g_assert_cmpstr(fp4->username, ==, "foo5@example.org");
+  g_assert(fp4->trusted == otrng_true);
+  otrng_assert_cmpmem(fp4->fp, expected4, FPRINT_LEN_BYTES);
+
+  otrng_global_state_free(state);
+}
+
 static void test_instance_tag_api(void) {
   const char *alice_protocol = "otr";
   unsigned int instance_tag = 0x9abcdef0;
@@ -380,6 +478,69 @@ static void test_instance_tag_api(void) {
   otrng_client_free(alice);
 }
 
+/* Expects the file pointer to be at the END of the file */
+static char *read_full_file(FILE *fp) {
+  long fsize = ftell(fp);
+  char *buffer;
+
+  rewind(fp);
+  buffer = malloc(fsize + 1);
+  fread(buffer, fsize, 1, fp);
+  buffer[fsize] = 0;
+
+  return buffer;
+}
+
+static void test_global_state_fingerprint_writing(void) {
+  FILE *fp = tmpfile();
+  otrng_global_state_s *state =
+      otrng_global_state_new(empty_callbacks, otrng_false);
+
+  fputs("foo@example.org\talice@otr.im\tprpl-"
+        "jabber\tc188f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a1"
+        "5ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bcAAA\r\n"
+        "foo2@example.org\talice@otr.im\tprpl-"
+        "msn\tc188f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed"
+        "63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bcDDD\tsmp\n"
+        "foo2@example.org\talice@otr.im\tMALFORMED\n"
+        "foo3@example.org\talice@otr.im\tprpl-jabber\tc188f4a241b21fa0\n"
+        "foo4@example.org\tbob@otr.im\tprpl-"
+        "jabber\tc188f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a1"
+        "5ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bcEEF\n"
+        "foo5@example.org\tbob@otr.im\tprpl-"
+        "jabber\td388f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a1"
+        "5ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bcEEF\tfingerprint\n",
+        fp);
+  rewind(fp);
+  otrng_global_state_fingerprints_v4_read_from(state, fp,
+                                               read_client_id_for_privf);
+  fclose(fp);
+
+  fp = tmpfile();
+  otrng_result result = otrng_global_state_fingerprints_v4_write_to(state, fp);
+  char *content = read_full_file(fp);
+  fclose(fp);
+  otrng_assert_is_success(result);
+
+  g_assert_cmpstr(
+      content, ==,
+      ""
+      "foo@example.org\talice@otr.im\tprpl-"
+      "jabber\tc188f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15e"
+      "d63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bcaaa\t\n"
+      "foo2@example.org\talice@otr.im\tprpl-"
+      "msn\tc188f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63"
+      "bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bcddd\ttrusted\n"
+      "foo4@example.org\tbob@otr.im\tprpl-"
+      "jabber\tc188f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15e"
+      "d63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bceef\t\n"
+      "foo5@example.org\tbob@otr.im\tprpl-"
+      "jabber\td388f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15e"
+      "d63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bceef\ttrusted\n");
+
+  otrng_global_state_free(state);
+}
+
 void units_messaging_add_tests() {
   g_test_add_func("/global_state/key_management",
                   test_global_state_key_management);
@@ -389,6 +550,10 @@ void units_messaging_add_tests() {
                   test_global_state_prekey_profile_management);
   g_test_add_func("/global_state/prekey_message_management",
                   test_global_state_prekey_message_management);
+  g_test_add_func("/global_state/fingerprints/reading",
+                  test_global_state_fingerprint_reading);
+  g_test_add_func("/global_state/fingerprints/writing",
+                  test_global_state_fingerprint_writing);
 
   g_test_add_func("/api/instance_tag", test_instance_tag_api);
 }

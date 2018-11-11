@@ -225,6 +225,111 @@ tstatic otrng_result otrng_client_read_from_prefix(FILE *fp, uint8_t **dec,
   return OTRNG_SUCCESS;
 }
 
+tstatic uint8_t **split_tab_delimited_file(char *line, size_t max,
+                                           size_t *len) {
+  uint8_t **result = otrng_xmalloc_z(sizeof(uint8_t *) * max);
+  size_t index = 0;
+  char *curr, *last, *eol;
+
+  last = (char *)line;
+
+  eol = strchr((char *)line, '\r');
+  if (!eol) {
+    eol = strchr((char *)line, '\n');
+  }
+  if (eol) {
+    *eol = '\0';
+  }
+
+  while (index < max) {
+    curr = strchr(last, '\t');
+    if (curr == NULL) {
+
+      curr = strchr(last, '\t');
+
+      result[index++] = (uint8_t *)last;
+      break;
+    }
+    *curr = '\0';
+    result[index++] = (uint8_t *)last;
+    last = curr + 1;
+  }
+
+  *len = index;
+  return result;
+}
+
+tstatic void fingerprint_hex_to_bytes(otrng_known_fingerprint_s *fp,
+                                      const char *hex) {
+  size_t count;
+  char *pos = (char *)hex;
+  for (count = 0; count < FPRINT_LEN_BYTES; count++) {
+    sscanf(pos, "%2hhx", &fp->fp[count]);
+    pos += 2;
+  }
+}
+
+INTERNAL otrng_result otrng_client_fingerprint_v4_read_from(
+    otrng_global_state_s *gs, FILE *fp,
+    otrng_client_s *(*get_client)(otrng_global_state_s *,
+                                  const otrng_client_id_s)) {
+  char *line;
+  int len;
+  uint8_t **items = NULL;
+  size_t item_len = 0;
+  uint8_t *fp_human;
+  otrng_bool trusted = otrng_false;
+  otrng_client_id_s client_id;
+  otrng_client_s *client;
+  otrng_known_fingerprint_s *fpr;
+
+  assert(fp);
+  len = get_limited_line(&line, fp);
+  if (len < 0) {
+    return OTRNG_ERROR;
+  }
+
+  items = split_tab_delimited_file(line, 5, &item_len);
+
+  if (item_len != 4 && item_len != 5) {
+    free(line);
+    free(items);
+    return OTRNG_ERROR;
+  }
+
+  client_id.account = otrng_xstrdup((char *)items[1]);
+  client_id.protocol = otrng_xstrdup((char *)items[2]);
+  fp_human = items[3];
+
+  if (strlen((char *)fp_human) != FPRINT_LEN_BYTES * 2) {
+    free(line);
+    free(items);
+    return OTRNG_ERROR;
+  }
+
+  if (item_len == 5 && strlen((char *)items[4]) > 0) {
+    trusted = otrng_true;
+  }
+
+  client = get_client(gs, client_id);
+
+  if (client->fingerprints == NULL) {
+    client->fingerprints = otrng_xmalloc_z(sizeof(otrng_known_fingerprints_s));
+  }
+
+  fpr = otrng_xmalloc_z(sizeof(otrng_known_fingerprint_s));
+  fpr->username = otrng_xstrdup((char *)items[0]);
+  fpr->trusted = trusted;
+  fingerprint_hex_to_bytes(fpr, (char *)fp_human);
+
+  free(line);
+  free(items);
+
+  client->fingerprints->fps = otrng_list_add(fpr, client->fingerprints->fps);
+
+  return OTRNG_SUCCESS;
+}
+
 INTERNAL otrng_result
 otrng_client_private_key_v4_read_from(otrng_client_s *client, FILE *privf) {
   char *line = NULL;
@@ -734,4 +839,42 @@ INTERNAL otrng_result otrng_client_expired_prekey_profile_read_from(
   otrng_prekey_profile_destroy(&exp_profile);
 
   return result;
+}
+
+typedef struct fingerprint_writing_context_s {
+  FILE *fp;
+  otrng_client_id_s client_id;
+} fingerprint_writing_context_s;
+
+tstatic void add_fingerprint_to_file(list_element_s *node, void *c) {
+  fingerprint_writing_context_s *ctx = c;
+  otrng_known_fingerprint_s *fp = node->data;
+  int i;
+
+  fprintf(ctx->fp, "%s\t%s\t%s\t", fp->username, ctx->client_id.account,
+          ctx->client_id.protocol);
+  for (i = 0; i < FPRINT_LEN_BYTES; i++) {
+    fprintf(ctx->fp, "%02x", fp->fp[i]);
+  }
+  fprintf(ctx->fp, "\t%s\n", fp->trusted ? "trusted" : "");
+}
+
+INTERNAL otrng_result
+otrng_client_fingerprints_v4_write_to(const otrng_client_s *client, FILE *fp) {
+  fingerprint_writing_context_s ctx = {
+      .fp = fp,
+      .client_id = client->client_id,
+  };
+
+  if (client->fingerprints == NULL) {
+    return OTRNG_ERROR;
+  }
+
+  if (!fp) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_list_foreach(client->fingerprints->fps, add_fingerprint_to_file, &ctx);
+
+  return OTRNG_SUCCESS;
 }

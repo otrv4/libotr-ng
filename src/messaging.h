@@ -140,6 +140,13 @@ API otrng_result otrng_global_state_prekeys_read_from(
     otrng_global_state_s *gs, FILE *prekey_filep,
     otrng_client_id_s (*read_client_id_for_prekey)(FILE *filep));
 
+API otrng_result otrng_global_state_fingerprints_v4_read_from(
+    otrng_global_state_s *gs, FILE *fp,
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep));
+
+API otrng_result otrng_global_state_fingerprints_v4_write_to(
+    const otrng_global_state_s *gs, FILE *privf);
+
 #ifdef DEBUG_API
 
 API void otrng_global_state_debug_print(FILE *, int, otrng_global_state_s *gs);
