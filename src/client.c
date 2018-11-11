@@ -115,6 +115,9 @@ API void otrng_client_free(otrng_client_s *client) {
   otrng_prekey_profile_free(client->exp_prekey_profile);
   otrng_list_free(client->conversations, conversation_free);
   otrng_prekey_client_free(client->prekey_client);
+  if (client->fingerprints) {
+    otrng_known_fingerprints_free(client->fingerprints);
+  }
 
   otrng_free(client);
 }
