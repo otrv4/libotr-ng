@@ -53,6 +53,14 @@ API otrng_result otrng_fingerprint_hash_to_human(char *human,
 INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
                                                   const otrng_public_key pub);
 
+struct otrng_client_s;
+
+API otrng_known_fingerprint_s *otrng_fingerprint_get_by_fp(const struct otrng_client_s *client, const otrng_fingerprint fp);
+
+API otrng_known_fingerprint_s *otrng_fingerprint_get_by_username(const struct otrng_client_s *client, const char *username);
+
+API otrng_known_fingerprint_s *otrng_fingerprint_add(struct otrng_client_s *client, const otrng_fingerprint fp, const char *peer, otrng_bool trusted);
+
 #ifdef OTRNG_FINGERPRINT_PRIVATE
 #endif
 #endif

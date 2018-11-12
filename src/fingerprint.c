@@ -20,10 +20,13 @@
 
 #define OTRNG_FINGERPRINT_PRIVATE
 
+#include <assert.h>
+
 #include "fingerprint.h"
 #include "alloc.h"
 #include "serialize.h"
 #include "shake.h"
+#include "client.h"
 
 /* Convert a 56-byte hash value to a 126-byte human-readable value */
 API otrng_result otrng_fingerprint_hash_to_human(char *human,
@@ -89,4 +92,58 @@ static void free_fp_proxy(void *kf) { otrng_known_fingerprint_free(kf); }
 API void otrng_known_fingerprints_free(otrng_known_fingerprints_s *kf) {
   otrng_list_free(kf->fps, free_fp_proxy);
   otrng_free(kf);
+}
+
+API otrng_known_fingerprint_s *otrng_fingerprint_get_by_fp(const otrng_client_s *client, const otrng_fingerprint fp) {
+  list_element_s *c;
+
+  if (client == NULL || client->fingerprints == NULL) {
+    return NULL;
+  }
+
+  for (c = client->fingerprints->fps; c; c = c->next) {
+    otrng_known_fingerprint_s *kf = c->data;
+    if (memcmp(fp, kf->fp, FPRINT_LEN_BYTES) == 0) {
+      return kf;
+    }
+  }
+
+  return NULL;
+}
+
+
+API otrng_known_fingerprint_s *otrng_fingerprint_get_by_username(const otrng_client_s *client, const char *username) {
+  list_element_s *c;
+
+  if (client == NULL || client->fingerprints == NULL) {
+    return NULL;
+  }
+
+  for (c = client->fingerprints->fps; c; c = c->next) {
+    otrng_known_fingerprint_s *kf = c->data;
+    if (strcmp(username, kf->username) == 0) {
+      return kf;
+    }
+  }
+
+  return NULL;
+}
+
+API otrng_known_fingerprint_s *otrng_fingerprint_add(otrng_client_s *client, const otrng_fingerprint fp, const char *peer, otrng_bool trusted) {
+  otrng_known_fingerprint_s *nfp;
+
+  assert(client);
+
+  if (client->fingerprints == NULL) {
+    client->fingerprints = otrng_xmalloc_z(sizeof(otrng_known_fingerprints_s));
+  }
+
+  nfp = otrng_xmalloc_z(sizeof(otrng_known_fingerprint_s));
+  nfp->username = otrng_xstrdup(peer);
+  nfp->trusted = trusted;
+  memcpy(nfp->fp, fp, FPRINT_LEN_BYTES);
+
+  client->fingerprints->fps = otrng_list_add(nfp, client->fingerprints->fps);
+
+  return nfp;
 }
