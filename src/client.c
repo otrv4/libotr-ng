@@ -362,6 +362,18 @@ API otrng_result otrng_client_smp_respond(char **to_send, const char *recipient,
   return otrng_smp_continue(to_send, secret, secret_len, conv->conn);
 }
 
+API otrng_result otrng_client_smp_abort(char **to_send, const char *recipient,
+                                        otrng_client_s *client) {
+  otrng_conversation_s *conv = NULL;
+
+  conv = get_or_create_conversation_with(recipient, client);
+  if (!conv) {
+    return OTRNG_ERROR;
+  }
+
+  return otrng_smp_abort(to_send, conv->conn);
+}
+
 API otrng_result otrng_client_receive(char **new_msg, char **to_display,
                                       const char *msg, const char *recipient,
                                       otrng_client_s *client,

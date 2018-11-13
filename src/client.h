@@ -131,6 +131,9 @@ API otrng_result otrng_client_smp_respond(char **to_send, const char *recipient,
                                           size_t secret_len,
                                           otrng_client_s *client);
 
+API otrng_result otrng_client_smp_abort(char **to_send, const char *recipient,
+                                        otrng_client_s *client);
+
 API otrng_result otrng_client_receive(char **new_msg, char **to_display,
                                       const char *msg, const char *recipient,
                                       otrng_client_s *client,
