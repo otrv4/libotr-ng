@@ -182,6 +182,84 @@ static void test_receive_prekey_server_messages(void) {
   otrng_client_free(alice);
 }
 
+static void notify_error_cb(struct otrng_client_s *client, int error,
+                            void *ctx) {
+  (void)*ctx;
+  (void)error;
+  (void)*client;
+}
+
+otrng_prekey_client_callbacks_s prekey_client_cb = {
+    .ctx = NULL,
+    .notify_error = notify_error_cb,
+    .storage_status_received = NULL,
+    .success_received = NULL,
+    .failure_received = NULL,
+    .no_prekey_in_storage_received = NULL,
+    .low_prekey_messages_in_storage = NULL,
+    .prekey_ensembles_received = NULL,
+    .build_prekey_publication_message = NULL,
+};
+
+static void test_receive_prekey_ensemble_retrieval_message(void) {
+  otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
+
+  set_up_client(alice, ALICE_ACCOUNT, 1);
+  otrng_assert(!alice->conversations);
+
+  alice->prekey_client = otrng_prekey_client_new();
+  otrng_prekey_client_init(
+      alice->prekey_client, "prekey@localhost", "alice@localhost",
+      otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
+      otrng_client_get_client_profile(alice),
+      otrng_client_get_prekey_profile(alice),
+      otrng_client_get_max_published_prekey_msg(alice),
+      otrng_client_get_minimum_stored_prekey_msg(alice));
+
+  alice->prekey_client->callbacks =
+      otrng_xmalloc_z(sizeof(otrng_prekey_client_callbacks_s));
+  memcpy(alice->prekey_client->callbacks, &prekey_client_cb,
+         sizeof(otrng_prekey_client_callbacks_s));
+
+  char *retrieval_message = otrng_xstrndup(
+      "AAQTbQJzmAEAAAAFAAHboU/xAAIAEEGKF1z/jL6X/zFAzb73dt6mHIF/"
+      "IAR4tXk9Upesq3MB9r3rASDzBEMsDRjuTPvjI5HcN3jzkT3FAAADABIHmyTIgVHn/"
+      "SaLZRjfANgoU5v3kXJELvsWRTyyl+VTJwO75DqFIql1M+Hq/"
+      "2T9XPVomMXieN0ZeIAABAAAAAIzNAAFAAAAAFv15zjb8LHKy9PYyWDkNT5j6+tt+"
+      "LqGPbfqm81jNNaXoJTENphli8DHo8XJixaRZFdvGXF8CZ1wmrVYKAAkbmmlIGmiXw6K61M/"
+      "jX/Rn4lwFBboSA7NjBBIKMafaAlj8zHifazFFTERCpdJMwnx2n+WviI6HADboU/"
+      "xAAAAAFwMWQgAEUAQYz6Yxrwp53esxzANqF1FNOJjOJXRmf+TfY+"
+      "fT1Wq358JKGkl6ZMsFLsFEZNNIKbpw0iwb4v/AOZrhdwGv2/"
+      "AnvFmPMYyJ4beE7wGRXYgehwD4pfcLofqn4J6V0x/"
+      "b47SlVoIAe5u9nVNTpWTEIvVgDZpLsdE2f8ssBhN+"
+      "ghFYvB72wbC3exBKkKW5cDYP5jg0277NO2K1Xm/"
+      "0fekPCkDmoK9LEaKiw8sAAAEDwP4h8rboU/"
+      "xPs56PUu8oX4MIY9cI3zj3DMGOnsYO8qJT4n0inL3OykFjw3kqYc0nB0R/"
+      "VdL05tkqBYjJyGjLeIAAAABgHtnxUacg6mmxcmdyr5BjpIfyuOcHD2Km+"
+      "Wstk6CBLjg0Mg1vhTGQiA4AQaOZZ1CXO1yu6W4+"
+      "u8Z3YHVnEAQDeIx2oVHZu9pvi7yauAXja3irXbkzQQDQq8ohWrjvY+JR/"
+      "Fjlf3cToCdbEpl0PRc5AyKlkmnLXODYWLE0jlgVxpYBAXecYg4Y9nkErOqk3raxgy0QrJ0/"
+      "drPk3IZEy5pRoC72uVMM55GtE3ylxfjK+EkkEFk9R/v8bns4Eh4tX6dEceRD+hVSShK1agm/"
+      "GeqKQFFtJcd7styByn2qIITB2wLrRMPZJiYTjWzHy8WBsikR5mCyVn3X4GHzDFxTUlpkYy6j"
+      "2INC+O5dngk9lYlBIiAewPMM/yc0MWxU/SNijb7gbtpj+HAA1PYuso1k1K/"
+      "Gjq5fldLq76MkBHwVrmyO/"
+      "g8suP9o41HjUKq9NfwYoGfgfxUJWEmI+Ov0Gx3lVe4QtXzlmcWredoG/"
+      "QbOWGqKWc98VM88euF9yCkGebZoclaBQ==.",
+      1222);
+
+  char *to_send = NULL;
+  otrng_assert_is_success(otrng_prekey_client_receive(
+      &to_send, "prekey@localhost", retrieval_message, alice));
+
+  otrng_assert(!to_send); /* wrong instance tag */
+
+  otrng_free(retrieval_message);
+
+  otrng_free(alice->prekey_client->callbacks);
+  otrng_global_state_free(alice->global_state);
+  otrng_client_free(alice);
+}
+
 void functionals_prekey_client_add_tests(void) {
   g_test_add_func("/prekey_server_client/send_dake_1_message",
                   test_send_dake_1_message);
@@ -190,4 +268,7 @@ void functionals_prekey_client_add_tests(void) {
       test_send_dake_3_message_with_storage_info_request);
   g_test_add_func("/prekey_server_client/receive_prekey_server_messages",
                   test_receive_prekey_server_messages);
+  g_test_add_func(
+      "/prekey_server_client/receive_prekey_ensemble_retrieval_message",
+      test_receive_prekey_ensemble_retrieval_message);
 }

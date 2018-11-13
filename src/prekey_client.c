@@ -1563,23 +1563,29 @@ static char *receive_no_prekey_in_storage(const uint8_t *decoded,
   return NULL;
 }
 
-static void process_received_prekey_ensemble_retrieval(
+static otrng_result process_received_prekey_ensemble_retrieval(
     otrng_prekey_ensemble_retrieval_message_s *msg, otrng_client_s *client) {
   int i;
 
   if (msg->instance_tag != client->prekey_client->instance_tag) {
-    return;
+    return OTRNG_ERROR;
   }
 
   for (i = 0; i < msg->num_ensembles; i++) {
     if (!otrng_prekey_ensemble_validate(msg->ensembles[i])) {
       otrng_prekey_ensemble_destroy(msg->ensembles[i]);
       msg->ensembles[i] = NULL;
+      msg->num_ensembles = msg->num_ensembles - 1;
     }
+  }
+
+  if (msg->num_ensembles == 0) {
+    return OTRNG_ERROR;
   }
 
   prekey_ensembles_received_callback(client, msg->ensembles,
                                      msg->num_ensembles);
+  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
@@ -1662,7 +1668,12 @@ static char *receive_prekey_ensemble_retrieval(const uint8_t *decoded,
     return NULL;
   }
 
-  process_received_prekey_ensemble_retrieval(msg, client);
+  if (!process_received_prekey_ensemble_retrieval(msg, client)) {
+    notify_error_callback(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG);
+    otrng_prekey_ensemble_retrieval_message_destroy(msg);
+    return NULL;
+  }
+
   otrng_prekey_ensemble_retrieval_message_destroy(msg);
   return NULL;
 }
