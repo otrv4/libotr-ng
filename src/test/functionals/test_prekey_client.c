@@ -184,9 +184,9 @@ static void test_receive_prekey_server_messages(void) {
 
 static void notify_error_cb(struct otrng_client_s *client, int error,
                             void *ctx) {
-  (void)*ctx;
+  (void)ctx;
   (void)error;
-  (void)*client;
+  (void)client;
 }
 
 otrng_prekey_client_callbacks_s prekey_client_cb = {
