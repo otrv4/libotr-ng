@@ -1070,6 +1070,24 @@ tstatic otrng_result prekey_message_received(const prekey_message_s *msg,
   return OTRNG_SUCCESS;
 }
 
+tstatic otrng_result ensure_client_profile_version(char *versions,
+                                                   otrng_s *otr) {
+  while (*versions) {
+    if (*versions == '4' && (otr->supported_versions == OTRNG_ALLOW_V4 ||
+                             otr->supported_versions == OTRNG_ALLOW_V34)) {
+      return OTRNG_SUCCESS;
+    }
+
+    if (*versions == '3' && (otr->supported_versions == OTRNG_ALLOW_V3 ||
+                             otr->supported_versions == OTRNG_ALLOW_V34)) {
+      return OTRNG_SUCCESS;
+    }
+    versions++;
+  }
+
+  return OTRNG_ERROR;
+}
+
 tstatic otrng_result receive_prekey_ensemble(string_p *dst,
                                              const prekey_ensemble_s *ensemble,
                                              otrng_s *otr) {
@@ -1079,8 +1097,9 @@ tstatic otrng_result receive_prekey_ensemble(string_p *dst,
     return OTRNG_ERROR;
   }
 
-  // TODO: @non_interactive Check if the Client Profile's version is supported
-  // by the receiver.
+  if (!ensure_client_profile_version(ensemble->client_profile->versions, otr)) {
+    return OTRNG_ERROR;
+  }
 
   // TODO: @non_interactive Decide whether to send a message using this Prekey
   // Ensemble if the long-term key within the Client Profile is trusted or not.

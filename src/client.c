@@ -139,7 +139,7 @@ get_conversation_with(const char *recipient, list_element_s *conversations) {
 tstatic otrng_policy_s get_policy_for(const char *recipient) {
   // TODO: @policy the policy should come from client config.
   // or a callback.
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34};
   UNUSED_ARG(recipient);
 
   return policy;

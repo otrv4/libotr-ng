@@ -28,7 +28,7 @@ int dh_mpi_cmp(const dh_mpi m1, const dh_mpi m2) {
 otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
                 int byte) {
   set_up_client(client, account_name, byte);
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34};
 
   return otrng_new(client, policy);
 }
@@ -165,7 +165,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_fixture->v3->v3_conn =
       otrng_v3_conn_new(otrng_fixture->client, "they_are_bob");
 
-  otrng_policy_s policyv34 = {.allows = OTRNG_ALLOW_V3 | OTRNG_ALLOW_V4};
+  otrng_policy_s policyv34 = {.allows = OTRNG_ALLOW_V34};
   otrng_fixture->v34 = otrng_new(otrng_fixture->client, policyv34);
   otrng_fixture->v34->v3_conn =
       otrng_v3_conn_new(otrng_fixture->client, "they_are_alice");
@@ -375,7 +375,6 @@ void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
   otrng_client_add_instance_tag(client, 0x100 + byte);
 
   client->client_profile = otrng_client_build_default_client_profile(client);
-
   client->should_heartbeat = test_should_not_heartbeat;
 }
 

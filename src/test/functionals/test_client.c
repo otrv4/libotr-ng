@@ -64,7 +64,7 @@ static void test_client_conversation_api() {
   otrng_assert(alice_to_charlie);
   otrng_assert(alice_to_charlie->conn);
 
-  // Free memory
+  /* Free memory */
   otrng_global_state_free(alice->global_state);
   otrng_client_free(alice);
 }
