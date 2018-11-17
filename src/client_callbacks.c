@@ -135,6 +135,11 @@ INTERNAL void otrng_client_callbacks_display_error_message(
   cb->display_error_message(event, to_display, conv);
 }
 
+INTERNAL otrng_policy_s otrng_client_callbacks_define_policy(
+    const otrng_client_callbacks_s *cb, const otrng_s *conv) {
+  return cb->define_policy(conv);
+}
+
 #ifdef DEBUG_API
 
 #include "debug.h"
@@ -325,6 +330,16 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "get_shared_session_state = ");
     otrng_debug_print_pointer(f, c->get_shared_session_state);
+    debug_api_print(f, "\n");
+  }
+
+  if (otrng_debug_print_should_ignore("client_callbacks->define_policy")) {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "define_policy = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "define_policy = ");
+    otrng_debug_print_pointer(f, c->define_policy);
     debug_api_print(f, "\n");
   }
 

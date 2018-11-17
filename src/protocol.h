@@ -42,10 +42,6 @@ typedef enum {
 #define OTRNG_ALLOW_V4 2
 #define OTRNG_ALLOW_V34 3
 
-typedef struct otrng_policy_s {
-  uint8_t allows;
-} otrng_policy_s;
-
 typedef struct otrng_s {
   struct otrng_client_s *client;
 

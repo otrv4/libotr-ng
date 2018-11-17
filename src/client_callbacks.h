@@ -51,13 +51,17 @@ typedef struct otrng_shared_session_state_s {
   char *password;
 } otrng_shared_session_state_s;
 
+typedef struct otrng_policy_s {
+  uint8_t allows;
+} otrng_policy_s;
+
 // Forward declaration
 struct otrng_client_s;
 struct otrng_s;
 struct otrng_client_id_s;
 
 typedef struct otrng_client_callbacks_s {
-  /* OPTIONAL */ // TODO: why is this optional?
+  /* REQUIRED */
   void (*create_instag)(struct otrng_client_s *client);
 
   /* REQUIRED */
@@ -192,6 +196,9 @@ typedef struct otrng_client_callbacks_s {
 
   /* REQUIRED */
   void (*store_forging_key)(struct otrng_client_s *client);
+
+  /* Return the OTRv4 policy for the given client. */
+  otrng_policy_s (*define_policy)(const struct otrng_s *conv);
 } otrng_client_callbacks_s;
 
 INTERNAL otrng_bool
@@ -235,6 +242,9 @@ INTERNAL void otrng_client_callbacks_smp_update(
 INTERNAL void otrng_client_callbacks_display_error_message(
     const otrng_client_callbacks_s *cb, const otrng_error_event event,
     string_p *to_display, const struct otrng_s *conv);
+
+INTERNAL otrng_policy_s otrng_client_callbacks_define_policy(
+    const otrng_client_callbacks_s *cb, const struct otrng_s *conv);
 
 #ifdef DEBUG_API
 API void otrng_client_callbacks_debug_print(FILE *, int,
