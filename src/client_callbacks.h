@@ -198,7 +198,7 @@ typedef struct otrng_client_callbacks_s {
   void (*store_forging_key)(struct otrng_client_s *client);
 
   /* Return the OTRv4 policy for the given client. */
-  otrng_policy_s (*define_policy)(const struct otrng_s *conv);
+  otrng_policy_s (*define_policy)(struct otrng_client_s *client);
 } otrng_client_callbacks_s;
 
 INTERNAL otrng_bool
@@ -244,7 +244,7 @@ INTERNAL void otrng_client_callbacks_display_error_message(
     string_p *to_display, const struct otrng_s *conv);
 
 INTERNAL otrng_policy_s otrng_client_callbacks_define_policy(
-    const otrng_client_callbacks_s *cb, const struct otrng_s *conv);
+    const otrng_client_callbacks_s *cb, struct otrng_client_s *client);
 
 #ifdef DEBUG_API
 API void otrng_client_callbacks_debug_print(FILE *, int,

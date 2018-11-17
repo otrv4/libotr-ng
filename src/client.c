@@ -136,11 +136,9 @@ get_conversation_with(const char *recipient, list_element_s *conversations) {
   return NULL;
 }
 
-tstatic otrng_policy_s get_policy_for(const char *recipient) {
-  // TODO: @policy the policy should come from client config.
-  // or a callback.
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34};
-  UNUSED_ARG(recipient);
+tstatic otrng_policy_s get_policy_for(otrng_client_s *client) {
+  const otrng_client_callbacks_s *cb = client->global_state->callbacks;
+  otrng_policy_s policy = otrng_client_callbacks_define_policy(cb, client);
 
   return policy;
 }
@@ -189,7 +187,7 @@ tstatic /*@temp@*/ otrng_s *create_connection_for(const char *recipient,
     return NULL;
   }
 
-  conn = otrng_new(client, get_policy_for(recipient));
+  conn = otrng_new(client, get_policy_for(client));
   if (!conn) {
     otrng_v3_conn_free(v3_conn);
     return NULL;

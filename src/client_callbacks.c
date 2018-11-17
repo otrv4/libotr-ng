@@ -136,8 +136,13 @@ INTERNAL void otrng_client_callbacks_display_error_message(
 }
 
 INTERNAL otrng_policy_s otrng_client_callbacks_define_policy(
-    const otrng_client_callbacks_s *cb, const otrng_s *conv) {
-  return cb->define_policy(conv);
+    const otrng_client_callbacks_s *cb, otrng_client_s *client) {
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34};
+  if (!cb->define_policy) {
+    return policy;
+  }
+
+  return cb->define_policy(client);
 }
 
 #ifdef DEBUG_API
