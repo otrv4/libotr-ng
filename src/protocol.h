@@ -50,6 +50,9 @@ typedef enum {
 #define OTRNG_TRY_DAKEZ_WHEN_OFFLINE 0x0A
 #define OTRNG_REQUIRE_AUTHENTICATED 0x0B
 
+#define OTRNG_POLICY_DEFAULT OTRNG_ALLOW_V34
+#define OTRNG_POLICY_MANUAL OTRNG_ALLOW_V34
+
 typedef struct otrng_s {
   struct otrng_client_s *client;
 
