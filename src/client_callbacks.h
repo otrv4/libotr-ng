@@ -53,6 +53,7 @@ typedef struct otrng_shared_session_state_s {
 
 typedef struct otrng_policy_s {
   uint8_t allows;
+  uint8_t type;
 } otrng_policy_s;
 
 // Forward declaration
