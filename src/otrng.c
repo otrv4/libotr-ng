@@ -310,7 +310,8 @@ tstatic void set_to_display(otrng_response_s *response, const string_p msg) {
 tstatic otrng_result message_to_display_without_tag(otrng_response_s *response,
                                                     const string_p msg,
                                                     size_t msg_len) {
-  // TODO: What if there is more than one VERSION TAG?
+  // TODO: This will display the incorrect message if more than
+  // one version is included
   size_t tag_len = WHITESPACE_TAG_BASE_BYTES + WHITESPACE_TAG_VERSION_BYTES;
   size_t chars = msg_len - tag_len;
   char *found_at;
@@ -475,14 +476,21 @@ tstatic otrng_result receive_tagged_plaintext(otrng_response_s *response,
                                               otrng_s *otr) {
   set_running_version_from_tag(otr, msg);
 
+  // TODO: move me!
+  if (!otr->receiving_init_message) {
+    otr->receiving_init_message = otrng_xstrdup(msg);
+  }
+
   switch (otr->running_version) {
   case OTRNG_PROTOCOL_VERSION_4:
-    if (message_to_display_without_tag(response, msg, strlen(msg)) ==
-        OTRNG_ERROR) {
-      return OTRNG_ERROR;
+    if (otr->policy_type & OTRNG_WHITESPACE_START_AKE) {
+      if (message_to_display_without_tag(response, msg, strlen(msg)) ==
+          OTRNG_ERROR) {
+        return OTRNG_ERROR;
+      }
+      return start_dake(response, otr);
     }
-
-    return start_dake(response, otr);
+    return OTRNG_ERROR;
   case OTRNG_PROTOCOL_VERSION_3:
     return otrng_v3_receive_message(&response->to_send, &response->to_display,
                                     &response->tlvs, msg, otr->v3_conn);
@@ -2271,10 +2279,7 @@ tstatic otrng_result receive_message_v4_only(otrng_response_s *response,
     return OTRNG_SUCCESS;
 
   case MSG_TAGGED_PLAINTEXT:
-    if (otr->policy_type & OTRNG_WHITESPACE_START_AKE) {
-      return receive_tagged_plaintext(response, msg, otr);
-    }
-    return OTRNG_ERROR;
+    return receive_tagged_plaintext(response, msg, otr);
 
   case MSG_QUERY_STRING:
     return receive_query_message(response, msg, otr);

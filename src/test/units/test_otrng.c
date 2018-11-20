@@ -370,6 +370,139 @@ static void test_otrng_generates_shared_session_state_string(void) {
   otrng_free(state5->identifier2);
 }
 
+// TODO: move this to functionals?
+void test_start_with_whitespace_tag(void) {
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
+
+  set_up_client(alice_client, ALICE_ACCOUNT, 1);
+  set_up_client(bob_client, BOB_ACCOUNT, 2);
+
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4,
+                           .type = OTRNG_POLICY_ALWAYS};
+
+  otrng_s *alice = otrng_new(alice_client, policy);
+  otrng_s *bob = otrng_new(bob_client, policy);
+
+  otrng_response_s *response_to_bob = otrng_response_new();
+  otrng_response_s *response_to_alice = otrng_response_new();
+  char *whitespace_tag = NULL;
+  const char *message = "Add some random";
+  otrng_warning warn = OTRNG_WARN_NONE;
+
+  otrng_assert(alice->state == OTRNG_STATE_START);
+  otrng_assert(bob->state == OTRNG_STATE_START);
+
+  /* Alice sends a Whitespace tag */
+  otrng_assert_is_success(
+      otrng_build_whitespace_tag(&whitespace_tag, message, alice));
+  otrng_assert(alice->state == OTRNG_STATE_START);
+
+  /* Bob receives a Whitespace tag */
+  otrng_assert_is_success(
+      otrng_receive_message(response_to_alice, &warn, whitespace_tag, bob));
+  otrng_free(whitespace_tag);
+
+  const char *expected_tag = "Add some random";
+  /* Bob replies with an Identity Message */
+  otrng_assert(bob->state == OTRNG_STATE_WAITING_AUTH_R);
+  g_assert_cmpstr(response_to_alice->to_display, ==, expected_tag);
+  otrng_assert(response_to_alice->to_send);
+  otrng_assert_cmpmem("?OTR:AAQ1", response_to_alice->to_send, 9);
+
+  /* Alice receives an Identity Message */
+  otrng_assert_is_success(otrng_receive_message(
+      response_to_bob, &warn, response_to_alice->to_send, alice));
+  otrng_free(response_to_alice->to_send);
+  response_to_alice->to_send = NULL;
+
+  /* Alice has Bob's ephemeral keys */
+  otrng_assert_ec_public_key_eq(alice->keys->their_ecdh,
+                                bob->keys->our_ecdh->pub);
+  otrng_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
+  otrng_assert_not_zero(alice->keys->ssid, sizeof(alice->keys->ssid));
+  otrng_assert_not_zero(alice->keys->shared_secret, sizeof(k_shared_secret));
+
+  /* Alice replies with an Auth-R message */
+  otrng_assert(alice->state == OTRNG_STATE_WAITING_AUTH_I);
+  otrng_assert(response_to_bob->to_display == NULL);
+  otrng_assert(response_to_bob->to_send);
+  otrng_assert_cmpmem("?OTR:AAQ2", response_to_bob->to_send, 9);
+
+  /* Bob receives an Auth-R message */
+  otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
+                                                response_to_bob->to_send, bob));
+  otrng_free(response_to_bob->to_send);
+  response_to_bob->to_send = NULL;
+
+  /* Bob has Alice's ephemeral keys */
+  otrng_assert_ec_public_key_eq(bob->keys->their_ecdh,
+                                alice->keys->our_ecdh->pub);
+  otrng_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh->pub);
+  otrng_assert_not_zero(bob->keys->ssid, sizeof(alice->keys->ssid));
+  otrng_assert_zero(bob->keys->shared_secret, sizeof(k_shared_secret));
+  otrng_assert_not_zero(bob->keys->current->root_key, sizeof(k_root));
+
+  g_assert_cmpint(bob->keys->i, ==, 0);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 0);
+
+  /* Bob replies with an Auth-I message */
+  otrng_assert(bob->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
+  otrng_assert(response_to_alice->to_display == NULL);
+  otrng_assert(response_to_alice->to_send);
+  otrng_assert_cmpmem("?OTR:AAQ3", response_to_alice->to_send, 9);
+
+  /* The double ratchet is initialized */
+  otrng_assert(bob->keys->current);
+
+  /* Alice receives an Auth-I message */
+  otrng_assert_is_success(otrng_receive_message(
+      response_to_bob, &warn, response_to_alice->to_send, alice));
+  otrng_free(response_to_alice->to_send);
+  response_to_alice->to_send = NULL;
+
+  /* The double ratchet is initialized */
+  otrng_assert(alice->keys->current);
+
+  /* Both participants have the same shared secret */
+  otrng_assert_root_key_eq(alice->keys->shared_secret,
+                           bob->keys->shared_secret);
+
+  /* Alice replies with initial data message Dake Data Message */
+  otrng_assert(alice->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+  otrng_assert_cmpmem("?OTR:AAQD", response_to_bob->to_send, 9);
+  otrng_assert(response_to_bob->to_display == NULL);
+
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+
+  /* Bob receives the initial data message */
+  otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
+                                                response_to_bob->to_send, bob));
+  otrng_free(response_to_bob->to_send);
+  response_to_bob->to_send = NULL;
+
+  otrng_assert(bob->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+  otrng_assert(response_to_alice->to_send == NULL);
+  otrng_assert(response_to_alice->to_display == NULL);
+
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(bob->keys->i, ==, 1);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+
+  otrng_response_free(response_to_alice);
+  otrng_response_free(response_to_bob);
+
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_client_free_all(alice_client, bob_client);
+  otrng_conn_free_all(alice, bob);
+}
+
 void units_otrng_add_tests(void) {
   (void)test_otrng_receives_identity_message_invalid_on_start; // this function
                                                                // is unused
@@ -418,4 +551,6 @@ void units_otrng_add_tests(void) {
                   test_otrng_invokes_shared_session_state_callbacks);
   g_test_add_func("/otrng/build_prekey_ensemble",
                   test_otrng_build_prekey_ensemble);
+  g_test_add_func("/otrng/start_with_whitespace_tag",
+                  test_start_with_whitespace_tag);
 }
