@@ -64,7 +64,9 @@ typedef struct otrng_s {
   otrng_v3_conn_s *v3_conn;
 
   otrng_state_e state;
+
   uint8_t supported_versions;
+  uint8_t policy_type;
 
   uint32_t their_prekeys_id;
 

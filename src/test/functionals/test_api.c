@@ -659,7 +659,8 @@ static void test_api_conversation_v3(void) {
   set_up_client(alice_client, ALICE_ACCOUNT, 1);
   set_up_client(bob_client, BOB_ACCOUNT, 2);
 
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V3,
+                           .type = OTRNG_POLICY_DEFAULT};
   otrng_s *alice = otrng_new(alice_client, policy);
   otrng_s *bob = otrng_new(bob_client, policy);
 

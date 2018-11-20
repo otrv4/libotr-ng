@@ -137,7 +137,8 @@ INTERNAL void otrng_client_callbacks_display_error_message(
 
 INTERNAL otrng_policy_s otrng_client_callbacks_define_policy(
     const otrng_client_callbacks_s *cb, otrng_client_s *client) {
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
+                           .type = OTRNG_POLICY_DEFAULT};
   if (!cb->define_policy) {
     return policy;
   }

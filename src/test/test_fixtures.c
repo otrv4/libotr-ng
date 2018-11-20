@@ -28,7 +28,8 @@ int dh_mpi_cmp(const dh_mpi m1, const dh_mpi m2) {
 otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
                 int byte) {
   set_up_client(client, account_name, byte);
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
+                           .type = OTRNG_POLICY_DEFAULT};
 
   return otrng_new(client, policy);
 }
@@ -157,15 +158,18 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_client_add_forging_key(otrng_fixture->client, *forging_key);
   otrng_free(forging_key);
 
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4,
+                           .type = OTRNG_POLICY_DEFAULT};
   otrng_fixture->otr = otrng_new(otrng_fixture->client, policy);
 
-  otrng_policy_s policyv3 = {.allows = OTRNG_ALLOW_V3};
+  otrng_policy_s policyv3 = {.allows = OTRNG_ALLOW_V3,
+                             .type = OTRNG_POLICY_DEFAULT};
   otrng_fixture->v3 = otrng_new(otrng_fixture->client, policyv3);
   otrng_fixture->v3->v3_conn =
       otrng_v3_conn_new(otrng_fixture->client, "they_are_bob");
 
-  otrng_policy_s policyv34 = {.allows = OTRNG_ALLOW_V34};
+  otrng_policy_s policyv34 = {.allows = OTRNG_ALLOW_V34,
+                              .type = OTRNG_POLICY_DEFAULT};
   otrng_fixture->v34 = otrng_new(otrng_fixture->client, policyv34);
   otrng_fixture->v34->v3_conn =
       otrng_v3_conn_new(otrng_fixture->client, "they_are_alice");

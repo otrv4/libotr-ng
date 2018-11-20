@@ -223,7 +223,8 @@ static void test_otrng_receives_identity_message_invalid_on_start(
 static void test_otrng_destroy() {
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
 
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4,
+                           .type = OTRNG_POLICY_DEFAULT};
   otrng_s *otr = otrng_new(client, policy);
 
   otrng_destroy(otr);
@@ -259,7 +260,8 @@ static void test_otrng_build_prekey_ensemble() {
   otrng_client_add_client_profile(client, profile);
   otrng_client_profile_free(profile);
 
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4};
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4,
+                           .type = OTRNG_POLICY_DEFAULT};
   otrng_s *otr = otrng_new(client, policy);
 
   // TODO: @sanitizer add a client profile

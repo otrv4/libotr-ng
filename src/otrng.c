@@ -157,7 +157,7 @@ INTERNAL otrng_s *otrng_new(otrng_client_s *client, otrng_policy_s policy) {
   otr->client = client;
   otr->state = OTRNG_STATE_START;
   otr->supported_versions = policy.allows;
-  // TODO: add policy type
+  otr->policy_type = policy.type;
 
   otr->keys = otrng_key_manager_new();
   otr->smp = otrng_secure_alloc(sizeof(smp_protocol_s));
@@ -2271,7 +2271,10 @@ tstatic otrng_result receive_message_v4_only(otrng_response_s *response,
     return OTRNG_SUCCESS;
 
   case MSG_TAGGED_PLAINTEXT:
-    return receive_tagged_plaintext(response, msg, otr);
+    if (otr->policy_type & OTRNG_WHITESPACE_START_AKE) {
+      return receive_tagged_plaintext(response, msg, otr);
+    }
+    return OTRNG_ERROR;
 
   case MSG_QUERY_STRING:
     return receive_query_message(response, msg, otr);
