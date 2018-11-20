@@ -410,6 +410,8 @@ void test_start_with_whitespace_tag(void) {
   otrng_assert(response_to_alice->to_send);
   otrng_assert_cmpmem("?OTR:AAQ1", response_to_alice->to_send, 9);
 
+  free(response_to_alice->to_display);
+
   /* Alice receives an Identity Message */
   otrng_assert_is_success(otrng_receive_message(
       response_to_bob, &warn, response_to_alice->to_send, alice));
