@@ -33,10 +33,11 @@ typedef struct list_element_s {
 INTERNAL void otrng_list_foreach(list_element_s *head,
                                  void (*fn)(list_element_s *node,
                                             void *context),
-                                 void *context);
+                                 /*@null@*/ void *context);
 
 // Free list and invoke fn to free the nodes' data
-INTERNAL void otrng_list_free(list_element_s *head, void (*fn)(void *data));
+INTERNAL void otrng_list_free(list_element_s *head,
+                              /*@null@*/ void (*fn)(void *data));
 
 // Free list and invoke "free()" to free the nodes' data
 INTERNAL void otrng_list_free_full(list_element_s *head);

@@ -631,8 +631,8 @@ tstatic otrng_result build_rsign_tag(
     const otrng_client_profile_s *i_profile,
     const otrng_client_profile_s *r_profile, const ec_point i_ecdh,
     const ec_point r_ecdh, const dh_mpi i_dh, const dh_mpi r_dh,
-    const uint8_t *ser_r_shared_prekey, size_t ser_r_shared_prekey_len,
-    const uint8_t *phi, size_t phi_len) {
+    /*@null@*/ const uint8_t *ser_r_shared_prekey,
+    size_t ser_r_shared_prekey_len, const uint8_t *phi, size_t phi_len) {
   uint8_t *ser_i_profile = NULL, *ser_r_profile = NULL;
   size_t ser_i_profile_len = 0, ser_r_profile_len = 0;
   uint8_t ser_i_ecdh[ED448_POINT_BYTES], ser_r_ecdh[ED448_POINT_BYTES];

@@ -43,7 +43,7 @@ INTERNAL otrng_result otrng_mpi_deserialize(otrng_mpi_s *dst,
 INTERNAL otrng_result otrng_mpi_deserialize_no_copy(otrng_mpi_s *dst,
                                                     const uint8_t *src,
                                                     size_t src_len,
-                                                    size_t *read);
+                                                    /*@null@*/ size_t *read);
 
 INTERNAL size_t otrng_mpi_memcpy(uint8_t *dst, const otrng_mpi_s *mpi);
 

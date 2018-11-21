@@ -52,7 +52,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
 INTERNAL otrng_result otrng_dh_proof_generate(
     dh_proof_s *dst, const dh_mpi *values_priv, const dh_mpi *values_pub,
     const size_t values_len, const uint8_t *m, const uint8_t usage,
-    random_generator gen);
+    /*@null@*/ random_generator gen);
 
 INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
                                           const dh_mpi *values_pub,

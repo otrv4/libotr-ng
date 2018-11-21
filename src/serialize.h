@@ -44,7 +44,8 @@ INTERNAL size_t otrng_serialize_uint8(uint8_t *dst, const uint8_t data);
 INTERNAL size_t otrng_serialize_bytes_array(uint8_t *target,
                                             const uint8_t data[], size_t len);
 
-INTERNAL size_t otrng_serialize_data(uint8_t *target, const uint8_t *data,
+INTERNAL size_t otrng_serialize_data(uint8_t *target,
+                                     const uint8_t /*@null@*/ *data,
                                      size_t len);
 
 INTERNAL int otrng_serialize_ec_point(uint8_t *dst, const ec_point point);
@@ -92,7 +93,7 @@ INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys);
 
 INTERNAL size_t otrng_serialize_phi(uint8_t *dst,
                                     const char *shared_session_state,
-                                    const char *init_msg,
+                                    /*@null@*/ const char *init_msg,
                                     uint16_t sender_instance_tag,
                                     uint16_t receiver_instance_tag);
 

@@ -338,7 +338,9 @@ INTERNAL otrng_result otrng_expire_fragments(time_t now,
     }
 
     current = current->next;
-    otrng_list_free_nodes(to_free);
+    if (to_free) {
+      otrng_list_free_nodes(to_free);
+    }
   }
 
   return OTRNG_SUCCESS;

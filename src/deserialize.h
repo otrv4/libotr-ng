@@ -67,7 +67,7 @@ INTERNAL otrng_result otrng_deserialize_public_key(otrng_public_key pub,
 INTERNAL otrng_result otrng_deserialize_forging_key(otrng_public_key pub,
                                                     const uint8_t *ser,
                                                     size_t ser_len,
-                                                    size_t *read);
+                                                    /*@null@*/ size_t *read);
 
 INTERNAL otrng_result otrng_deserialize_shared_prekey(
     otrng_shared_prekey_pub shared_prekey, const uint8_t *ser, size_t ser_len,
@@ -79,7 +79,8 @@ INTERNAL otrng_result otrng_deserialize_ec_scalar(ec_scalar scalar,
 
 INTERNAL otrng_result otrng_deserialize_ring_sig(ring_sig_s *proof,
                                                  const uint8_t *ser,
-                                                 size_t ser_len, size_t *read);
+                                                 size_t ser_len,
+                                                 /*@null@*/ size_t *read);
 
 INTERNAL otrng_result otrng_symmetric_key_deserialize(otrng_keypair_s *pair,
                                                       const char *buff,

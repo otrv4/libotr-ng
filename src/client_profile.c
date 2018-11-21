@@ -402,12 +402,14 @@ tstatic otrng_result deserialize_field(otrng_client_profile_s *target,
   {
     uint8_t *versions = NULL;
     size_t versions_len = 0;
+
     if (!otrng_deserialize_data(&versions, &versions_len, buffer + w,
                                 buff_len - w, &read)) {
       return OTRNG_ERROR;
     }
     target->versions = otrng_xmalloc_z(versions_len + 1);
     memcpy(target->versions, versions, versions_len);
+
     otrng_free(versions);
   } break;
   case OTRNG_CLIENT_PROFILE_FIELD_EXPIRATION: /* Expiration */
@@ -641,10 +643,21 @@ static otrng_result generate_dsa_key_sexp(gcry_sexp_t *pubs,
   for (i = 0; i < 4 && w < buff_len; i++) {
     if (!otrng_deserialize_dh_mpi_otr(mpis[i], buffer + w, buff_len - w,
                                       &read)) {
-      otrng_dh_mpi_release(p);
-      otrng_dh_mpi_release(q);
-      otrng_dh_mpi_release(g);
-      otrng_dh_mpi_release(y);
+      if (p) {
+        otrng_dh_mpi_release(p);
+      }
+
+      if (q) {
+        otrng_dh_mpi_release(q);
+      }
+
+      if (g) {
+        otrng_dh_mpi_release(g);
+      }
+
+      if (y) {
+        otrng_dh_mpi_release(y);
+      }
 
       return OTRNG_ERROR;
     }

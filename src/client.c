@@ -308,7 +308,7 @@ API otrng_result otrng_client_send_fragment(otrng_message_to_send_s **new_msg,
   otrng_conversation_s *conv = NULL;
   string_p to_send = NULL;
   uint32_t our_tag, their_tag;
-  otrng_result ret;
+  otrng_result ret = OTRNG_ERROR;
 
   conv = get_or_create_conversation_with(recipient, client);
   if (!conv) {
@@ -316,15 +316,19 @@ API otrng_result otrng_client_send_fragment(otrng_message_to_send_s **new_msg,
   }
 
   if (otrng_failed(send_message(&to_send, msg, recipient, client))) {
-    otrng_free(to_send);
+    if (to_send) {
+      otrng_free(to_send);
+    }
     return OTRNG_ERROR;
   }
 
   our_tag = otrng_client_get_instance_tag(client);
   their_tag = conv->conn->their_instance_tag;
 
-  ret = otrng_fragment_message(mms, *new_msg, our_tag, their_tag, to_send);
-  otrng_free(to_send);
+  if (to_send) {
+    ret = otrng_fragment_message(mms, *new_msg, our_tag, their_tag, to_send);
+    otrng_free(to_send);
+  }
 
   return ret;
 }

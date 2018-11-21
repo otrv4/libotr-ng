@@ -54,7 +54,8 @@ INTERNAL otrng_result otrng_prekey_message_deserialize(prekey_message_s *dst,
                                                        size_t *nread);
 
 INTERNAL otrng_result otrng_prekey_message_deserialize_with_metadata(
-    prekey_message_s *dst, const uint8_t *src, size_t src_len, size_t *nread);
+    prekey_message_s *dst, const uint8_t *src, size_t src_len,
+    /*@null@*/ size_t *nread);
 
 INTERNAL otrng_result otrng_prekey_message_serialize_into(
     uint8_t **dst, size_t *nbytes, const prekey_message_s *prekey_msg);

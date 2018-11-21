@@ -200,7 +200,7 @@ static char *prekey_encode(const uint8_t *buffer, size_t buff_len) {
 }
 
 static otrng_result parse_header(uint8_t *msg_type, const uint8_t *buf,
-                                 size_t buflen, size_t *read) {
+                                 size_t buflen, /*@null@*/ size_t *read) {
   size_t r = 0; /* read */
   size_t w = 0; /* walked */
 

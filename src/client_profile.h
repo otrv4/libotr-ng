@@ -103,7 +103,7 @@ INTERNAL otrng_result otrng_client_profile_deserialize(
 
 INTERNAL otrng_result otrng_client_profile_deserialize_with_metadata(
     otrng_client_profile_s *target, const uint8_t *buffer, size_t buff_len,
-    size_t *nread);
+    /*@null@*/ size_t *nread);
 
 INTERNAL otrng_result otrng_client_profile_serialize(
     uint8_t **dst, size_t *nbytes, const otrng_client_profile_s *profile);

@@ -126,7 +126,7 @@ INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len);
            is > 0.
  **/
 INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
-                              const uint8_t *data);
+                              /*@null@*/ const uint8_t *data);
 
 /**
  * @brief appends the given TLV to the list of TLVs
@@ -139,7 +139,7 @@ INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
  *         It is the callers responsibility to free it after use.
  *         Returns NULL if something goes wrong, or if [tlv] is NULL
  **/
-INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *tlvs, tlv_s *tlv);
+INTERNAL tlv_list_s *otrng_append_tlv(/*@null@*/ tlv_list_s *tlvs, tlv_s *tlv);
 
 INTERNAL tlv_s *otrng_tlv_padding_new(size_t len);
 
