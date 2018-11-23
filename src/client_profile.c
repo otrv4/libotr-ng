@@ -601,7 +601,7 @@ static otrng_bool client_profile_invalid(time_t expires,
 }
 
 tstatic otrng_bool rollback_detected(const char *versions) {
-  while (*versions) {
+  while (*versions != '\0') {
     if (*versions != '3' && *versions != '4') {
       return otrng_true;
     }

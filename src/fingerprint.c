@@ -32,8 +32,8 @@ API otrng_result otrng_fingerprint_hash_to_human(char *human,
 
   for (word = 0; word < 14; ++word) {
     for (byte = 0; byte < 4; ++byte) {
-      if (snprintf(p, OTRNG_FPRINT_HUMAN_LEN, "%02X", hash[word * 4 + byte]) <
-          0) {
+      if (snprintf(p, OTRNG_FPRINT_HUMAN_LEN, "%02X",
+                   (unsigned int)hash[word * 4 + byte]) < 0) {
         return OTRNG_ERROR;
       }
       p += 2;

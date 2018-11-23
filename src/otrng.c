@@ -241,7 +241,7 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
   rem = cursor - buffer;
 
   /* Add '\0' */
-  if (*otrng_stpncpy(cursor, msg, qm_size - rem)) {
+  if (*otrng_stpncpy(cursor, msg, qm_size - rem) != '\0') {
     otrng_free(buffer);
     return OTRNG_ERROR; /* could not zero-terminate the string */
   }
@@ -1081,7 +1081,7 @@ tstatic otrng_result prekey_message_received(const prekey_message_s *msg,
 
 tstatic otrng_result ensure_client_profile_version(char *versions,
                                                    otrng_s *otr) {
-  while (*versions) {
+  while (*versions != '\0') {
     if (*versions == '4' && (otr->supported_versions == OTRNG_ALLOW_V4 ||
                              otr->supported_versions == OTRNG_ALLOW_V34)) {
       return OTRNG_SUCCESS;

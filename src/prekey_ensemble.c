@@ -72,7 +72,7 @@ otrng_prekey_ensemble_validate(const prekey_ensemble_s *dst) {
   versions signed in the Client Profile contained in the Prekey Ensemble. */
   versions = dst->client_profile->versions;
   found = otrng_false;
-  while (*versions && !found) {
+  while ((*versions != '\0') && !found) {
     found = (*versions == '4');
     versions++;
   }

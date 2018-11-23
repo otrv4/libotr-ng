@@ -35,7 +35,6 @@
 # In order to work on this, comment one of them away, and work on the things exposed
 # If it REALLY should be suppressed, put it somewhere else in this file
 +boolint
-+charint
 +voidabstract
 +matchanyintegral
 -branchstate

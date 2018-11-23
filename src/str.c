@@ -81,7 +81,7 @@ otrng_stpncpy(/*@notnull@*/ char *dst, /*@notnull@*/ const char *src,
 INTERNAL size_t otrng_strnlen(/*@notnull@*/ const char *s,
                               const size_t maxlen) {
   size_t l = 0;
-  while (s[l] && l < maxlen) {
+  while ((s[l] != '\0') && l < maxlen) {
     l++;
   }
 
