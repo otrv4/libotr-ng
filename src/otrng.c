@@ -264,9 +264,17 @@ API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
   int allows_v3 = allow_version(otr, OTRNG_ALLOW_V3);
   string_p cursor = NULL;
 
-#define WHITESPACE_TAG_MAX_BYTES                                               \
-  (WHITESPACE_TAG_BASE_BYTES + 2 * WHITESPACE_TAG_VERSION_BYTES)
-  char *buffer = otrng_xmalloc_z(WHITESPACE_TAG_MAX_BYTES + strlen(msg) + 1);
+  size_t msg_len = strlen(msg);
+  size_t base_tag_len = WHITESPACE_TAG_BASE_BYTES;
+  size_t v3_tag_len = (allows_v3 ? WHITESPACE_TAG_VERSION_BYTES : 0);
+  size_t v4_tag_len = (allows_v4 ? WHITESPACE_TAG_VERSION_BYTES : 0);
+
+  if (v3_tag_len == 0 && v4_tag_len == 0) {
+    return OTRNG_ERROR;
+  }
+
+  char *buffer =
+      otrng_xmalloc_z(msg_len + base_tag_len + v3_tag_len + v4_tag_len + 1);
 
   cursor = otrng_stpcpy(buffer, tag_base);
 
