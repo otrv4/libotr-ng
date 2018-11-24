@@ -378,7 +378,7 @@ void test_start_with_whitespace_tag(void) {
   set_up_client(alice_client, ALICE_ACCOUNT, 1);
   set_up_client(bob_client, BOB_ACCOUNT, 2);
 
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4,
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
                            .type = OTRNG_POLICY_ALWAYS};
 
   otrng_s *alice = otrng_new(alice_client, policy);

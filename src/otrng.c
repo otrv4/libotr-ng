@@ -268,12 +268,13 @@ API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
   size_t base_tag_len = WHITESPACE_TAG_BASE_BYTES;
   size_t v3_tag_len = (allows_v3 ? WHITESPACE_TAG_VERSION_BYTES : 0);
   size_t v4_tag_len = (allows_v4 ? WHITESPACE_TAG_VERSION_BYTES : 0);
+  char *buffer = NULL;
 
   if (v3_tag_len == 0 && v4_tag_len == 0) {
     return OTRNG_ERROR;
   }
 
-  char *buffer =
+  buffer =
       otrng_xmalloc_z(msg_len + base_tag_len + v3_tag_len + v4_tag_len + 1);
 
   cursor = otrng_stpcpy(buffer, tag_base);
@@ -318,20 +319,27 @@ tstatic void set_to_display(otrng_response_s *response, const string_p msg) {
 tstatic otrng_result message_to_display_without_tag(otrng_response_s *response,
                                                     const string_p msg,
                                                     size_t msg_len) {
-  // TODO: This will display the incorrect message if more than
-  // one version is included
-  size_t tag_len = WHITESPACE_TAG_BASE_BYTES + WHITESPACE_TAG_VERSION_BYTES;
-  size_t chars = msg_len - tag_len;
+  size_t tag_len = 0;
+  size_t chars = 0;
   char *found_at;
   string_p buffer;
   size_t bytes_before_tag;
+
+  if ((strstr(msg, tag_version_v4) != NULL) &&
+      (strstr(msg, tag_version_v3) != NULL)) {
+    tag_len = WHITESPACE_TAG_BASE_BYTES + 2 * WHITESPACE_TAG_VERSION_BYTES;
+  } else {
+    tag_len = WHITESPACE_TAG_BASE_BYTES + WHITESPACE_TAG_VERSION_BYTES;
+  }
+
+  chars = msg_len - tag_len;
 
   if (msg_len < tag_len) {
     return OTRNG_ERROR;
   }
 
   found_at = strstr(msg, tag_base);
-  if (!found_at) {
+  if (found_at == NULL) {
     return OTRNG_ERROR;
   }
 
