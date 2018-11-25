@@ -759,7 +759,7 @@ static void test_api_multiple_clients(void) {
   otrng_assert_is_success(
       otrng_build_query_message(&query_message, "?OTRv4", alice));
   otrng_assert(alice->state == OTRNG_STATE_START);
-  otrng_assert_cmpmem("?OTRv4", query_message, 6);
+  otrng_assert_cmpmem("?OTRv4?", query_message, 7);
 
   // PC receives query message and sends identity message
   result = otrng_receive_message(pc_to_alice, &warn, query_message, bob_pc);

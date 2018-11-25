@@ -516,6 +516,7 @@ tstatic otrng_result receive_tagged_plaintext(otrng_response_s *response,
   }
 }
 
+// TODO: should we display any message that accompanies the query?
 tstatic otrng_result receive_query_message(otrng_response_s *response,
                                            const string_p msg, otrng_s *otr) {
   set_running_version_from_query_message(otr, msg);

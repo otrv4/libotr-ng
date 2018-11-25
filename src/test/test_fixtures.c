@@ -255,14 +255,17 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert(bob->state == OTRNG_STATE_START);
 
   /* Alice sends a Query Message */
-  otrng_assert_is_success(otrng_build_query_message(&query_message, "", alice));
+  otrng_assert_is_success(
+      otrng_build_query_message(&query_message, "Hi", alice));
   otrng_assert(alice->state == OTRNG_STATE_START);
-  otrng_assert_cmpmem("?OTRv4", query_message, 6);
+  otrng_assert_cmpmem("?OTRv43? Hi", query_message, 10);
 
   /* Bob receives a Query Message */
   otrng_assert_is_success(
       otrng_receive_message(response_to_alice, &warn, query_message, bob));
   otrng_free(query_message);
+
+  otrng_assert(!response_to_alice->to_display); // TODO: should display "hi"?
 
   /* Bob replies with an Identity Message */
   otrng_assert(bob->state == OTRNG_STATE_WAITING_AUTH_R);
