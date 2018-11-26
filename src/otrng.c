@@ -499,7 +499,7 @@ tstatic otrng_result receive_tagged_plaintext(otrng_response_s *response,
 
   switch (otr->running_version) {
   case OTRNG_PROTOCOL_VERSION_4:
-    if (otr->policy_type & OTRNG_WHITESPACE_START_AKE) {
+    if (otr->policy_type & OTRNG_WHITESPACE_START_DAKE) {
       if (message_to_display_without_tag(response, msg, strlen(msg)) ==
           OTRNG_ERROR) {
         return OTRNG_ERROR;
