@@ -29,7 +29,7 @@ otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
                 int byte) {
   set_up_client(client, account_name, byte);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
-                           .type = OTRNG_POLICY_DEFAULT};
+                           .type = OTRNG_POLICY_ALWAYS};
 
   return otrng_new(client, policy);
 }

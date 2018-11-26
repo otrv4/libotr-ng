@@ -2250,10 +2250,15 @@ tstatic otrng_result receive_encoded_message(otrng_response_s *response,
 tstatic otrng_result receive_error_message(otrng_response_s *response,
                                            const string_p msg, otrng_s *otr) {
   otrng_error_event error_event = OTRNG_ERROR_NONE;
+  otrng_result result = OTRNG_ERROR;
 
   if (strncmp(msg, "ERROR_1:", 8) == 0) {
     error_event = OTRNG_ERROR_UNREADABLE_EVENT;
     display_error_message_cb(error_event, &response->to_display, otr);
+    if (otr->policy_type & OTRNG_ERROR_START_DAKE) {
+      result = otrng_build_query_message(&response->to_send, "", otr);
+      return result;
+    }
     return OTRNG_SUCCESS;
   } else if (strncmp(msg, "ERROR_2:", 8) == 0) {
     error_event = OTRNG_ERROR_NOT_IN_PRIVATE_EVENT;
@@ -2371,6 +2376,11 @@ INTERNAL otrng_result otrng_send_message(string_p *to_send, const string_p msg,
   case OTRNG_PROTOCOL_VERSION_3:
     return otrng_v3_send_message(to_send, msg, tlvs, otr->v3_conn);
   case OTRNG_PROTOCOL_VERSION_4:
+    // if (otr->state == OTRNG_STATE_START) {
+    //  if (otr->policy_type & OTRNG_SEND_WHITESPACE_TAG) {
+    //  printf("\n HEEERE \n");
+    //}
+    //}
     return otrng_prepare_to_send_data_message(to_send, warn, msg, tlvs, otr,
                                               flags);
   default:
