@@ -611,13 +611,13 @@ static void test_api_conversation_errors_with_policies(void) {
       "xSssNlgx1+Tnk3oXiJO+SO8znlZ6lkxmhZgrqG1u8abBO9YG6DC4gz9s3sBCJDA+"
       "eF08cb9C7RwGpebYgJMNZ3PgwVy6s6H5yoD0c2PcqF50hspJu+2oA1A=.";
 
-  // Alice receives malformed Identity message
+  /* Alice receives malformed Identity message */
   otrng_assert_is_error(
       otrng_receive_message(response_to_bob, &warn, malformed, alice));
   const string_p err_code = "?OTR Error: ERROR_4: OTRNG_ERR_MALFORMED";
   otrng_assert_cmpmem(err_code, response_to_bob->to_send, strlen(err_code));
 
-  // Bob receives an error message, no query message should be sent
+  /* Bob receives an error message, a query message should be sent */
   otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
                                                 response_to_bob->to_send, bob));
 
@@ -629,7 +629,17 @@ static void test_api_conversation_errors_with_policies(void) {
   otrng_assert_cmpmem(err_human, response_to_alice->to_display,
                       strlen(err_human));
 
-  otrng_assert(!response_to_alice->to_send);
+  otrng_assert(response_to_alice->to_send);
+  otrng_assert_cmpmem("?OTRv43?", response_to_alice->to_send, 8);
+
+  /* Alice receives a Query Message */
+  otrng_assert_is_success(otrng_receive_message(
+      response_to_bob, &warn, response_to_alice->to_send, alice));
+
+  otrng_free(response_to_alice->to_send);
+  response_to_alice->to_send = NULL;
+
+  otrng_assert(!response_to_bob->to_display);
 
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);

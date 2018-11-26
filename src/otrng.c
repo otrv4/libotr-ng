@@ -2255,10 +2255,12 @@ tstatic otrng_result receive_error_message(otrng_response_s *response,
   if (strncmp(msg, "ERROR_1:", 8) == 0) {
     error_event = OTRNG_ERROR_UNREADABLE_EVENT;
     display_error_message_cb(error_event, &response->to_display, otr);
+
     if (otr->policy_type & OTRNG_ERROR_START_DAKE) {
       result = otrng_build_query_message(&response->to_send, "", otr);
       return result;
     }
+
     return OTRNG_SUCCESS;
   } else if (strncmp(msg, "ERROR_2:", 8) == 0) {
     error_event = OTRNG_ERROR_NOT_IN_PRIVATE_EVENT;
@@ -2271,6 +2273,12 @@ tstatic otrng_result receive_error_message(otrng_response_s *response,
   } else if (strncmp(msg, "ERROR_4:", 8) == 0) {
     error_event = OTRNG_ERROR_MALFORMED_EVENT;
     display_error_message_cb(error_event, &response->to_display, otr);
+
+    if (otr->policy_type & OTRNG_ERROR_START_DAKE) {
+      result = otrng_build_query_message(&response->to_send, "", otr);
+      return result;
+    }
+
     return OTRNG_SUCCESS;
   }
 
