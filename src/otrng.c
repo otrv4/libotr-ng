@@ -2380,11 +2380,13 @@ INTERNAL otrng_result otrng_send_message(string_p *to_send, const string_p msg,
   case OTRNG_PROTOCOL_VERSION_3:
     return otrng_v3_send_message(to_send, msg, tlvs, otr->v3_conn);
   case OTRNG_PROTOCOL_VERSION_4:
-    // if (otr->state == OTRNG_STATE_START) {
-    //  if (otr->policy_type & OTRNG_SEND_WHITESPACE_TAG) {
-    //  printf("\n HEEERE \n");
-    //}
-    //}
+    if (otr->state == OTRNG_STATE_START) {
+      otrng_result result = OTRNG_ERROR;
+      if (otr->policy_type & OTRNG_SEND_WHITESPACE_TAG) {
+        result = otrng_build_whitespace_tag(to_send, msg, otr);
+      }
+      return result;
+    }
     return otrng_prepare_to_send_data_message(to_send, warn, msg, tlvs, otr,
                                               flags);
   default:
