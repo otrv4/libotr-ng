@@ -2267,10 +2267,6 @@ tstatic otrng_result receive_error_message(otrng_response_s *response,
     display_error_message_cb(error_event, &response->to_display, otr);
     return OTRNG_SUCCESS;
   } else if (strncmp(msg, "ERROR_3:", 8) == 0) {
-    error_event = OTRNG_ERROR_ENCRYPTION_ERROR_EVENT;
-    display_error_message_cb(error_event, &response->to_display, otr);
-    return OTRNG_SUCCESS;
-  } else if (strncmp(msg, "ERROR_4:", 8) == 0) {
     error_event = OTRNG_ERROR_MALFORMED_EVENT;
     display_error_message_cb(error_event, &response->to_display, otr);
 

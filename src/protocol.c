@@ -107,11 +107,8 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
     *to_send =
         build_error_message(ERROR_CODE_2, "OTRNG_ERR_MSG_NOT_PRIVATE_STATE");
     break;
-  case OTRNG_ERR_MSG_ENCRYPTION_ERROR:
-    *to_send = build_error_message(ERROR_CODE_3, "OTRNG_ERR_ENCRYPTION_ERROR");
-    break;
   case OTRNG_ERR_MSG_MALFORMED:
-    *to_send = build_error_message(ERROR_CODE_4, "OTRNG_ERR_MALFORMED");
+    *to_send = build_error_message(ERROR_CODE_3, "OTRNG_ERR_MALFORMED");
     break;
   }
 }
@@ -243,8 +240,6 @@ tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
   data_msg->receiver_instance_tag = otr->their_instance_tag;
 
   if (!encrypt_data_message(data_msg, msg, msg_len, enc_key)) {
-    otrng_error_message(to_send, OTRNG_ERR_MSG_ENCRYPTION_ERROR);
-
     otrng_secure_wipe(enc_key, ENC_KEY_BYTES);
     otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
     otrng_data_message_free(data_msg);

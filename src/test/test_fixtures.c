@@ -92,7 +92,6 @@ static void display_error_message_cb(const otrng_error_event event,
   (void)otr;
   const char *unreadable_msg_error = "Unreadable message";
   const char *not_in_private_error = "Not in private state message";
-  const char *encryption_error = "Encryption error";
   const char *malformed_error = "Malformed message";
 
   switch (event) {
@@ -103,9 +102,6 @@ static void display_error_message_cb(const otrng_error_event event,
   case OTRNG_ERROR_NOT_IN_PRIVATE_EVENT:
     *to_display =
         otrng_xstrndup(not_in_private_error, strlen(not_in_private_error));
-    break;
-  case OTRNG_ERROR_ENCRYPTION_ERROR_EVENT:
-    *to_display = otrng_xstrndup(encryption_error, strlen(encryption_error));
     break;
   case OTRNG_ERROR_MALFORMED_EVENT:
     *to_display = otrng_xstrndup(malformed_error, strlen(malformed_error));

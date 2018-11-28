@@ -555,7 +555,7 @@ static void test_api_conversation_errors_2(void) {
   // Alice receives malformed Identity message
   otrng_assert_is_error(
       otrng_receive_message(response_to_bob, &warn, malformed, alice));
-  const string_p err_code = "?OTR Error: ERROR_4: OTRNG_ERR_MALFORMED";
+  const string_p err_code = "?OTR Error: ERROR_3: OTRNG_ERR_MALFORMED";
   otrng_assert_cmpmem(err_code, response_to_bob->to_send, strlen(err_code));
 
   // Bob receives an error message
@@ -614,7 +614,7 @@ static void test_api_conversation_errors_with_policies(void) {
   /* Alice receives malformed Identity message */
   otrng_assert_is_error(
       otrng_receive_message(response_to_bob, &warn, malformed, alice));
-  const string_p err_code = "?OTR Error: ERROR_4: OTRNG_ERR_MALFORMED";
+  const string_p err_code = "?OTR Error: ERROR_3: OTRNG_ERR_MALFORMED";
   otrng_assert_cmpmem(err_code, response_to_bob->to_send, strlen(err_code));
 
   /* Bob receives an error message, a query message should be sent */

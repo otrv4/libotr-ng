@@ -29,7 +29,6 @@
 #define ERROR_CODE_1 "ERROR_1: "
 #define ERROR_CODE_2 "ERROR_2: "
 #define ERROR_CODE_3 "ERROR_3: "
-#define ERROR_CODE_4 "ERROR_4: "
 
 // needed for comparing with GOLDILOCKS_TRUE
 typedef uint8_t
@@ -77,7 +76,6 @@ typedef enum {
   OTRNG_ERR_MSG_NONE,
   OTRNG_ERR_MSG_UNREADABLE,
   OTRNG_ERR_MSG_NOT_PRIVATE,
-  OTRNG_ERR_MSG_ENCRYPTION_ERROR,
   OTRNG_ERR_MSG_MALFORMED,
 } otrng_err_code;
 
