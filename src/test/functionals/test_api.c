@@ -565,7 +565,6 @@ static void test_api_whitespace_tag(void) {
   otrng_assert(bob->state == OTRNG_STATE_START);
 
   /* Alice receives a disconnected TLV from Bob */
-  response_to_bob = otrng_response_new();
   otrng_receive_message(response_to_bob, &warn, to_send, alice);
 
   free(to_send);
