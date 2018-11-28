@@ -404,7 +404,6 @@ void test_start_with_whitespace_tag(void) {
   otrng_free(whitespace_tag);
 
   const char *expected_tag = "Add some random";
-  /* Bob replies with an Identity Message */
   otrng_assert(bob->state == OTRNG_STATE_WAITING_AUTH_R);
   g_assert_cmpstr(response_to_alice->to_display, ==, expected_tag);
   otrng_assert(response_to_alice->to_send);
