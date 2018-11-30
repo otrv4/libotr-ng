@@ -2252,15 +2252,13 @@ tstatic otrng_result receive_encoded_message(otrng_response_s *response,
 tstatic otrng_result receive_error_message(otrng_response_s *response,
                                            const string_p msg, otrng_s *otr) {
   otrng_error_event error_event = OTRNG_ERROR_NONE;
-  otrng_result result = OTRNG_ERROR;
 
   if (strncmp(msg, "ERROR_1:", 8) == 0) {
     error_event = OTRNG_ERROR_UNREADABLE_EVENT;
     display_error_message_cb(error_event, &response->to_display, otr);
 
     if (otr->policy_type & OTRNG_ERROR_START_DAKE) {
-      result = otrng_build_query_message(&response->to_send, "", otr);
-      return result;
+      return otrng_build_query_message(&response->to_send, "", otr);
     }
 
     return OTRNG_SUCCESS;
@@ -2273,8 +2271,7 @@ tstatic otrng_result receive_error_message(otrng_response_s *response,
     display_error_message_cb(error_event, &response->to_display, otr);
 
     if (otr->policy_type & OTRNG_ERROR_START_DAKE) {
-      result = otrng_build_query_message(&response->to_send, "", otr);
-      return result;
+      return otrng_build_query_message(&response->to_send, "", otr);
     }
 
     return OTRNG_SUCCESS;
@@ -2380,7 +2377,9 @@ INTERNAL otrng_result otrng_send_message(string_p *to_send, const string_p msg,
 
   if (otr->running_version == OTRNG_PROTOCOL_VERSION_NONE) {
     if (otr->state == OTRNG_STATE_START) {
-      if (otr->policy_type & OTRNG_SEND_WHITESPACE_TAG) {
+      if (otr->policy_type & OTRNG_REQUIRE_ENCRYPTION) {
+        return otrng_build_query_message(to_send, "", otr);
+      } else if (otr->policy_type & OTRNG_SEND_WHITESPACE_TAG) {
         return otrng_build_whitespace_tag(to_send, msg, otr);
       }
     }
