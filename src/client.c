@@ -579,7 +579,7 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
   int i, j;
 
   if (num_messages > MAX_NUMBER_PUBLISHED_PREKEY_MSGS) {
-    // TODO: notify error
+    // TODO: @error notify error
     return NULL;
   }
 
@@ -771,8 +771,16 @@ otrng_client_get_client_profile(otrng_client_s *client) {
 
 API otrng_client_profile_s *
 otrng_client_build_default_client_profile(otrng_client_s *client) {
-  // TODO: Get allowed versions from the policy
-  const char *allowed_versions = "34";
+  otrng_policy_s policy = get_policy_for(client);
+  const char *allowed_versions = NULL;
+
+  if (policy.allows == OTRNG_ALLOW_V34) {
+    allowed_versions = "34";
+  } else if (policy.allows == OTRNG_ALLOW_V4) {
+    allowed_versions = "4";
+  } else if (policy.allows == OTRNG_ALLOW_V3) {
+    allowed_versions = "3";
+  }
 
   assert(client != NULL);
 
