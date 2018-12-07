@@ -253,7 +253,7 @@ tstatic otrng_result send_message(char **new_msg, const char *msg,
   result = otrng_send_message(new_msg, msg, &warn, NULL, 0, conv->conn);
 
   if (warn == OTRNG_WARN_SEND_NOT_ENCRYPTED) {
-    // TODO: we need to signal this a different way than by return values
+    // TODO: @error we need to signal this a different way than by return values
     /* return OTRNG_CLIENT_RESULT_ERROR_NOT_ENCRYPTED; */
     return OTRNG_ERROR;
   }
@@ -410,7 +410,7 @@ API otrng_result otrng_client_receive(char **new_msg, char **to_display,
 
   if (warn == OTRNG_WARN_RECEIVED_NOT_VALID) {
     //    return OTRNG_CLIENT_RESULT_ERROR_NOT_VALID;
-    // TODO: fix this
+    // TODO: @error fix this
     otrng_response_free(response);
     return OTRNG_ERROR;
   }

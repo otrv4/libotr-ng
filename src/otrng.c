@@ -2292,6 +2292,8 @@ static int get_message_type(const string_p msg) {
     return MSG_OTR_ENCODED;
   }
 
+  // TODO: this defaults everything to plaintext.. what if this is a corrupted
+  // message?
   return MSG_PLAINTEXT;
 }
 
@@ -2331,7 +2333,7 @@ static otrng_result receive_defragmented_message(otrng_response_s *response,
   response->to_display = NULL;
 
   /* A DH-Commit sets our running version to 3 */
-  if (allow_version(otr, OTRNG_ALLOW_V3) &&
+  if ((allow_version(otr, OTRNG_ALLOW_V3) || allow_version(otr, OTRNG_ALLOW_V34)) &&
       (strstr(msg, "?OTR:AAMC") != NULL)) {
     otr->running_version = OTRNG_PROTOCOL_VERSION_3;
   }

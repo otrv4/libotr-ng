@@ -475,7 +475,7 @@ INTERNAL otrng_result otrng_client_profile_deserialize(
     w += read;
   }
 
-  // TODO: Extract function deserialize_transitional_signature
+  // TODO: @refactor Extract function deserialize_transitional_signature
   if (buff_len - w < ED448_SIGNATURE_BYTES) {
     return OTRNG_ERROR;
   }
