@@ -39,8 +39,7 @@ otrng_result
 hash_init_with_usage_and_domain_separation(goldilocks_shake256_ctx_p hd,
                                            uint8_t usage, const char *domain) {
   hash_init(hd);
-  // TODO: why we cast here?
-  if (hash_update(hd, (const unsigned char *)domain, strlen(domain)) ==
+  if (hash_update(hd, (const uint8_t *)domain, strlen(domain)) ==
       GOLDILOCKS_FAILURE) {
     hash_destroy(hd);
     return OTRNG_ERROR;

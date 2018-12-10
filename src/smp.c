@@ -150,7 +150,6 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp,
 }
 
 INTERNAL tlv_s *otrng_process_smp_tlv(const tlv_s *tlv, otrng_s *otr) {
-  // TODO: @smp: what happens with the error and failure?
   otrng_smp_event event = OTRNG_SMP_EVENT_NONE;
   tlv_s *out = otrng_process_smp(&event, otr->smp, tlv);
   handle_smp_event_cb_v4(
@@ -282,10 +281,13 @@ otrng_smp_provide_secret(otrng_smp_event *event, smp_protocol_s *smp,
                          const otrng_client_profile_s *their_client_profile,
                          uint8_t *ssid, const uint8_t *secret,
                          const size_t secret_len) {
-  // TODO: @smp If state is not CONTINUE_SMP then error.
   tlv_s *smp_reply = NULL;
-
   otrng_fingerprint our_fp, their_fp;
+
+  if (smp->state_expect != SMP_STATE_EXPECT_1) {
+    return NULL;
+  }
+
   if (!otrng_serialize_fingerprint(our_fp, our_profile->long_term_pub_key)) {
     return NULL;
   }
@@ -347,12 +349,12 @@ INTERNAL otrng_result otrng_smp_continue(string_p *to_send,
                                          const size_t secret_len,
                                          otrng_s *otr) {
   switch (otr->running_version) {
-  case 3:
+  case OTRNG_PROTOCOL_VERSION_3:
     // FIXME: @smp missing fragmentation
     return otrng_v3_smp_continue(to_send, secret, secret_len, otr->v3_conn);
-  case 4:
+  case OTRNG_PROTOCOL_VERSION_4:
     return smp_continue_v4(to_send, secret, secret_len, otr);
-  case 0:
+  case OTRNG_PROTOCOL_VERSION_NONE:
     return OTRNG_ERROR;
   }
 

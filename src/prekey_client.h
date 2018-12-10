@@ -176,9 +176,9 @@ otrng_prekey_client_request_storage_information(otrng_prekey_client_s *client);
 
 API char *otrng_prekey_client_publish(otrng_prekey_client_s *client);
 
-API otrng_result otrng_prekey_client_receive(char **to_send, const char *server,
-                                             const char *msg,
-                                             struct otrng_client_s *client);
+API otrng_bool otrng_prekey_client_receive(char **to_send, const char *server,
+                                           const char *msg,
+                                           struct otrng_client_s *client);
 
 API void otrng_prekey_client_set_prekey_profile_publication(
     otrng_prekey_client_s *client);

@@ -1707,10 +1707,9 @@ static char *receive_decoded(const uint8_t *decoded, size_t decoded_len,
   return ret;
 }
 
-/* TODO: this function should probably return otrng_bool instead */
-API otrng_result otrng_prekey_client_receive(char **to_send, const char *server,
-                                             const char *msg,
-                                             otrng_client_s *client) {
+API otrng_bool otrng_prekey_client_receive(char **to_send, const char *server,
+                                           const char *msg,
+                                           otrng_client_s *client) {
   uint8_t *ser = NULL;
   size_t ser_len = 0;
 
@@ -1721,14 +1720,14 @@ API otrng_result otrng_prekey_client_receive(char **to_send, const char *server,
      This avoids processing any plaintext message from a party as a
      malformed prekey server message. */
   if (strcmp(client->prekey_client->server_identity, server) != 0) {
-    return OTRNG_ERROR;
+    return otrng_false;
   }
 
   // TODO: process fragmented messages
 
   /* If it fails to decode it was not a prekey server message. */
   if (!prekey_decode(msg, &ser, &ser_len)) {
-    return OTRNG_ERROR;
+    return otrng_false;
   }
 
   /* In any other case, it returns SUCCESS because we processed the message.
@@ -1738,7 +1737,7 @@ API otrng_result otrng_prekey_client_receive(char **to_send, const char *server,
   *to_send = receive_decoded(ser, ser_len, client);
   otrng_free(ser);
 
-  return OTRNG_SUCCESS;
+  return otrng_true;
 }
 
 INTERNAL otrng_prekey_dake2_message_s *otrng_prekey_dake2_message_new() {

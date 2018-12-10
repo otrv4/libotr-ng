@@ -494,7 +494,6 @@ tstatic otrng_result receive_tagged_plaintext(otrng_response_s *response,
                                               otrng_s *otr) {
   set_running_version_from_tag(otr, msg);
 
-  // TODO: move me!
   if (!otr->receiving_init_message) {
     otr->receiving_init_message = otrng_xstrdup(msg);
   }
@@ -518,12 +517,10 @@ tstatic otrng_result receive_tagged_plaintext(otrng_response_s *response,
   }
 }
 
-// TODO: should we display any message that accompanies the query?
 tstatic otrng_result receive_query_message(otrng_response_s *response,
                                            const string_p msg, otrng_s *otr) {
   set_running_version_from_query_message(otr, msg);
 
-  // TODO: @refactoring still unsure about this
   if (!otr->receiving_init_message) {
     otr->receiving_init_message = otrng_xstrdup(msg);
   }
@@ -2112,7 +2109,6 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       continue;
     }
 
-    // TODO: @client this displays an event on otrv3..
     if (!response->to_display) {
       otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
       otrng_data_message_free(msg);

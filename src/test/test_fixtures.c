@@ -261,7 +261,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
       otrng_receive_message(response_to_alice, &warn, query_message, bob));
   otrng_free(query_message);
 
-  otrng_assert(!response_to_alice->to_display); // TODO: should display "hi"?
+  otrng_assert(!response_to_alice->to_display);
 
   /* Bob replies with an Identity Message */
   otrng_assert(bob->state == OTRNG_STATE_WAITING_AUTH_R);

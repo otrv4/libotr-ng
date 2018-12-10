@@ -961,8 +961,8 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
     if (warn) {
       *warn = OTRNG_WARN_STORAGE_FULL;
     }
+
     otrng_secure_free(extra_key);
-    // TODO: should we really return success here?
     return OTRNG_SUCCESS;
   }
 
@@ -1169,7 +1169,7 @@ INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
       if (!shake_256_kdf1(mac_key, MAC_KEY_BYTES, usage_mac_key, enc_key,
                           ENC_KEY_BYTES)) {
         otrng_secure_free(ser_mac_keys);
-        return NULL; // TODO: is this the best to do in this case?
+        return NULL;
       }
 
       memcpy(ser_mac_keys + i * MAC_KEY_BYTES, mac_key, MAC_KEY_BYTES);
