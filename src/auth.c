@@ -194,15 +194,6 @@ static otrng_result otrng_rsig_calculate_c_from_sigma_with_usage_and_domain(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_rsig_authenticate(
-    ring_sig_s *dst, const otrng_private_key secret, const otrng_public_key pub,
-    const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *msg, size_t msg_len) {
-  return otrng_rsig_authenticate_with_usage_and_domain(
-      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, dst, secret,
-      pub, A1, A2, A3, msg, msg_len);
-}
-
 INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
     uint8_t usage, const char *domain_sep, ring_sig_s *dst,
     const otrng_private_key secret, const otrng_public_key pub,
@@ -310,14 +301,13 @@ INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
-                                      const otrng_public_key A1,
-                                      const otrng_public_key A2,
-                                      const otrng_public_key A3,
-                                      const uint8_t *msg, size_t msg_len) {
-  return otrng_rsig_verify_with_usage_and_domain(
-      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, src, A1, A2,
-      A3, msg, msg_len);
+INTERNAL otrng_result otrng_rsig_authenticate(
+    ring_sig_s *dst, const otrng_private_key secret, const otrng_public_key pub,
+    const otrng_public_key A1, const otrng_public_key A2,
+    const otrng_public_key A3, const uint8_t *msg, size_t msg_len) {
+  return otrng_rsig_authenticate_with_usage_and_domain(
+      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, dst, secret,
+      pub, A1, A2, A3, msg, msg_len);
 }
 
 INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
@@ -340,6 +330,16 @@ INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
   }
 
   return otrng_false;
+}
+
+INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
+                                      const otrng_public_key A1,
+                                      const otrng_public_key A2,
+                                      const otrng_public_key A3,
+                                      const uint8_t *msg, size_t msg_len) {
+  return otrng_rsig_verify_with_usage_and_domain(
+      OTRNG_PROTOCOL_USAGE_AUTH, OTRNG_PROTOCOL_DOMAIN_SEPARATION, src, A1, A2,
+      A3, msg, msg_len);
 }
 
 INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src) {

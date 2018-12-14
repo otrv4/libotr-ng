@@ -66,7 +66,6 @@ typedef struct ring_sig_s {
  * @return OTRNG_SUCCESS if pub is one of (A1, A2, A3) and a signature of
  * knowledge could be created. Returns OTRNG_ERROR otherwise.
  */
-
 INTERNAL otrng_result otrng_rsig_authenticate(
     ring_sig_s *dst, const otrng_private_key priv, const otrng_public_key pub,
     const otrng_public_key A1, const otrng_public_key A2,
@@ -91,6 +90,55 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
                                       const uint8_t *msg, size_t msg_len);
 
 /**
+ * @brief The Authentication function of the Ring Sig  that takes hash usage and
+ * domain separation as params.
+ *
+ * It produces a signature of knowledge, named sigma, bound to the
+ * message msg, that demonstrates knowledge of a private key
+ * corresponding to one of three public keys.
+ *
+ * @param [usage] The hash usage id.
+ * @param [domain_sep] The hash domain separation string.
+ * @param [dst] The signature of knowledge
+ * @param [dst] The signature of knowledge
+ * @param [priv] The known private key.
+ * @param [pub] The public counterpart of priv.
+ * @param [A1] The first public key.
+ * @param [A2] The second public key.
+ * @param [A3] The thrid public key.
+ * @param [msg] The message to "sign".
+ * @param [msg_len] The length of the message.
+ *
+ * @return OTRNG_SUCCESS if pub is one of (A1, A2, A3) and a signature of
+ * knowledge could be created. Returns OTRNG_ERROR otherwise.
+ */
+INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
+    uint8_t usage, const char *domain_sep, ring_sig_s *dst,
+    const otrng_private_key secret, const otrng_public_key pub,
+    const otrng_public_key A1, const otrng_public_key A2,
+    const otrng_public_key A3, const uint8_t *msg, size_t msg_len);
+
+/**
+ * @brief The Verification function of the Ring Sigi that takes hash usage and
+ * domain separation as params.
+ *
+ * The verification function for the SoK sigma, created by rsig_authenticate.
+ *
+ * @param [usage] The hash usage id.
+ * @param [domain_sep] The hash domain separation string.
+ * @param [src] The signature of knowledge
+ * @param [A1] The first public key.
+ * @param [A2] The second public key.
+ * @param [A3] The third public key.
+ * @param [msg] The message to "verify".
+ * @param [msg_len] The length of the message.
+ */
+INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
+    uint8_t usage, const char *domain_sep, const ring_sig_s *src,
+    const otrng_public_key A1, const otrng_public_key A2,
+    const otrng_public_key A3, const uint8_t *msg, size_t msg_len);
+
+/**
  * @brief Zero the values of the Ring Sig.
  *
  *
@@ -98,22 +146,13 @@ INTERNAL otrng_bool otrng_rsig_verify(const ring_sig_s *src,
  */
 INTERNAL void otrng_ring_sig_destroy(ring_sig_s *src);
 
-INTERNAL otrng_result otrng_rsig_authenticate_with_usage_and_domain(
-    uint8_t usage, const char *domain_sep, ring_sig_s *dst,
-    const otrng_private_key secret, const otrng_public_key pub,
-    const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *msg, size_t msg_len);
-
-INTERNAL otrng_bool otrng_rsig_verify_with_usage_and_domain(
-    uint8_t usage, const char *domain_sep, const ring_sig_s *src,
-    const otrng_public_key A1, const otrng_public_key A2,
-    const otrng_public_key A3, const uint8_t *msg, size_t msg_len);
-
 #ifdef OTRNG_AUTH_PRIVATE
 
 /**
  * @brief Calculate the 'c' parameter used in the Ring Signature.
  *
+ * @param [usage] The hash usage id.
+ * @param [domain_sep] The hash domain separation string.
  * @param [dst] The 'c' value to be calculated.
  * @param [A1] The first public key.
  * @param [A2] The second public key.
