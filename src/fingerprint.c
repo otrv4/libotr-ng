@@ -29,6 +29,8 @@
 #include "shake.h"
 
 /* Convert a 56-byte hash value to a 126-byte human-readable value */
+/* The 126-byte output INCLUDES a terminating zero byte. The actual content */
+/* is only 125 bytes */
 API otrng_result otrng_fingerprint_hash_to_human(char *human,
                                                  const unsigned char *hash) {
   int word, byte;
@@ -91,6 +93,9 @@ API void otrng_known_fingerprint_free(otrng_known_fingerprint_s *kf) {
 static void free_fp_proxy(void *kf) { otrng_known_fingerprint_free(kf); }
 
 API void otrng_known_fingerprints_free(otrng_known_fingerprints_s *kf) {
+  if (kf == NULL) {
+    return;
+  }
   otrng_list_free(kf->fps, free_fp_proxy);
   otrng_free(kf);
 }
