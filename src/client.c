@@ -118,6 +118,8 @@ API void otrng_client_free(otrng_client_s *client) {
   if (client->fingerprints) {
     otrng_known_fingerprints_free(client->fingerprints);
   }
+  otrng_free((void *)client->client_id.account);
+  otrng_free((void *)client->client_id.protocol);
 
   otrng_free(client);
 }

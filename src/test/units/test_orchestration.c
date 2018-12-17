@@ -307,8 +307,8 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   f->gs = otrng_xmalloc_z(sizeof(otrng_global_state_s));
   f->gs->callbacks = f->callbacks;
   f->gs->user_state_v3 = otrl_userstate_create();
-  f->client_id.protocol = "test-otr";
-  f->client_id.account = "sita@otr.im";
+  f->client_id.protocol = otrng_xstrdup("test-otr");
+  f->client_id.account = otrng_xstrdup("sita@otr.im");
 
   f->client = otrng_client_new(f->client_id);
   f->client->max_published_prekey_msg = 3;

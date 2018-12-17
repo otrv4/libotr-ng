@@ -36,8 +36,8 @@ otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
 
 otrng_client_id_s create_client_id(const char *protocol, const char *account) {
   const otrng_client_id_s cid = {
-      .protocol = protocol,
-      .account = account,
+      .protocol = otrng_xstrdup(protocol),
+      .account = otrng_xstrdup(account),
   };
   return cid;
 }
