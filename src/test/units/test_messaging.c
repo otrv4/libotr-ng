@@ -51,8 +51,8 @@ static otrng_client_id_s read_client_id_for_privf(FILE *privf) {
   }
 
   /* The account name acts as client_id (PidginAccount* for pidgin) */
-  result.protocol = "otr";
-  result.account = charlie_account;
+  result.protocol = otrng_xstrdup("otr");
+  result.account = otrng_xstrdup(charlie_account);
   return result;
 }
 
