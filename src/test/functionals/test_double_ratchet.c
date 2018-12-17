@@ -26,8 +26,18 @@
 
 /* Test the an in-order sending and receiving double ratchet */
 static void test_double_ratchet_new_sending_ratchet_in_order(void) {
-  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
-  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
+  const otrng_client_id_s cid_alice = {
+      .protocol = otrng_xstrdup("otr"),
+      .account = otrng_xstrdup("alice@otr.example"),
+  };
+
+  const otrng_client_id_s cid_bob = {
+      .protocol = otrng_xstrdup("otr"),
+      .account = otrng_xstrdup("bob@otr.example"),
+  };
+
+  otrng_client_s *alice_client = otrng_client_new(cid_alice);
+  otrng_client_s *bob_client = otrng_client_new(cid_bob);
 
   otrng_s *alice = set_up(alice_client, ALICE_ACCOUNT, 1);
   otrng_s *bob = set_up(bob_client, BOB_ACCOUNT, 2);
