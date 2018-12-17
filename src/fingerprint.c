@@ -22,11 +22,11 @@
 
 #include <assert.h>
 
-#include "fingerprint.h"
 #include "alloc.h"
+#include "client.h"
+#include "fingerprint.h"
 #include "serialize.h"
 #include "shake.h"
-#include "client.h"
 
 /* Convert a 56-byte hash value to a 126-byte human-readable value */
 API otrng_result otrng_fingerprint_hash_to_human(char *human,
@@ -59,7 +59,7 @@ INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
 
   memset(ser, 0, ED448_POINT_BYTES);
 
-  if (fp == NULL) { // TODO: unsure about this check. This is an array
+  if (fp == NULL) {
     return OTRNG_ERROR;
   }
 
@@ -85,6 +85,7 @@ INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
 
 API void otrng_known_fingerprint_free(otrng_known_fingerprint_s *kf) {
   otrng_free(kf->username);
+  otrng_free(kf);
 }
 
 static void free_fp_proxy(void *kf) { otrng_known_fingerprint_free(kf); }
@@ -94,10 +95,13 @@ API void otrng_known_fingerprints_free(otrng_known_fingerprints_s *kf) {
   otrng_free(kf);
 }
 
-API otrng_known_fingerprint_s *otrng_fingerprint_get_by_fp(const otrng_client_s *client, const otrng_fingerprint fp) {
+API otrng_known_fingerprint_s *
+otrng_fingerprint_get_by_fp(const otrng_client_s *client,
+                            const otrng_fingerprint fp) {
   list_element_s *c;
+  assert(client);
 
-  if (client == NULL || client->fingerprints == NULL) {
+  if (client->fingerprints == NULL) {
     return NULL;
   }
 
@@ -111,11 +115,13 @@ API otrng_known_fingerprint_s *otrng_fingerprint_get_by_fp(const otrng_client_s 
   return NULL;
 }
 
-
-API otrng_known_fingerprint_s *otrng_fingerprint_get_by_username(const otrng_client_s *client, const char *username) {
+API otrng_known_fingerprint_s *
+otrng_fingerprint_get_by_username(const otrng_client_s *client,
+                                  const char *username) {
   list_element_s *c;
+  assert(client);
 
-  if (client == NULL || client->fingerprints == NULL) {
+  if (client->fingerprints == NULL) {
     return NULL;
   }
 
@@ -129,9 +135,11 @@ API otrng_known_fingerprint_s *otrng_fingerprint_get_by_username(const otrng_cli
   return NULL;
 }
 
-API otrng_known_fingerprint_s *otrng_fingerprint_add(otrng_client_s *client, const otrng_fingerprint fp, const char *peer, otrng_bool trusted) {
+API otrng_known_fingerprint_s *otrng_fingerprint_add(otrng_client_s *client,
+                                                     const otrng_fingerprint fp,
+                                                     const char *peer,
+                                                     otrng_bool trusted) {
   otrng_known_fingerprint_s *nfp;
-
   assert(client);
 
   if (client->fingerprints == NULL) {
@@ -146,4 +154,69 @@ API otrng_known_fingerprint_s *otrng_fingerprint_add(otrng_client_s *client, con
   client->fingerprints->fps = otrng_list_add(nfp, client->fingerprints->fps);
 
   return nfp;
+}
+
+API void otrng_fingerprints_do_all(const struct otrng_client_s *client,
+                                   void (*fn)(const otrng_client_s *,
+                                              otrng_known_fingerprint_s *,
+                                              void *),
+                                   void *context) {
+  list_element_s *c;
+  assert(client);
+
+  if (client->fingerprints == NULL) {
+    return;
+  }
+
+  for (c = client->fingerprints->fps; c; c = c->next) {
+    fn(client, c->data, context);
+  }
+}
+
+API void otrng_fingerprint_forget(const otrng_client_s *client,
+                                  otrng_known_fingerprint_s *fp) {
+  list_element_s *prev, *c, *work;
+  assert(client);
+
+  if (client->fingerprints == NULL) {
+    return;
+  }
+
+  for (c = client->fingerprints->fps; c;) {
+    otrng_known_fingerprint_s *kf = c->data;
+    if (memcmp(fp->fp, kf->fp, FPRINT_LEN_BYTES) == 0 &&
+        strcmp(fp->username, kf->username) == 0) {
+      work = c;
+      c = work->next;
+      if (prev) {
+        prev->next = c;
+      } else {
+        client->fingerprints->fps = c;
+      }
+      otrng_known_fingerprint_free(kf);
+      otrng_free(work);
+    } else {
+      prev = c;
+      c = c->next;
+    }
+  }
+}
+
+/* This returns the fingerprint of the peer, not the self.
+ It only works properly if it's a v4 connection. */
+API otrng_known_fingerprint_s *
+otrng_fingerprint_get_current(const otrng_s *conn) {
+  otrng_fingerprint fp;
+  assert(conn);
+
+  if (conn->their_client_profile == NULL) {
+    return NULL;
+  }
+
+  if (otrng_failed(otrng_serialize_fingerprint(
+          fp, conn->their_client_profile->long_term_pub_key))) {
+    return NULL;
+  }
+
+  return otrng_fingerprint_get_by_fp(conn->client, fp);
 }

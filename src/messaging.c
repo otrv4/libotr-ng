@@ -494,6 +494,19 @@ API otrng_result otrng_global_state_prekeys_read_from(
                                 otrng_client_prekey_messages_read_from);
 }
 
+tstatic void remove_fingerprints_from(list_element_s *node, void *ignored) {
+  otrng_client_s *client = node->data;
+  (void)ignored;
+  if (client->fingerprints != NULL) {
+    otrng_known_fingerprints_free(client->fingerprints);
+    client->fingerprints = NULL;
+  }
+}
+
+API void otrng_global_state_clean_all(otrng_global_state_s *gs) {
+  otrng_list_foreach(gs->clients, remove_fingerprints_from, NULL);
+}
+
 tstatic void free_fingerprints_from(list_element_s *node, void *ignored) {
   otrng_client_s *client = node->data;
   (void)ignored;
@@ -527,6 +540,27 @@ static void add_fingerprints_v4_to(list_element_s *node, void *fp) {
 API otrng_result otrng_global_state_fingerprints_v4_write_to(
     const otrng_global_state_s *gs, FILE *fp) {
   return global_state_write_to(gs, fp, add_fingerprints_v4_to);
+}
+
+typedef struct all_fingerprints_ctx {
+  void (*fn)(const otrng_client_s *, otrng_known_fingerprint_s *, void *);
+  void *context;
+} all_fingerprints_ctx;
+
+static void do_all_fingerprints(list_element_s *node, void *ctx) {
+  all_fingerprints_ctx *fctx = ctx;
+  otrng_fingerprints_do_all(node->data, fctx->fn, fctx->context);
+}
+
+API void otrng_global_state_do_all_fingerprints(
+    const otrng_global_state_s *gs,
+    void (*fn)(const otrng_client_s *, otrng_known_fingerprint_s *, void *),
+    void *context) {
+  all_fingerprints_ctx fctx = {
+      .fn = fn,
+      .context = context,
+  };
+  otrng_list_foreach(gs->clients, do_all_fingerprints, &fctx);
 }
 
 #ifdef DEBUG_API
