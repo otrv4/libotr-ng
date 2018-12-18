@@ -164,10 +164,8 @@ test_otrng_receives_plaintext_with_ws_tag_v3(otrng_fixture_s *otrng_fixture,
   otrng_assert_is_success(
       otrng_receive_message(response, &warn, message, otrng_fixture->v3));
 
-  // g_assert_cmpstr(response->to_display, ==, "And some random invitation
-  // text.");
-  // g_assert_cmpint(otrng_fixture->otr->state, ==,
-  // OTRNG_STATE_AKE_IN_PROGRESS);
+  g_assert_cmpstr(response->to_display, ==, "And some random invitation text.");
+  g_assert_cmpint(otrng_fixture->otr->state, ==, OTRNG_STATE_START);
   g_assert_cmpint(otrng_fixture->v3->running_version, ==, 3);
 
   otrng_response_free(response);

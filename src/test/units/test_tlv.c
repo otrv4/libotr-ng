@@ -87,31 +87,7 @@ static void test_otrng_append_tlv() {
   otrng_tlv_list_free(tlvs);
 }
 
-// TODO: Add this test to receive message
-static void test_otrng_append_padding_tlv() {
-  return;
-  // uint8_t smp2_data[2] = {0x03, 0x04};
-
-  // tlv_list_s *tlvs = otrng_tlv_list_one(
-  //    otrng_tlv_new(OTRNG_TLV_SMP_MESSAGE_2, sizeof(smp2_data), smp2_data));
-  // tlvs = otrng_append_padding_tlv(tlvs, 6);
-  // otrng_assert(tlvs);
-  // assert_tlv_structure(tlvs->next, OTRNG_TLV_PADDING, 245, smp2_data, false);
-  // otrng_tlv_list_free(tlvs);
-
-  // tlvs = otrng_tlv_list_one(
-  //    otrng_tlv_new(OTRNG_TLV_SMP_MESSAGE_2, sizeof(smp2_data), smp2_data));
-  // tlvs = otrng_append_padding_tlv(tlvs, 500);
-  // assert_tlv_structure(tlvs->next, OTRNG_TLV_PADDING, 7, smp2_data, false);
-  // otrng_tlv_list_free(tlvs);
-
-  // tlvs = otrng_append_padding_tlv(NULL, 500);
-  // otrng_assert(tlvs);
-  // otrng_tlv_list_free(tlvs);
-}
-
 void units_tlv_add_tests(void) {
   g_test_add_func("/tlv/parse", test_tlv_parse);
   g_test_add_func("/tlv/append", test_otrng_append_tlv);
-  g_test_add_func("/tlv/append_padding", test_otrng_append_padding_tlv);
 }

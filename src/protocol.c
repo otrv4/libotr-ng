@@ -323,7 +323,7 @@ tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
     return OTRNG_ERROR;
   }
 
-  // Append padding
+  /* Append padding */
   msg_len = strlen(msg) + 1 + len;
   if (!generate_padding(&padding, &padding_len, msg_len, otr)) {
     otrng_free(ser);
