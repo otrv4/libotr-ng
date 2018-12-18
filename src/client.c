@@ -1030,6 +1030,13 @@ otrng_client_delete_my_prekey_message_by_id(uint32_t id,
   otrng_list_free(node, prekey_message_free_from_list);
 }
 
+API void otrng_client_set_should_heartbeat(otrng_bool (*should_heartbeat)(int),
+                                           otrng_client_s *client) {
+  assert(client != NULL);
+
+  client->should_heartbeat = should_heartbeat;
+}
+
 API void otrng_client_set_padding(size_t granularity, otrng_client_s *client) {
   client->padding = granularity;
   assert(client != NULL);
