@@ -537,7 +537,7 @@ static void test_global_state_fingerprint_writing(void) {
       "foo5@example.org\tbob@otr.im\tprpl-"
       "jabber\td388f4a241b21fa0d5a0a15ed63bcaaaf062f47fc188f4a241b21fa0d5a0a15e"
       "d63bcaaaf062f47fc188f4a241b21fa0d5a0a15ed63bceef\ttrusted\n");
-
+  otrng_free(content);
   otrng_global_state_free(state);
 }
 

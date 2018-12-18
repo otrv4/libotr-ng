@@ -452,6 +452,8 @@ static void orchestration_fixture_teardown(orchestration_fixture_s *f,
   otrng_client_profile_free(f->client_profile);
   otrng_prekey_profile_free(f->prekey_profile);
   v3_free_key(f->v3_key);
+  otrng_free((char *)f->client_id.protocol);
+  otrng_free((char *)f->client_id.account);
 }
 
 static otrng_client_profile_s *
