@@ -180,7 +180,7 @@ API void otrng_fingerprints_do_all(const struct otrng_client_s *client,
 
 API void otrng_fingerprint_forget(const otrng_client_s *client,
                                   otrng_known_fingerprint_s *fp) {
-  list_element_s *prev, *c, *work;
+  list_element_s *prev = NULL, *c, *work;
   assert(client);
 
   if (client->fingerprints == NULL) {
