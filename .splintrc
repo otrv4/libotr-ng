@@ -43,6 +43,7 @@
 -compmempass
 -exportlocal
 -fixedformalarray
+-formatcode
 -globstate
 -incondefs
 -mayaliasunique
