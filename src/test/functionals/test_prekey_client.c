@@ -30,7 +30,7 @@
 static void test_send_dake_1_message(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
+  set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
   alice->prekey_client = otrng_prekey_client_new();
@@ -49,13 +49,12 @@ static void test_send_dake_1_message(void) {
   otrng_free(dake_1);
 
   otrng_global_state_free(alice->global_state);
-  otrng_client_free(alice);
 }
 
 static void test_send_dake_3_message_with_storage_info_request(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
+  set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
   alice->prekey_client = otrng_prekey_client_new();
@@ -123,14 +122,13 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   otrng_free(dake_3);
 
   otrng_global_state_free(alice->global_state);
-  otrng_client_free(alice);
   otrng_prekey_dake2_message_destroy(&message);
 }
 
 static void test_receive_prekey_server_messages(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
+  set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
   alice->prekey_client = otrng_prekey_client_new();
@@ -179,7 +177,6 @@ static void test_receive_prekey_server_messages(void) {
   otrng_free(success);
 
   otrng_global_state_free(alice->global_state);
-  otrng_client_free(alice);
 }
 
 static void notify_error_cb(struct otrng_client_s *client, int error,
@@ -204,7 +201,7 @@ otrng_prekey_client_callbacks_s prekey_client_cb = {
 static void test_receive_prekey_ensemble_retrieval_message(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
+  set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
   alice->prekey_client = otrng_prekey_client_new();
@@ -257,7 +254,6 @@ static void test_receive_prekey_ensemble_retrieval_message(void) {
 
   otrng_free(alice->prekey_client->callbacks);
   otrng_global_state_free(alice->global_state);
-  otrng_client_free(alice);
 }
 
 void functionals_prekey_client_add_tests(void) {

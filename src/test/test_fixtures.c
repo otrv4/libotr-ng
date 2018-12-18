@@ -25,9 +25,8 @@ int dh_mpi_cmp(const dh_mpi m1, const dh_mpi m2) {
   return gcry_mpi_cmp(m1, m2);
 }
 
-otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
-                int byte) {
-  set_up_client(client, account_name, byte);
+otrng_s *set_up(struct otrng_client_s *client, int byte) {
+  set_up_client(client, byte);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
                            .type = OTRNG_POLICY_ALWAYS};
 
@@ -36,8 +35,8 @@ otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
 
 otrng_client_id_s create_client_id(const char *protocol, const char *account) {
   const otrng_client_id_s cid = {
-      .protocol = otrng_xstrdup(protocol),
-      .account = otrng_xstrdup(account),
+      .protocol = protocol,
+      .account = account,
   };
   return cid;
 }
@@ -362,11 +361,10 @@ otrng_bool test_should_not_heartbeat(int last_sent) {
   return otrng_false;
 }
 
-void set_up_client(otrng_client_s *client, const char *account_name, int byte) {
+void set_up_client(otrng_client_s *client, int byte) {
   client->global_state = otrng_global_state_new(test_callbacks, otrng_false);
-
-  // TODO: REMOVE after updating every otrng_client_state_new(NULL)
-  client->client_id = create_client_id("otr", account_name);
+  client->global_state->clients =
+      otrng_list_add(client, client->global_state->clients);
 
   uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
   uint8_t forging_sym[ED448_PRIVATE_BYTES] = {byte + 0xD};

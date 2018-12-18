@@ -297,15 +297,13 @@ INTERNAL otrng_result otrng_client_fingerprint_v4_read_from(
     return OTRNG_ERROR;
   }
 
-  client_id.account = otrng_xstrdup((char *)items[1]);
-  client_id.protocol = otrng_xstrdup((char *)items[2]);
+  client_id.account = (char *)items[1];
+  client_id.protocol = (char *)items[2];
   fp_human = items[3];
 
   if (strlen((char *)fp_human) != FPRINT_LEN_BYTES * 2) {
     free(line);
     free(items);
-    otrng_free((char *)client_id.account);
-    otrng_free((char *)client_id.protocol);
     return OTRNG_ERROR;
   }
 

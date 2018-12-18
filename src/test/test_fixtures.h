@@ -70,10 +70,9 @@ void dake_fixture_teardown(dake_fixture_s *f, gconstpointer user_data);
 
 otrng_bool test_should_not_heartbeat(int last_sent);
 
-void set_up_client(otrng_client_s *client, const char *account_name, int byte);
+void set_up_client(otrng_client_s *client, int byte);
 
-otrng_s *set_up(struct otrng_client_s *client, const char *account_name,
-                int byte);
+otrng_s *set_up(struct otrng_client_s *client, int byte);
 
 void do_dake_fixture(otrng_s *alice, otrng_s *bob);
 

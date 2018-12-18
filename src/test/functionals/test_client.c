@@ -35,7 +35,7 @@
 static void test_client_conversation_api() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
+  set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
   otrng_conversation_s *alice_to_bob =
@@ -66,7 +66,6 @@ static void test_client_conversation_api() {
 
   /* Free memory */
   otrng_global_state_free(alice->global_state);
-  otrng_client_free(alice);
 }
 
 static void test_client_api() {
@@ -74,9 +73,9 @@ static void test_client_api() {
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
   otrng_client_s *charlie = otrng_client_new(CHARLIE_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
-  set_up_client(bob, BOB_ACCOUNT, 2);
-  set_up_client(charlie, CHARLIE_ACCOUNT, 3);
+  set_up_client(alice, 1);
+  set_up_client(bob, 2);
+  set_up_client(charlie, 3);
 
   char *query_message_to_bob =
       otrng_client_query_message(BOB_ACCOUNT, "Hi bob", alice);
@@ -222,15 +221,14 @@ static void test_client_api() {
   otrng_global_state_free(alice->global_state);
   otrng_global_state_free(bob->global_state);
   otrng_global_state_free(charlie->global_state);
-  otrng_client_free_all(alice, bob, charlie);
 }
 
 static void test_conversation_with_multiple_locations() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
-  set_up_client(bob, BOB_ACCOUNT, 2);
+  set_up_client(alice, 1);
+  set_up_client(bob, 2);
 
   // Alice sends a query message
   char *query_message =
@@ -320,15 +318,14 @@ static void test_conversation_with_multiple_locations() {
   // Free memory
   otrng_global_state_free(alice->global_state);
   otrng_global_state_free(bob->global_state);
-  otrng_client_free_all(alice, bob);
 }
 
 static void test_valid_identity_message_in_waiting_auth_i() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
-  set_up_client(bob, BOB_ACCOUNT, 2);
+  set_up_client(alice, 1);
+  set_up_client(bob, 2);
 
   char *query_message_to_bob =
       otrng_client_query_message(BOB_ACCOUNT, "Hi bob", alice);
@@ -470,15 +467,14 @@ static void test_valid_identity_message_in_waiting_auth_i() {
   // Free memory
   otrng_global_state_free(alice->global_state);
   otrng_global_state_free(bob->global_state);
-  otrng_client_free_all(alice, bob);
 }
 
 static void test_invalid_auth_r_message_in_not_waiting_auth_r() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
-  set_up_client(bob, BOB_ACCOUNT, 2);
+  set_up_client(alice, 1);
+  set_up_client(bob, 2);
 
   // Alice sends a query message to Bob
   char *query_message_to_bob =
@@ -589,15 +585,14 @@ static void test_invalid_auth_r_message_in_not_waiting_auth_r() {
   // Free memory
   otrng_global_state_free(alice->global_state);
   otrng_global_state_free(bob->global_state);
-  otrng_client_free_all(alice, bob);
 }
 
 static void test_valid_identity_message_in_waiting_auth_r() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
-  set_up_client(bob, BOB_ACCOUNT, 2);
+  set_up_client(alice, 1);
+  set_up_client(bob, 2);
 
   // Alice sends a query message to Bob
   char *query_message_to_bob =
@@ -824,15 +819,14 @@ static void test_valid_identity_message_in_waiting_auth_r() {
   // Free memory
   otrng_global_state_free(alice->global_state);
   otrng_global_state_free(bob->global_state);
-  otrng_client_free_all(alice, bob);
 }
 
 static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
-  set_up_client(bob, BOB_ACCOUNT, 2);
+  set_up_client(alice, 1);
+  set_up_client(bob, 2);
 
   // Alice sends a query message to Bob
   char *query_message_to_bob =
@@ -956,7 +950,6 @@ static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
   // Free memory
   otrng_global_state_free(alice->global_state);
   otrng_global_state_free(bob->global_state);
-  otrng_client_free_all(alice, bob);
 }
 
 static void test_client_receives_fragmented_message(void) {
@@ -967,7 +960,7 @@ static void test_client_receives_fragmented_message(void) {
   otrng_assert_is_success(otrng_fragment_message(60, fmessage, 0, 0, message));
 
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
-  set_up_client(alice, ALICE_ACCOUNT, 1);
+  set_up_client(alice, 1);
 
   char *to_send = NULL, *to_display = NULL;
   otrng_bool ignore = otrng_false;
@@ -985,7 +978,6 @@ static void test_client_receives_fragmented_message(void) {
 
   otrng_message_free(fmessage);
   otrng_global_state_free(alice->global_state);
-  otrng_client_free(alice);
 }
 
 static void test_client_expires_old_fragments(void) {
@@ -996,7 +988,7 @@ static void test_client_expires_old_fragments(void) {
   otrng_assert_is_success(otrng_fragment_message(60, fmessage, 0, 0, message));
 
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
-  set_up_client(alice, ALICE_ACCOUNT, 1);
+  set_up_client(alice, 1);
 
   char *to_send = NULL, *to_display = NULL;
   time_t expiration_time;
@@ -1018,7 +1010,6 @@ static void test_client_expires_old_fragments(void) {
   otrng_free(to_display);
   otrng_message_free(fmessage);
   otrng_global_state_free(alice->global_state);
-  otrng_client_free(alice);
 }
 
 static void test_client_sends_fragmented_message(void) {
@@ -1026,8 +1017,8 @@ static void test_client_sends_fragmented_message(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
-  set_up_client(alice, ALICE_ACCOUNT, 1);
-  set_up_client(bob, BOB_ACCOUNT, 2);
+  set_up_client(alice, 1);
+  set_up_client(bob, 2);
 
   char *query_message_to_bob =
       otrng_client_query_message(BOB_ACCOUNT, "Hi bob", alice);
@@ -1095,7 +1086,6 @@ static void test_client_sends_fragmented_message(void) {
   otrng_message_free(to_send);
   otrng_global_state_free(alice->global_state);
   otrng_global_state_free(bob->global_state);
-  otrng_client_free_all(alice, bob);
 }
 
 void functionals_client_add_tests(void) {

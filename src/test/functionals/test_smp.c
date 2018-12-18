@@ -34,8 +34,8 @@ static void test_smp_state_machine(void) {
   otrng_client_s *alice_state = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_state = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_state, ALICE_ACCOUNT, 1);
-  otrng_s *bob = set_up(bob_state, BOB_ACCOUNT, 2);
+  otrng_s *alice = set_up(alice_state, 1);
+  otrng_s *bob = set_up(bob_state, 2);
 
   smp_message_1_s smp_message_1;
   smp_message_2_s smp_message_2;
@@ -136,7 +136,6 @@ static void test_smp_state_machine(void) {
 
   otrng_global_state_free(alice_state->global_state);
   otrng_global_state_free(bob_state->global_state);
-  otrng_client_free_all(alice_state, bob_state);
   otrng_conn_free_all(alice, bob);
 }
 
@@ -146,8 +145,8 @@ static void test_smp_state_machine_abort(void) {
   otrng_client_s *alice_state = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_state = otrng_client_new(BOB_IDENTITY);
 
-  otrng_s *alice = set_up(alice_state, ALICE_ACCOUNT, 1);
-  otrng_s *bob = set_up(bob_state, BOB_ACCOUNT, 2);
+  otrng_s *alice = set_up(alice_state, 1);
+  otrng_s *bob = set_up(bob_state, 2);
 
   smp_message_1_s smp_message_1;
   smp_message_2_s smp_message_2;
@@ -231,7 +230,6 @@ static void test_smp_state_machine_abort(void) {
 
   otrng_global_state_free(alice_state->global_state);
   otrng_global_state_free(bob_state->global_state);
-  otrng_client_free_all(alice_state, bob_state);
   otrng_conn_free_all(alice, bob);
 }
 

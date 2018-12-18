@@ -34,7 +34,7 @@
 
 static void test_client_get_our_fingerprint() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
-  set_up_client(alice, ALICE_ACCOUNT, 1);
+  set_up_client(alice, 1);
 
   otrng_fingerprint expected_fp = {0};
   otrng_assert(otrng_serialize_fingerprint(expected_fp, alice->keypair->pub));
@@ -44,7 +44,6 @@ static void test_client_get_our_fingerprint() {
   otrng_assert_cmpmem(expected_fp, our_fp, sizeof(otrng_fingerprint));
 
   otrng_global_state_free(alice->global_state);
-  otrng_client_free(alice);
 }
 
 static void test_fingerprint_hash_to_human() {

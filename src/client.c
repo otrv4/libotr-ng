@@ -73,10 +73,16 @@ tstatic otrng_bool should_heartbeat(int last_sent) {
   return otrng_false;
 }
 
+/* The given client_id will be copied, so managing the lifetime of the protocol
+   and account strings is the responsibility of the client. */
 API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
   otrng_client_s *client = otrng_xmalloc_z(sizeof(otrng_client_s));
+  const otrng_client_id_s cid = {
+      .protocol = otrng_xstrdup(client_id.protocol),
+      .account = otrng_xstrdup(client_id.account),
+  };
 
-  client->client_id = client_id;
+  client->client_id = cid;
   client->max_stored_msg_keys = 1000;
   client->max_published_prekey_msg = 100;
   client->minimum_stored_prekey_msg = 20;

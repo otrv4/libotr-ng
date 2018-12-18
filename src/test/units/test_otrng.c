@@ -291,7 +291,7 @@ static void test_otrng_build_prekey_ensemble() {
 
 static void test_otrng_invokes_shared_session_state_callbacks(void) {
   otrng_client_s *client = otrng_client_new(ALICE_IDENTITY);
-  otrng_s *protocol = set_up(client, ALICE_ACCOUNT, 1);
+  otrng_s *protocol = set_up(client, 1);
 
   otrng_shared_session_state_s session;
   session = otrng_get_shared_session_state(protocol);
@@ -306,7 +306,6 @@ static void test_otrng_invokes_shared_session_state_callbacks(void) {
 
   otrng_conn_free(protocol);
   otrng_global_state_free(client->global_state);
-  otrng_client_free(client);
 }
 
 static void test_otrng_generates_shared_session_state_string(void) {
@@ -375,8 +374,8 @@ void test_start_with_whitespace_tag(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
 
-  set_up_client(alice_client, ALICE_ACCOUNT, 1);
-  set_up_client(bob_client, BOB_ACCOUNT, 2);
+  set_up_client(alice_client, 1);
+  set_up_client(bob_client, 2);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
                            .type = OTRNG_POLICY_ALWAYS};
@@ -500,7 +499,6 @@ void test_start_with_whitespace_tag(void) {
 
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
-  otrng_client_free_all(alice_client, bob_client);
   otrng_conn_free_all(alice, bob);
 }
 
