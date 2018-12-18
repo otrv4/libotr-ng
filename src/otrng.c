@@ -2116,12 +2116,14 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     }
 
     if (otr->client->should_heartbeat(otr->last_sent)) {
+      otrng_debug_enter("trying to send a heartbeat message");
       if (!otrng_send_message(&response->to_send, "", warn, NULL,
                               MSG_FLAGS_IGNORE_UNREADABLE, otr)) {
         otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
         otrng_data_message_free(msg);
         return OTRNG_ERROR;
       }
+      otrng_debug_exit("heartbeat message sent");
       otr->last_sent = time(NULL);
     }
 
