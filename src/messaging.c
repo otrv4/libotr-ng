@@ -427,14 +427,6 @@ global_state_read_from(otrng_global_state_s *gs, FILE *f,
     if (otrng_failed(on_each_line(client, f))) {
       return OTRNG_ERROR;
     }
-
-    if (client_id.protocol) {
-      free((char *)client_id.protocol);
-    }
-
-    if (client_id.account) {
-      free((char *)client_id.account);
-    }
   }
 
   return OTRNG_SUCCESS;
