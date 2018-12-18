@@ -130,7 +130,6 @@ AX_CFLAGS_GCC_OPTION([-Wformat-security])
 AX_CFLAGS_GCC_OPTION([-Wstrict-overflow=5])
 AX_CFLAGS_GCC_OPTION([-Wswitch-default])
 AX_CFLAGS_GCC_OPTION([-Wswitch-enum])
-AX_CFLAGS_GCC_OPTION([-Wconversion])
 dnl for undefined behavior
 AX_CFLAGS_GCC_OPTION([-fcatch-undefined-behavior])
 AX_CFLAGS_GCC_OPTION([-fno-delete-null-pointer-checks])

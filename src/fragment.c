@@ -143,8 +143,8 @@ init_message_to_send_with_total(otrng_message_to_send_s *fragments, int total) {
 
 INTERNAL otrng_result otrng_fragment_message(int max_size,
                                              otrng_message_to_send_s *fragments,
-                                             int our_instance,
-                                             int their_instance,
+                                             uint32_t our_instance,
+                                             uint32_t their_instance,
                                              const string_p msg) {
   size_t msg_len = strlen(msg);
   size_t limit = max_size - FRAGMENT_HEADER_LEN;

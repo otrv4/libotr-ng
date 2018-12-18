@@ -207,7 +207,7 @@ typedef struct otrng_client_callbacks_s {
   void (*load_fingerprints_v4)(struct otrng_client_s *client);
 } otrng_client_callbacks_s;
 
-INTERNAL otrng_bool
+INTERNAL int
 otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb);
 
 INTERNAL void

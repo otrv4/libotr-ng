@@ -66,7 +66,7 @@ tstatic void conversation_free(void *data) {
 
 tstatic otrng_bool should_heartbeat(int last_sent) {
   time_t now = time(NULL);
-  int interval = now - HEARTBEAT_INTERVAL;
+  long interval = now - HEARTBEAT_INTERVAL;
   if (last_sent < interval) {
     return otrng_true;
   }
@@ -498,7 +498,7 @@ API otrng_result otrng_expire_encrypted_session(char **new_msg,
   return OTRNG_SUCCESS;
 }
 
-API otrng_result otrng_client_expire_fragments(int expiration_time,
+API otrng_result otrng_client_expire_fragments(uint32_t expiration_time,
                                                otrng_client_s *client) {
   const list_element_s *el = NULL;
   otrng_conversation_s *conv = NULL;
@@ -539,7 +539,7 @@ otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client) {
   return client->minimum_stored_prekey_msg;
 }
 
-tstatic otrng_result
+tstatic uint64_t
 otrng_client_get_client_profile_exp_time(otrng_client_s *client) {
   assert(client != NULL);
 
@@ -1080,8 +1080,7 @@ otrng_client_set_client_profile_exp_time(uint64_t client_profile_exp_time,
   client->client_profile_exp_time = client_profile_exp_time;
 }
 
-API otrng_result
-otrng_client_get_prekey_profile_exp_time(otrng_client_s *client) {
+API uint64_t otrng_client_get_prekey_profile_exp_time(otrng_client_s *client) {
   assert(client != NULL);
 
   return client->prekey_profile_exp_time;

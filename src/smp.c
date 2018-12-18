@@ -56,6 +56,8 @@ tstatic void handle_smp_event_cb_v4(const otrng_smp_event event,
     conv->client->global_state->callbacks->smp_update(event, progress_percent,
                                                       conv);
     break;
+  case OTRNG_SMP_EVENT_NONE:
+    break;
   default:
     /* OTRNG_SMP_EVENT_NONE. Should not be used. */
     break;

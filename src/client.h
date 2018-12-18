@@ -160,7 +160,7 @@ API otrng_result otrng_expire_encrypted_session(char **new_msg,
  *
  * @details Details around this function if any
  **/
-API otrng_result otrng_client_expire_fragments(int expiration_time,
+API otrng_result otrng_client_expire_fragments(uint32_t expiration_time,
                                                otrng_client_s *client);
 
 API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint fp,
@@ -254,8 +254,7 @@ API void
 otrng_client_set_client_profile_exp_time(uint64_t client_profile_exp_time,
                                          otrng_client_s *client);
 
-API otrng_result
-otrng_client_get_prekey_profile_exp_time(otrng_client_s *client);
+API uint64_t otrng_client_get_prekey_profile_exp_time(otrng_client_s *client);
 
 API void
 otrng_client_set_prekey_profile_exp_time(uint64_t prekey_profile_exp_time,
@@ -288,7 +287,7 @@ otrng_client_get_max_published_prekey_msg(otrng_client_s *client);
 tstatic otrng_result
 otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
 
-tstatic otrng_result
+tstatic uint64_t
 otrng_client_get_client_profile_exp_time(otrng_client_s *client);
 
 #endif

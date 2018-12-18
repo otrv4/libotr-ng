@@ -47,8 +47,8 @@ INTERNAL void otrng_fragment_context_free(fragment_context_s *context);
 
 INTERNAL otrng_result otrng_fragment_message(int max_size,
                                              otrng_message_to_send_s *fragments,
-                                             int our_instance,
-                                             int their_instance,
+                                             uint32_t our_instance,
+                                             uint32_t their_instance,
                                              const string_p msg);
 
 INTERNAL otrng_result otrng_unfragment_message(char **unfrag_msg,

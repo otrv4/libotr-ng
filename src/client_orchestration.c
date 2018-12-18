@@ -442,7 +442,7 @@ tstatic otrng_bool ensure_valid_prekey_profile(otrng_client_s *client) {
 tstatic void create_new_prekey_messages(otrng_client_s *client) {
   prekey_message_s **messages;
   size_t ix;
-  size_t to_publish =
+  uint8_t to_publish =
       client->max_published_prekey_msg - otrng_list_len(client->our_prekeys);
 
   if (client->prekey_msgs_num_to_publish > to_publish) {

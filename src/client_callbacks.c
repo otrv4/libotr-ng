@@ -22,7 +22,7 @@
 #include "client_callbacks.h"
 #include "client.h"
 
-INTERNAL otrng_bool
+INTERNAL int
 otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
   return otrng_bool_is_true(
       cb->create_privkey_v3 != NULL && cb->create_privkey_v4 != NULL &&

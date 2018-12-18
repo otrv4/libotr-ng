@@ -46,11 +46,10 @@ static const uint8_t prime_order_bytes_dup[ED448_SCALAR_BYTES] = {
     0x23, 0x78, 0xc2, 0x92, 0xab, 0x58, 0x44, 0xf3,
 };
 
-static void choose_T(goldilocks_448_point_p chosen,
-                     const goldilocks_448_point_p Ai, uint8_t is_secret,
-                     const goldilocks_448_point_p Ri,
-                     const goldilocks_448_point_p Ti,
-                     const goldilocks_448_scalar_p ci) {
+static void
+choose_T(goldilocks_448_point_p chosen, const goldilocks_448_point_p Ai,
+         goldilocks_bool_t is_secret, const goldilocks_448_point_p Ri,
+         const goldilocks_448_point_p Ti, const goldilocks_448_scalar_p ci) {
   /* Ti = is_secret_i ? Ti : Ri + Ai * ci */
   goldilocks_448_point_scalarmul(chosen, Ai, ci);
   goldilocks_448_point_add(chosen, Ri, chosen);
