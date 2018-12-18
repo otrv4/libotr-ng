@@ -64,7 +64,6 @@ static void test_client_conversation_api() {
   otrng_assert(alice_to_charlie);
   otrng_assert(alice_to_charlie->conn);
 
-  /* Free memory */
   otrng_global_state_free(alice->global_state);
 }
 
@@ -315,7 +314,6 @@ static void test_conversation_with_multiple_locations() {
   otrng_free(from_alice_to_bob);
   from_alice_to_bob = NULL;
 
-  // Free memory
   otrng_global_state_free(alice->global_state);
   otrng_global_state_free(bob->global_state);
 }

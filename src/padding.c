@@ -38,6 +38,7 @@ INTERNAL otrng_result generate_padding(uint8_t **dst, size_t *dst_len,
   tlv_s *padding_tlv;
   size_t ret;
   size_t padding_len = calculate_padding_len(msg_len, otr->client->padding);
+
   if (!padding_len) {
     return OTRNG_SUCCESS;
   }

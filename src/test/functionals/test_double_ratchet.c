@@ -32,7 +32,7 @@ static void test_double_ratchet_new_sending_ratchet_in_order(void) {
   otrng_s *alice = set_up(alice_client, 1);
   otrng_s *bob = set_up(bob_client, 2);
 
-  // DAKE has finished
+  /* DAKE has finished */
   do_dake_fixture(alice, bob);
 
   otrng_response_s *response_to_alice = NULL;

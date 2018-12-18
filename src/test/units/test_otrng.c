@@ -500,6 +500,42 @@ void test_start_with_whitespace_tag(void) {
   otrng_conn_free_all(alice, bob);
 }
 
+void test_send_with_padding(void) {
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
+
+  size_t granularity = 256;
+  otrng_client_set_padding(granularity, alice_client);
+
+  otrng_s *alice = set_up(alice_client, 1);
+  otrng_s *bob = set_up(bob_client, 2);
+
+  /* DAKE has finished */
+  do_dake_fixture(alice, bob);
+
+  string_p to_send_1 = NULL;
+  otrng_result result;
+  otrng_warning warn = OTRNG_WARN_NONE;
+
+  /* Alice sends a data message */
+  result = otrng_send_message(&to_send_1, "hi", &warn, NULL, 0, alice);
+  assert_message_sent(result, to_send_1);
+  otrng_assert(!alice->keys->old_mac_keys);
+
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 2);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
+
+  g_assert_cmpint(1094, ==,
+                  strlen(to_send_1)); /* without padding this is 748 */
+
+  free(to_send_1);
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_conn_free_all(alice, bob);
+}
+
 void units_otrng_add_tests(void) {
   (void)test_otrng_receives_identity_message_invalid_on_start; // this function
                                                                // is unused
@@ -550,4 +586,5 @@ void units_otrng_add_tests(void) {
                   test_otrng_build_prekey_ensemble);
   g_test_add_func("/otrng/start_with_whitespace_tag",
                   test_start_with_whitespace_tag);
+  g_test_add_func("/otrng/send_with_padding", test_send_with_padding);
 }
