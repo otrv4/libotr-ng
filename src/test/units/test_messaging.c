@@ -482,10 +482,21 @@ static void test_instance_tag_api(void) {
 static char *read_full_file(FILE *fp) {
   long fsize = ftell(fp);
   char *buffer;
+  size_t result;
+
+  if (fsize < 0) {
+    return NULL;
+  }
+
+  buffer = malloc(fsize + 1);
 
   rewind(fp);
-  buffer = malloc(fsize + 1);
-  fread(buffer, fsize, 1, fp);
+  result = fread(buffer, fsize, 1, fp);
+  if (result < 1) {
+    free(buffer);
+    return NULL;
+  }
+
   buffer[fsize] = 0;
 
   return buffer;
