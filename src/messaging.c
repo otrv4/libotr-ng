@@ -525,7 +525,7 @@ API otrng_result otrng_global_state_fingerprints_v4_read_from(
   }
 
   while (!feof(f)) {
-    otrng_client_fingerprint_v4_read_from(gs, f, get_client);
+    (void)otrng_client_fingerprint_v4_read_from(gs, f, get_client);
   }
 
   return OTRNG_SUCCESS;

@@ -264,7 +264,8 @@ tstatic void fingerprint_hex_to_bytes(otrng_known_fingerprint_s *fp,
   size_t count;
   char *pos = (char *)hex;
   for (count = 0; count < FPRINT_LEN_BYTES; count++) {
-    sscanf(pos, "%2hhx", &fp->fp[count]);
+    // TODO: this format will not be understood by old compilers and splint
+    (void)sscanf(pos, "%2hhx", &fp->fp[count]);
     pos += 2;
   }
 }
