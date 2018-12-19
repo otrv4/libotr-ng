@@ -185,6 +185,8 @@ API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv) {
     return conv->conn->state == OTRNG_STATE_FINISHED;
   case 3:
     return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_FINISHED;
+  default:
+    break;
   }
 
   return otrng_false;
