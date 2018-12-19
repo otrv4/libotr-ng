@@ -274,6 +274,8 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
     return ret;
   case 0:
     return OTRNG_ERROR;
+  default:
+    break;
   }
 
   return OTRNG_ERROR;

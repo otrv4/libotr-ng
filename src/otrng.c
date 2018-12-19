@@ -2316,6 +2316,8 @@ tstatic otrng_result receive_message_v4_only(otrng_response_s *response,
 
   case MSG_OTR_ERROR:
     return receive_error_message(response, msg + strlen(ERROR_PREFIX), otr);
+  default:
+    break;
   }
 
   return OTRNG_SUCCESS;
