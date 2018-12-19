@@ -136,6 +136,15 @@ AX_CFLAGS_GCC_OPTION([-fno-strict-aliasing])
 
 AX_CFLAGS_GCC_OPTION([-Wno-unknown-pragmas])
 
+AX_CHECK_COMPILE_FLAG([-Wformat-security],
+    [AX_APPEND_FLAG([-Wformat-security])],
+    [AC_MSG_NOTICE(No support for -Wformat-security flag - continuing without it)]
+)
+
+AX_CHECK_COMPILE_FLAG([-Wstrict-overflow=5],
+    [AX_APPEND_FLAG([-Wstrict-overflow=5])],
+    [AC_MSG_NOTICE(No support for -Wstrict-overflow=5 flag - continuing without it)]
+)
 
 dnl Code coverage
 AX_CODE_COVERAGE
