@@ -244,9 +244,6 @@ tstatic uint8_t **split_tab_delimited_file(char *line, size_t max,
   while (index < max) {
     curr = strchr(last, '\t');
     if (curr == NULL) {
-
-      (void)strchr(last, '\t');
-
       result[index++] = (uint8_t *)last;
       break;
     }
