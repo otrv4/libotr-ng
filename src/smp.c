@@ -362,6 +362,8 @@ INTERNAL otrng_result otrng_smp_continue(string_p *to_send,
     return smp_continue_v4(to_send, secret, secret_len, otr);
   case OTRNG_PROTOCOL_VERSION_NONE:
     return OTRNG_ERROR;
+  default:
+    break;
   }
 
   return OTRNG_ERROR; // TODO: @smp IMPLEMENT
@@ -394,6 +396,8 @@ API otrng_result otrng_smp_abort(string_p *to_send, otrng_s *otr) {
     return otrng_smp_abort_v4(to_send, otr);
   case 0:
     return OTRNG_ERROR;
+  default:
+    break;
   }
   return OTRNG_ERROR;
 }
