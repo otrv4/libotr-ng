@@ -110,6 +110,8 @@ INTERNAL void otrng_error_message(string_p *to_send, otrng_err_code err_code) {
   case OTRNG_ERR_MSG_MALFORMED:
     *to_send = build_error_message(ERROR_CODE_3, "OTRNG_ERR_MALFORMED");
     break;
+  default:
+    break;
   }
 }
 

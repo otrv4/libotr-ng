@@ -436,6 +436,8 @@ tstatic otrng_result deserialize_field(otrng_client_profile_s *target,
     read = OTRv3_DSA_SIG_BYTES;
 
     break;
+  default:
+    break;
   }
 
   w += read;

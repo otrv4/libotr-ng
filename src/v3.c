@@ -510,6 +510,8 @@ tstatic void op_handle_message_event(void *opdata, OtrlMessageEvent msg_event,
     break;
   case OTRL_MSGEVENT_NONE:
     debug_print("OTRL_MSGEVENT_NONE");
+  default:
+    break;
   }
 
   debug_print(" received\n");

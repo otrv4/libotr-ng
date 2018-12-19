@@ -1568,6 +1568,8 @@ tstatic otrng_result receive_identity_message(string_p *dst,
   case OTRNG_STATE_FINISHED:
     result = receive_identity_message_on_state_start(dst, &msg, otr);
     break;
+  default:
+    break;
   }
 
   otrng_dake_identity_message_destroy(&msg);

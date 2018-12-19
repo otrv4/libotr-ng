@@ -166,6 +166,8 @@ API otrng_bool otrng_conversation_is_encrypted(otrng_conversation_s *conv) {
     return conv->conn->v3_conn->ctx->msgstate == OTRL_MSGSTATE_ENCRYPTED;
   case 4:
     return conv->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES;
+  default:
+    break;
   }
 
   return otrng_false;

@@ -141,6 +141,8 @@ tstatic tlv_s *otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp,
   case OTRNG_TLV_SYM_KEY:
     /* Ignore. They should not be passed to this function. */
     break;
+  default:
+    break;
   }
 
   if (!event) {
