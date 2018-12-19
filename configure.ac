@@ -126,8 +126,6 @@ AX_CFLAGS_GCC_OPTION([-Wlogicalop])
 AX_CFLAGS_GCC_OPTION([-Wno-type-limits])
 AX_CFLAGS_GCC_OPTION([-Wnull-dereference])
 AX_CFLAGS_GCC_OPTION([-Wwrite-strings])
-AX_CFLAGS_GCC_OPTION([-Wformat-security])
-AX_CFLAGS_GCC_OPTION([-Wstrict-overflow=5])
 AX_CFLAGS_GCC_OPTION([-Wswitch-default])
 AX_CFLAGS_GCC_OPTION([-Wswitch-enum])
 dnl for undefined behavior
