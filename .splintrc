@@ -19,6 +19,7 @@
 -DOtrlMessageEvent=int
 -DOtrlConvertType=int
 -DOtrlTLV=struct{}
+-DFingerprint=struct{}
 
 -linelen 160
 
