@@ -584,6 +584,40 @@ API void otrng_global_state_do_all_fingerprints(
   otrng_list_foreach(gs->clients, do_all_fingerprints, &fctx);
 }
 
+/* This function will actually not return ALL fingerprints.
+   Instead, it will return all fingerprints where we can find a corresponding
+   otrng_client_s instance Also, if you want keep the fingerprint from the
+   callback, you need to create a copy of it!
+*/
+API void otrng_global_state_do_all_fingerprints_v3(
+    const otrng_global_state_s *gs,
+    void (*fn)(const otrng_client_s *, otrng_known_fingerprint_v3_s *, void *),
+    void *context) {
+  otrng_client_id_s cid;
+  ConnContext *cc;
+  Fingerprint *fprint;
+  list_element_s *el;
+  otrng_known_fingerprint_v3_s fp;
+
+  for (cc = gs->user_state_v3->context_root; cc; cc = cc->next) {
+    /* Fingerprints are only stored in the master contexts */
+    if (cc->their_instance != OTRL_INSTAG_MASTER)
+      continue;
+
+    /* Don't bother with the first (fingerprintless) entry. */
+    for (fprint = cc->fingerprint_root.next; fprint; fprint = fprint->next) {
+      cid.protocol = cc->protocol;
+      cid.account = cc->accountname;
+      el = otrng_list_get(&cid, gs->clients, find_client_by_client_id);
+      if (el) {
+        fp.username = cc->username;
+        fp.fp = fprint;
+        fn(el->data, &fp, context);
+      }
+    }
+  }
+}
+
 INTERNAL void
 otrng_global_state_fingerprints_v3_loaded(otrng_global_state_s *gs) {
   gs->fingerprints_v3_loaded = otrng_true;

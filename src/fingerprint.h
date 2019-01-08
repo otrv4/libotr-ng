@@ -28,6 +28,13 @@
 #include "list.h"
 #include "shared.h"
 
+#ifndef S_SPLINT_S
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
+#include <libotr/context.h>
+#pragma clang diagnostic pop
+#endif
+
 #define FPRINT_LEN_BYTES 56
 #define OTRNG_FPRINT_HUMAN_LEN 126 // 56 / 4 * 9
 
@@ -39,6 +46,11 @@ typedef struct otrng_known_fingerprint_s {
   otrng_fingerprint fp;
   otrng_bool trusted;
 } otrng_known_fingerprint_s;
+
+typedef struct otrng_known_fingerprint_v3_s {
+  char *username;
+  Fingerprint *fp;
+} otrng_known_fingerprint_v3_s;
 
 typedef struct otrng_known_fingerprints_s {
   list_element_s *fps;

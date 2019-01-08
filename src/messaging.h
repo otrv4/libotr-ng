@@ -162,6 +162,11 @@ API void otrng_global_state_do_all_fingerprints(
     void (*fn)(const otrng_client_s *, otrng_known_fingerprint_s *, void *),
     void *context);
 
+API void otrng_global_state_do_all_fingerprints_v3(
+    const otrng_global_state_s *gs,
+    void (*fn)(const otrng_client_s *, otrng_known_fingerprint_v3_s *, void *),
+    void *context);
+
 INTERNAL void
 otrng_global_state_fingerprints_v3_loaded(otrng_global_state_s *gs);
 
