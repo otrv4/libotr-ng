@@ -204,6 +204,13 @@ static void load_fingerprints(otrng_client_s *client) {
   load_fingerprints__called_with = client;
 }
 
+static int load_fingerprints_v3__called = 0;
+static otrng_client_s *load_fingerprints_v3__called_with;
+static void load_fingerprints_v3(otrng_client_s *client) {
+  load_fingerprints_v3__called++;
+  load_fingerprints_v3__called_with = client;
+}
+
 static int store_fingerprints__called = 0;
 static otrng_client_s *store_fingerprints__called_with;
 static void store_fingerprints(otrng_client_s *client) {
@@ -341,6 +348,7 @@ static void orchestration_fixture_setup(orchestration_fixture_s *f,
   f->callbacks->load_privkey_v3 = load_privkey_v3;
   f->callbacks->store_fingerprints_v4 = store_fingerprints;
   f->callbacks->load_fingerprints_v4 = load_fingerprints;
+  f->callbacks->load_fingerprints_v3 = load_fingerprints_v3;
 
   f->long_term_key = otrng_keypair_new();
   otrng_assert_is_success(otrng_keypair_generate(f->long_term_key, sym1));

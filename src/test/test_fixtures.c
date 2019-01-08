@@ -125,6 +125,10 @@ otrng_client_callbacks_s test_callbacks[1] = {{
     .load_privkey_v4 = &load_privkey_v4_cb_empty,
     .load_client_profile = &load_client_profile_cb_empty,
     .load_prekey_profile = &load_prekey_profile_cb_empty,
+    .load_fingerprints_v4 = &load_fingerprints_v4_cb_empty,
+    .store_fingerprints_v4 = &store_fingerprints_v4_cb_empty,
+    .load_fingerprints_v3 = &load_fingerprints_v3_cb_empty,
+    .store_fingerprints_v3 = &store_fingerprints_v3_cb_empty,
 }};
 
 otrng_public_key *
@@ -394,6 +398,11 @@ get_account_and_protocol_cb_empty(char **account, char **protocol,
 
   return OTRNG_SUCCESS;
 }
+
+void store_fingerprints_v4_cb_empty(otrng_client_s *client) { (void)client; }
+void store_fingerprints_v3_cb_empty(otrng_client_s *client) { (void)client; }
+void load_fingerprints_v4_cb_empty(otrng_client_s *client) { (void)client; }
+void load_fingerprints_v3_cb_empty(otrng_client_s *client) { (void)client; }
 
 void create_privkey_v3_cb_empty(otrng_client_s *client) { (void)client; }
 

@@ -217,7 +217,11 @@ tstatic void op_new_fingerprint(void *opdata, OtrlUserState us,
 }
 
 /* The list of known fingerprints has changed.  Write them to disk. */
-tstatic void op_write_fingerprints(void *opdata) { (void)opdata; }
+tstatic void op_write_fingerprints(void *opdata) {
+  otrng_s *conv = opdata;
+
+  conv->client->global_state->callbacks->store_fingerprints_v3(conv->client);
+}
 
 /* A ConnContext has entered a secure state. */
 tstatic void op_gone_secure(void *opdata, ConnContext *context) {

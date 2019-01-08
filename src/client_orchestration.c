@@ -539,14 +539,30 @@ tstatic otrng_bool verify_valid_fingerprints(otrng_client_s *client) {
   return otrng_false;
 }
 
+tstatic otrng_bool verify_valid_fingerprints_v3(otrng_client_s *client) {
+  return client->global_state->fingerprints_v3_loaded;
+}
+
 tstatic void load_fingerprints_from_storage(otrng_client_s *client) {
   otrng_debug_enter("load_fingerprints_from_storage");
   client->global_state->callbacks->load_fingerprints_v4(client);
   otrng_debug_exit("load_fingerprints_from_storage");
 }
 
+tstatic void load_fingerprints_v3_from_storage(otrng_client_s *client) {
+  otrng_debug_enter("load_fingerprints_v3_from_storage");
+  client->global_state->callbacks->load_fingerprints_v3(client);
+  otrng_debug_exit("load_fingerprints_v3_from_storage");
+}
+
 tstatic void create_fingerprints(otrng_client_s *client) {
   client->fingerprints = otrng_xmalloc_z(sizeof(otrng_known_fingerprints_s));
+}
+
+tstatic void create_fingerprints_v3(otrng_client_s *client) {
+  /* So, this doesn't really need to do much, because the structures for v3
+   * storage are self creating */
+  otrng_global_state_fingerprints_v3_loaded(client->global_state);
 }
 
 tstatic void ensure_loaded_fingerprints(otrng_client_s *client) {
@@ -568,6 +584,26 @@ tstatic void ensure_loaded_fingerprints(otrng_client_s *client) {
   }
 
   signal_error_in_state_management(client, "Couldn't load fingerprints");
+}
+
+tstatic void ensure_loaded_fingerprints_v3(otrng_client_s *client) {
+  if (verify_valid_fingerprints_v3(client)) {
+    return;
+  }
+
+  load_fingerprints_v3_from_storage(client);
+
+  if (verify_valid_fingerprints_v3(client)) {
+    return;
+  }
+
+  create_fingerprints_v3(client);
+
+  if (verify_valid_fingerprints_v3(client)) {
+    return;
+  }
+
+  signal_error_in_state_management(client, "Couldn't load v3 fingerprints");
 }
 
 /* Note, the ensure_ family of functions will check whether the
@@ -616,6 +652,8 @@ API void otrng_client_ensure_correct_state(otrng_client_s *client) {
   }
 
   ensure_loaded_fingerprints(client);
+
+  ensure_loaded_fingerprints_v3(client);
 
   otrng_debug_exit("otrng_client_ensure_correct_state");
 }

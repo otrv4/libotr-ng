@@ -205,6 +205,12 @@ typedef struct otrng_client_callbacks_s {
 
   /* REQUIRED */
   void (*load_fingerprints_v4)(struct otrng_client_s *client);
+
+  /* REQUIRED */
+  void (*store_fingerprints_v3)(struct otrng_client_s *client);
+
+  /* REQUIRED */
+  void (*load_fingerprints_v3)(struct otrng_client_s *client);
 } otrng_client_callbacks_s;
 
 INTERNAL int

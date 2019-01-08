@@ -50,6 +50,7 @@ typedef struct otrng_global_state_s {
 
   const otrng_client_callbacks_s *callbacks;
   OtrlUserState user_state_v3;
+  otrng_bool fingerprints_v3_loaded;
 } otrng_global_state_s;
 
 API otrng_global_state_s *
@@ -146,13 +147,23 @@ API otrng_result otrng_global_state_fingerprints_v4_read_from(
     otrng_global_state_s *gs, FILE *fp,
     otrng_client_id_s (*read_client_id_for_key)(FILE *filep));
 
+API otrng_result otrng_global_state_fingerprints_v3_read_from(
+    otrng_global_state_s *gs, FILE *fp,
+    otrng_client_id_s (*read_client_id_for_key)(FILE *filep));
+
 API otrng_result otrng_global_state_fingerprints_v4_write_to(
+    const otrng_global_state_s *gs, FILE *privf);
+
+API otrng_result otrng_global_state_fingerprints_v3_write_to(
     const otrng_global_state_s *gs, FILE *privf);
 
 API void otrng_global_state_do_all_fingerprints(
     const otrng_global_state_s *gs,
     void (*fn)(const otrng_client_s *, otrng_known_fingerprint_s *, void *),
     void *context);
+
+INTERNAL void
+otrng_global_state_fingerprints_v3_loaded(otrng_global_state_s *gs);
 
 #ifdef DEBUG_API
 
