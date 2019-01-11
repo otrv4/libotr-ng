@@ -50,6 +50,7 @@ typedef enum {
   OTRNG_MSG_EVENT_HEARTBEAT_RECEIVED = 2,
   OTRNG_MSG_EVENT_HEARTBEAT_SENT = 3,
   OTRNG_MSG_EVENT_WRONG_INSTANCE = 4,
+  OTRNG_MSG_EVENT_INCORRECT_AMMOUNT_PREKEYS = 5,
 } otrng_msg_event;
 
 typedef struct otrng_shared_session_state_s {
@@ -153,8 +154,7 @@ typedef struct otrng_client_callbacks_s {
   /* REQUIRED */
   /* Handle diverse events
    */
-  void (*handle_event)(const otrng_msg_event event, string_p *to_display,
-                       const struct otrng_s *);
+  void (*handle_event)(const otrng_msg_event event);
 
   /* OPTIONAL */
   /* We received a request from the buddy to use the current "extra"
@@ -269,9 +269,9 @@ INTERNAL void otrng_client_callbacks_display_error_message(
     const otrng_client_callbacks_s *cb, const otrng_error_event event,
     string_p *to_display, const struct otrng_s *conv);
 
-INTERNAL void otrng_client_callbacks_handle_event(
-    const otrng_client_callbacks_s *cb, const otrng_msg_event event,
-    string_p *to_display, const struct otrng_s *conv);
+INTERNAL void
+otrng_client_callbacks_handle_event(const otrng_client_callbacks_s *cb,
+                                    const otrng_msg_event event);
 
 INTERNAL otrng_policy_s otrng_client_callbacks_define_policy(
     const otrng_client_callbacks_s *cb, struct otrng_client_s *client);

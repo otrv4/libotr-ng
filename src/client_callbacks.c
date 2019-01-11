@@ -139,13 +139,12 @@ INTERNAL void otrng_client_callbacks_display_error_message(
 
 INTERNAL void
 otrng_client_callbacks_handle_event(const otrng_client_callbacks_s *cb,
-                                    const otrng_msg_event event,
-                                    string_p *to_display, const otrng_s *conv) {
+                                    const otrng_msg_event event) {
   if (!cb->handle_event) {
     return;
   }
 
-  cb->handle_event(event, to_display, conv);
+  cb->handle_event(event);
 }
 
 INTERNAL otrng_policy_s otrng_client_callbacks_define_policy(

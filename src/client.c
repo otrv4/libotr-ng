@@ -594,7 +594,9 @@ otrng_client_build_prekey_messages(uint8_t num_messages,
   int i, j;
 
   if (num_messages > MAX_NUMBER_PUBLISHED_PREKEY_MSGS) {
-    // TODO: @error notify error
+    otrng_client_callbacks_handle_event(
+        client->global_state->callbacks,
+        OTRNG_MSG_EVENT_INCORRECT_AMMOUNT_PREKEYS);
     return NULL;
   }
 

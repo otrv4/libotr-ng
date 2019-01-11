@@ -120,19 +120,27 @@ typedef struct {
 
 typedef struct {
   void *ctx; /* How calbacks can keep state */
+
   void (*notify_error)(struct otrng_client_s *client, int error, void *ctx);
+
   void (*storage_status_received)(
       struct otrng_client_s *client,
       const otrng_prekey_storage_status_message_s *msg, void *ctx);
+
   void (*success_received)(struct otrng_client_s *client, void *ctx);
+
   void (*failure_received)(struct otrng_client_s *client, void *ctx);
+
   void (*no_prekey_in_storage_received)(struct otrng_client_s *client,
                                         void *ctx);
+
   void (*low_prekey_messages_in_storage)(struct otrng_client_s *client,
                                          char *server_identity, void *ctx);
+
   void (*prekey_ensembles_received)(struct otrng_client_s *client,
                                     prekey_ensemble_s *const *const ensembles,
                                     uint8_t num_ensembles, void *ctx);
+
   int (*build_prekey_publication_message)(
       struct otrng_client_s *client,
       otrng_prekey_publication_message_s *pub_msg,
