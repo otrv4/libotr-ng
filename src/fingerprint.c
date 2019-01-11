@@ -104,7 +104,7 @@ API otrng_known_fingerprint_s *
 otrng_fingerprint_get_by_fp(const otrng_client_s *client,
                             const otrng_fingerprint fp) {
   list_element_s *c;
-  assert(client);
+  assert(client != NULL);
 
   if (client->fingerprints == NULL) {
     return NULL;
@@ -124,7 +124,7 @@ API otrng_known_fingerprint_s *
 otrng_fingerprint_get_by_username(const otrng_client_s *client,
                                   const char *username) {
   list_element_s *c;
-  assert(client);
+  assert(client != NULL);
 
   if (client->fingerprints == NULL) {
     return NULL;
@@ -145,7 +145,7 @@ API otrng_known_fingerprint_s *otrng_fingerprint_add(otrng_client_s *client,
                                                      const char *peer,
                                                      otrng_bool trusted) {
   otrng_known_fingerprint_s *nfp;
-  assert(client);
+  assert(client != NULL);
 
   if (client->fingerprints == NULL) {
     client->fingerprints = otrng_xmalloc_z(sizeof(otrng_known_fingerprints_s));
@@ -167,7 +167,7 @@ API void otrng_fingerprints_do_all(const struct otrng_client_s *client,
                                               void *),
                                    void *context) {
   list_element_s *c;
-  assert(client);
+  assert(client != NULL);
 
   if (client->fingerprints == NULL) {
     return;
@@ -181,7 +181,7 @@ API void otrng_fingerprints_do_all(const struct otrng_client_s *client,
 API void otrng_fingerprint_forget(const otrng_client_s *client,
                                   otrng_known_fingerprint_s *fp) {
   list_element_s *prev = NULL, *c, *work;
-  assert(client);
+  assert(client != NULL);
 
   if (client->fingerprints == NULL) {
     return;
@@ -212,7 +212,7 @@ API void otrng_fingerprint_forget(const otrng_client_s *client,
 API otrng_known_fingerprint_s *
 otrng_fingerprint_get_current(const otrng_s *conn) {
   otrng_fingerprint fp;
-  assert(conn);
+  assert(conn != NULL);
 
   if (conn->their_client_profile == NULL) {
     return NULL;

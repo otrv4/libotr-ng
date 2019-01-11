@@ -190,7 +190,7 @@ INTERNAL otrng_result otrng_client_forging_key_write_to(
 static int get_limited_line(char **buf, FILE *f) {
   char *res = NULL;
 
-  assert(buf);
+  assert(buf != NULL);
 
   *buf = otrng_xmalloc_z(MAX_LINE_LENGTH * sizeof(char));
 
@@ -210,7 +210,7 @@ tstatic otrng_result otrng_client_read_from_prefix(FILE *fp, uint8_t **dec,
   char *line;
   int len;
 
-  assert(fp);
+  assert(fp != NULL);
 
   len = get_limited_line(&line, fp);
 
@@ -296,7 +296,7 @@ INTERNAL otrng_result otrng_client_fingerprint_v4_read_from(
   otrng_client_s *client;
   otrng_known_fingerprint_s *fpr;
 
-  assert(fp);
+  assert(fp != NULL);
   len = get_limited_line(&line, fp);
   if (len < 0) {
     return OTRNG_ERROR;

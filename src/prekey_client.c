@@ -194,7 +194,7 @@ static char *prekey_encode(const uint8_t *buffer, size_t buff_len) {
 
   l = otrl_base64_encode(ret, buffer, buff_len);
   ret[l] = '.';
-  ret[l + 1] = 0;
+  ret[l + 1] = '\0';
 
   return ret;
 }

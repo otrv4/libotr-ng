@@ -77,7 +77,7 @@ typedef struct otrng_client_s {
   uint64_t prekey_profile_exp_time;
   uint64_t profiles_buffer_time;
 
-  otrng_bool (*should_heartbeat)(int last_sent);
+  otrng_bool (*should_heartbeat)(long last_sent);
   size_t padding;
 
   /* This flag will be set when there is anything that should be published

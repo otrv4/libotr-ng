@@ -37,7 +37,7 @@ otrng_xstrndup(/*@notnull@*/ const char *s, size_t s_len) {
 
   new = otrng_xmalloc(s_len + 1);
   ret = memcpy(new, s, s_len + 1);
-  ret[s_len] = 0;
+  ret[s_len] = '\0';
 
   return ret;
 }
@@ -72,7 +72,7 @@ otrng_stpncpy(/*@notnull@*/ char *dst, /*@notnull@*/ const char *src,
   memmove(dst, src, w);
 
   for (t = dst + w; t < dst + n; t++) {
-    *t = 0;
+    *t = '\0';
   }
 
   return dst + w;

@@ -120,7 +120,7 @@ static otrng_result create_fragment_message(char **dst, const char *piece,
     return OTRNG_ERROR;
   }
 
-  (*dst)[FRAGMENT_HEADER_LEN + piece_len] = 0;
+  (*dst)[FRAGMENT_HEADER_LEN + piece_len] = '\0';
 
   return OTRNG_SUCCESS;
 }
@@ -321,8 +321,7 @@ otrng_unfragment_message(char **unfrag_msg, list_element_s **contexts,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_expire_fragments(time_t now,
-                                             uint32_t expiration_time,
+INTERNAL otrng_result otrng_expire_fragments(time_t now, double expiration_time,
                                              list_element_s **contexts) {
   list_element_s *current = *contexts;
 

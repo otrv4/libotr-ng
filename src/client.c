@@ -64,7 +64,7 @@ tstatic void conversation_free(void *data) {
   otrng_free(conv);
 }
 
-tstatic otrng_bool should_heartbeat(int last_sent) {
+tstatic otrng_bool should_heartbeat(long last_sent) {
   time_t now = time(NULL);
   long interval = now - HEARTBEAT_INTERVAL;
   if (last_sent < interval) {
@@ -1034,7 +1034,7 @@ otrng_client_delete_my_prekey_message_by_id(uint32_t id,
   otrng_list_free(node, prekey_message_free_from_list);
 }
 
-API void otrng_client_set_should_heartbeat(otrng_bool (*heartbeat)(int),
+API void otrng_client_set_should_heartbeat(otrng_bool (*heartbeat)(long),
                                            otrng_client_s *client) {
   assert(client != NULL);
 

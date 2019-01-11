@@ -56,8 +56,7 @@ INTERNAL otrng_result otrng_unfragment_message(char **unfrag_msg,
                                                const string_p msg,
                                                const uint32_t our_instance_tag);
 
-INTERNAL otrng_result otrng_expire_fragments(time_t now,
-                                             uint32_t expiration_time,
+INTERNAL otrng_result otrng_expire_fragments(time_t now, double expiration_time,
                                              list_element_s **contexts);
 
 #ifdef OTRNG_FRAGMENT_PRIVATE

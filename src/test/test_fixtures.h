@@ -68,7 +68,9 @@ void dake_fixture_setup(dake_fixture_s *f, gconstpointer user_data);
 
 void dake_fixture_teardown(dake_fixture_s *f, gconstpointer user_data);
 
-otrng_bool test_should_not_heartbeat(int last_sent);
+otrng_bool test_should_heartbeat(long last_sent);
+
+otrng_bool test_should_not_heartbeat(long last_sent);
 
 void set_up_client(otrng_client_s *client, int byte);
 

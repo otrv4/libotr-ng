@@ -360,7 +360,12 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_response_free(response_to_bob);
 }
 
-otrng_bool test_should_not_heartbeat(int last_sent) {
+otrng_bool test_should_heartbeat(long last_sent) {
+  (void)last_sent;
+  return otrng_true;
+}
+
+otrng_bool test_should_not_heartbeat(long last_sent) {
   (void)last_sent;
   return otrng_false;
 }

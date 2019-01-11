@@ -143,7 +143,7 @@ tstatic void allowed_versions(string_p dst, const otrng_s *otr) {
     *dst++ = '3';
   }
 
-  *dst = 0;
+  *dst = '\0';
 }
 
 tstatic const otrng_shared_prekey_pair_s *

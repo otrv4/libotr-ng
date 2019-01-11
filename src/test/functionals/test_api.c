@@ -29,18 +29,12 @@
 #include <glib.h>
 #include <string.h>
 
-#include "test_helpers.h"
-
 #include "test_fixtures.h"
+#include "test_helpers.h"
 
 #include "list.h"
 #include "otrng.h"
 #include "str.h"
-
-static otrng_bool test_should_heartbeat(int last_sent) {
-  (void)last_sent;
-  return otrng_true;
-}
 
 static void test_api_interactive_conversation(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
