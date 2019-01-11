@@ -137,6 +137,17 @@ INTERNAL void otrng_client_callbacks_display_error_message(
   cb->display_error_message(event, to_display, conv);
 }
 
+INTERNAL void
+otrng_client_callbacks_handle_event(const otrng_client_callbacks_s *cb,
+                                    const otrng_msg_event event,
+                                    string_p *to_display, const otrng_s *conv) {
+  if (!cb->handle_event) {
+    return;
+  }
+
+  cb->handle_event(event, to_display, conv);
+}
+
 INTERNAL otrng_policy_s otrng_client_callbacks_define_policy(
     const otrng_client_callbacks_s *cb, otrng_client_s *client) {
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
@@ -316,6 +327,16 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "display_error_message = ");
     otrng_debug_print_pointer(f, c->display_error_message);
+    debug_api_print(f, "\n");
+  }
+
+  if (otrng_debug_print_should_ignore("client_callbacks->handle_event")) {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "handle_event = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "handle_event = ");
+    otrng_debug_print_pointer(f, c->handle_event);
     debug_api_print(f, "\n");
   }
 

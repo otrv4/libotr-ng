@@ -44,6 +44,14 @@ typedef enum {
   OTRNG_ERROR_MALFORMED_EVENT = 4,
 } otrng_error_event;
 
+typedef enum {
+  OTRNG_MSG_EVENT_ENCRYPTION_REQUIRED = 0,
+  OTRNG_MSG_EVENT_ENCRYPTION_ERROR = 1,
+  OTRNG_MSG_EVENT_HEARTBEAT_RECEIVED = 2,
+  OTRNG_MSG_EVENT_HEARTBEAT_SENT = 3,
+  OTRNG_MSG_EVENT_WRONG_INSTANCE = 4,
+} otrng_msg_event;
+
 typedef struct otrng_shared_session_state_s {
   char *identifier1;
   char *identifier2;
@@ -141,6 +149,12 @@ typedef struct otrng_client_callbacks_s {
    */
   void (*display_error_message)(const otrng_error_event event,
                                 string_p *to_display, const struct otrng_s *);
+
+  /* REQUIRED */
+  /* Handle diverse events
+   */
+  void (*handle_event)(const otrng_msg_event event, string_p *to_display,
+                       const struct otrng_s *);
 
   /* OPTIONAL */
   /* We received a request from the buddy to use the current "extra"
@@ -253,6 +267,10 @@ INTERNAL void otrng_client_callbacks_smp_update(
 
 INTERNAL void otrng_client_callbacks_display_error_message(
     const otrng_client_callbacks_s *cb, const otrng_error_event event,
+    string_p *to_display, const struct otrng_s *conv);
+
+INTERNAL void otrng_client_callbacks_handle_event(
+    const otrng_client_callbacks_s *cb, const otrng_msg_event event,
     string_p *to_display, const struct otrng_s *conv);
 
 INTERNAL otrng_policy_s otrng_client_callbacks_define_policy(
