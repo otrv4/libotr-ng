@@ -350,21 +350,24 @@ tstatic otrng_result append_tlvs(uint8_t **dst, size_t *dst_len,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_prepare_to_send_data_message(
-    string_p *to_send, otrng_warning *warn, const string_p msg,
-    const tlv_list_s *tlvs, otrng_s *otr, unsigned char flags) {
+INTERNAL otrng_result otrng_prepare_to_send_data_message(string_p *to_send,
+                                                         const string_p msg,
+                                                         const tlv_list_s *tlvs,
+                                                         otrng_s *otr,
+                                                         unsigned char flags) {
   uint8_t *msg2 = NULL;
   size_t msg_len = 0;
   otrng_result result;
 
   if (otr->state == OTRNG_STATE_FINISHED) {
-    return OTRNG_ERROR; // Should restart
+    return OTRNG_ERROR; /* Should restart */
   }
 
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
-    if (warn) {
-      *warn = OTRNG_WARN_SEND_NOT_ENCRYPTED; // TODO: @queing queue message
-    }
+    otrng_client_callbacks_handle_event(
+        otr->client->global_state->callbacks,
+        OTRNG_MSG_EVENT_SENDING_NOT_IN_ENCRYPTED_STATE); // TODO: queue the
+                                                         // message
     return OTRNG_ERROR;
   }
 
@@ -372,7 +375,9 @@ INTERNAL otrng_result otrng_prepare_to_send_data_message(
     return OTRNG_ERROR;
   }
 
-  result = send_data_message(to_send, msg2, msg_len, otr, flags, warn);
+  otrng_warning warn;
+
+  result = send_data_message(to_send, msg2, msg_len, otr, flags, &warn);
 
   otr->last_sent = time(NULL);
 

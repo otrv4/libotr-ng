@@ -1820,10 +1820,7 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
   }
 
   // Reply with initial data message
-  // TODO: this ignores the warning received. that might
-  // be valid, but should be investigated.
-  return otrng_send_message(dst, "", NULL, NULL, MSG_FLAGS_IGNORE_UNREADABLE,
-                            otr);
+  return otrng_send_message(dst, "", NULL, MSG_FLAGS_IGNORE_UNREADABLE, otr);
 }
 
 // TODO: @refactoring this is the same as otrng_close
@@ -1831,7 +1828,6 @@ INTERNAL otrng_result otrng_expire_session(string_p *to_send, otrng_s *otr) {
   size_t ser_len = otrng_list_len(otr->keys->skipped_keys) * MAC_KEY_BYTES;
   uint8_t *ser_mac_keys = otrng_reveal_mac_keys_on_tlv(otr->keys);
   tlv_list_s *disconnected;
-  otrng_warning warn;
   otrng_result result;
 
   otr->keys->skipped_keys = NULL;
@@ -1844,9 +1840,7 @@ INTERNAL otrng_result otrng_expire_session(string_p *to_send, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  warn = OTRNG_WARN_NONE;
-  // TODO: we are ignoring the warning/notification happening here
-  result = otrng_send_message(to_send, "", &warn, disconnected,
+  result = otrng_send_message(to_send, "", disconnected,
                               MSG_FLAGS_IGNORE_UNREADABLE, otr);
 
   forget_our_keys(otr);
@@ -1971,9 +1965,7 @@ tstatic otrng_result receive_tlvs(otrng_response_s *response, otrng_s *otr) {
   }
 
   // Serialize response message to send
-  // TODO: this ignores the warning received. that might
-  // be valid, but should be investigated.
-  ret = otrng_send_message(&response->to_send, "", NULL, reply_tlvs,
+  ret = otrng_send_message(&response->to_send, "", reply_tlvs,
                            MSG_FLAGS_IGNORE_UNREADABLE, otr);
   otrng_tlv_list_free(reply_tlvs);
   return ret;
@@ -2119,7 +2111,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
     if (otr->client->should_heartbeat(otr->last_sent)) {
       otrng_debug_enter("trying to send a heartbeat message");
-      if (!otrng_send_message(&response->to_send, "", warn, NULL,
+      if (!otrng_send_message(&response->to_send, "", NULL,
                               MSG_FLAGS_IGNORE_UNREADABLE, otr)) {
         otrng_secure_wipe(mac_key, MAC_KEY_BYTES);
         otrng_data_message_free(msg);
@@ -2373,7 +2365,6 @@ INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
 }
 
 INTERNAL otrng_result otrng_send_message(string_p *to_send, const string_p msg,
-                                         otrng_warning *warn,
                                          const tlv_list_s *tlvs, uint8_t flags,
                                          otrng_s *otr) {
   if (!otr) {
@@ -2394,8 +2385,7 @@ INTERNAL otrng_result otrng_send_message(string_p *to_send, const string_p msg,
   case OTRNG_PROTOCOL_VERSION_3:
     return otrng_v3_send_message(to_send, msg, tlvs, otr->v3_conn);
   case OTRNG_PROTOCOL_VERSION_4:
-    return otrng_prepare_to_send_data_message(to_send, warn, msg, tlvs, otr,
-                                              flags);
+    return otrng_prepare_to_send_data_message(to_send, msg, tlvs, otr, flags);
   default:
     return OTRNG_ERROR;
   }
@@ -2405,7 +2395,6 @@ tstatic otrng_result otrng_close_v4(string_p *to_send, otrng_s *otr) {
   size_t ser_len;
   uint8_t *ser_mac_keys;
   tlv_list_s *disconnected;
-  otrng_warning warn;
   otrng_result result;
 
   if (otr->state != OTRNG_STATE_ENCRYPTED_MESSAGES) {
@@ -2424,10 +2413,7 @@ tstatic otrng_result otrng_close_v4(string_p *to_send, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
-  warn = OTRNG_WARN_NONE;
-  // TODO: we are ignoring the warning here. Send in NULL if we don't care.
-  // Otherwise we should act on it.
-  result = otrng_send_message(to_send, "", &warn, disconnected,
+  result = otrng_send_message(to_send, "", disconnected,
                               MSG_FLAGS_IGNORE_UNREADABLE, otr);
 
   otrng_tlv_list_free(disconnected);
@@ -2462,7 +2448,6 @@ tstatic otrng_result otrng_send_symkey_message_v4(
     size_t use_data_len, otrng_s *otr, unsigned char *extra_key) {
   unsigned char *tlv_data;
   tlv_list_s *tlvs;
-  otrng_warning warn;
   otrng_result ret;
 
   if (use_data_len > 0 && !use_data) {
@@ -2496,13 +2481,9 @@ tstatic otrng_result otrng_send_symkey_message_v4(
     return OTRNG_ERROR;
   }
 
-  warn = OTRNG_WARN_NONE;
   // TODO: @refactoring in v3 the extra_key is passed as a param to this
   // do the same?
-  // TODO: if we don't care about the warning, send in NULL. Otherwise
-  // act on it
-  ret = otrng_send_message(to_send, "", &warn, tlvs,
-                           MSG_FLAGS_IGNORE_UNREADABLE, otr);
+  ret = otrng_send_message(to_send, "", tlvs, MSG_FLAGS_IGNORE_UNREADABLE, otr);
   otrng_tlv_list_free(tlvs);
 
   return ret;

@@ -257,7 +257,6 @@ tstatic otrng_result send_message(char **new_msg, const char *msg,
                                   const char *recipient,
                                   otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
-  otrng_warning warn = OTRNG_WARN_NONE;
   otrng_result result;
 
   conv = get_or_create_conversation_with(recipient, client);
@@ -265,13 +264,7 @@ tstatic otrng_result send_message(char **new_msg, const char *msg,
     return OTRNG_ERROR;
   }
 
-  result = otrng_send_message(new_msg, msg, &warn, NULL, 0, conv->conn);
-
-  if (warn == OTRNG_WARN_SEND_NOT_ENCRYPTED) {
-    // TODO: @error we need to signal this a different way than by return values
-    /* return OTRNG_CLIENT_RESULT_ERROR_NOT_ENCRYPTED; */
-    return OTRNG_ERROR;
-  }
+  result = otrng_send_message(new_msg, msg, NULL, 0, conv->conn);
 
   return result;
 }

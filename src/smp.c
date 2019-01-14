@@ -236,7 +236,6 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
                                       const size_t answer_len, otrng_s *otr) {
   tlv_s *smp_start_tlv;
   tlv_list_s *tlvs;
-  otrng_warning warn;
   otrng_result ret;
 
   if (!otr) {
@@ -266,9 +265,7 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
       return OTRNG_ERROR;
     }
 
-    warn = OTRNG_WARN_NONE;
-    // TODO: do something about warn
-    ret = otrng_prepare_to_send_data_message(to_send, &warn, "", tlvs, otr,
+    ret = otrng_prepare_to_send_data_message(to_send, "", tlvs, otr,
                                              MSG_FLAGS_IGNORE_UNREADABLE);
     otrng_tlv_list_free(tlvs);
     return ret;
@@ -317,7 +314,6 @@ tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
                                      const size_t secret_len, otrng_s *otr) {
   otrng_smp_event event;
   tlv_list_s *tlvs;
-  otrng_warning warn;
   otrng_result ret;
 
   if (!otr) {
@@ -341,9 +337,7 @@ tstatic otrng_result smp_continue_v4(string_p *to_send, const uint8_t *secret,
                          otr->smp->message1->question,
                          otr->smp->message1->q_len, otr);
 
-  warn = OTRNG_WARN_NONE;
-  // TODO: warn
-  ret = otrng_prepare_to_send_data_message(to_send, &warn, "", tlvs, otr,
+  ret = otrng_prepare_to_send_data_message(to_send, "", tlvs, otr,
                                            MSG_FLAGS_IGNORE_UNREADABLE);
   otrng_tlv_list_free(tlvs);
 
@@ -372,7 +366,6 @@ INTERNAL otrng_result otrng_smp_continue(string_p *to_send,
 tstatic otrng_result otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
   tlv_list_s *tlvs =
       otrng_tlv_list_one(otrng_tlv_new(OTRL_TLV_SMP_ABORT, 0, NULL));
-  otrng_warning warn;
   otrng_result ret;
 
   if (!tlvs) {
@@ -380,9 +373,7 @@ tstatic otrng_result otrng_smp_abort_v4(string_p *to_send, otrng_s *otr) {
   }
 
   otr->smp->state_expect = SMP_STATE_EXPECT_1;
-  warn = OTRNG_WARN_NONE;
-  // TODO: warn
-  ret = otrng_prepare_to_send_data_message(to_send, &warn, "", tlvs, otr,
+  ret = otrng_prepare_to_send_data_message(to_send, "", tlvs, otr,
                                            MSG_FLAGS_IGNORE_UNREADABLE);
   otrng_tlv_list_free(tlvs);
   return ret;

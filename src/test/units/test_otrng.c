@@ -515,10 +515,9 @@ void test_send_with_padding(void) {
 
   string_p to_send_1 = NULL;
   otrng_result result;
-  otrng_warning warn = OTRNG_WARN_NONE;
 
   /* Alice sends a data message */
-  result = otrng_send_message(&to_send_1, "hi", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_1, "hi", NULL, 0, alice);
   assert_message_sent(result, to_send_1);
   otrng_assert(!alice->keys->old_mac_keys);
 

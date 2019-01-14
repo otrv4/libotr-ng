@@ -47,7 +47,7 @@ static void test_double_ratchet_new_sending_ratchet_in_order(void) {
   otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends a data message
-  result = otrng_send_message(&to_send_1, "hi", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_1, "hi", NULL, 0, alice);
   assert_message_sent(result, to_send_1);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -56,8 +56,7 @@ static void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result =
-      otrng_send_message(&to_send_2, "how are you?", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_2, "how are you?", NULL, 0, alice);
   assert_message_sent(result, to_send_2);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -66,7 +65,7 @@ static void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result = otrng_send_message(&to_send_3, "it's me", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_3, "it's me", NULL, 0, alice);
   assert_message_sent(result, to_send_3);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -103,7 +102,7 @@ static void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Bob sends a data message
-  result = otrng_send_message(&to_send_4, "oh, hi", &warn, NULL, 0, bob);
+  result = otrng_send_message(&to_send_4, "oh, hi", NULL, 0, bob);
   assert_message_sent(result, to_send_4);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -140,7 +139,7 @@ static void test_double_ratchet_new_sending_ratchet_in_order(void) {
   g_assert_cmpint(alice->keys->pn, ==, 4);
 
   // Bob sends another data message
-  result = otrng_send_message(&to_send_5, "I'm good", &warn, NULL, 0, bob);
+  result = otrng_send_message(&to_send_5, "I'm good", NULL, 0, bob);
   assert_message_sent(result, to_send_5);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
@@ -189,7 +188,7 @@ static void test_double_ratchet_same_ratchet_out_of_order(void) {
 
   // Alice sends a data message
 
-  result = otrng_send_message(&to_send_1, "hi", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_1, "hi", NULL, 0, alice);
   assert_message_sent(result, to_send_1);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -198,8 +197,7 @@ static void test_double_ratchet_same_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result =
-      otrng_send_message(&to_send_2, "how are you?", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_2, "how are you?", NULL, 0, alice);
   assert_message_sent(result, to_send_2);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -208,7 +206,7 @@ static void test_double_ratchet_same_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result = otrng_send_message(&to_send_3, "it's me", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_3, "it's me", NULL, 0, alice);
   assert_message_sent(result, to_send_3);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -217,7 +215,7 @@ static void test_double_ratchet_same_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result = otrng_send_message(&to_send_4, "ok?", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_4, "ok?", NULL, 0, alice);
   assert_message_sent(result, to_send_4);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -309,7 +307,7 @@ static void test_double_ratchet_new_ratchet_out_of_order(void) {
   otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends a data message
-  result = otrng_send_message(&to_send_1, "hi", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_1, "hi", NULL, 0, alice);
   assert_message_sent(result, to_send_1);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -318,8 +316,7 @@ static void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result =
-      otrng_send_message(&to_send_2, "how are you?", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_2, "how are you?", NULL, 0, alice);
   assert_message_sent(result, to_send_2);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -328,7 +325,7 @@ static void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->k, ==, 0);
   g_assert_cmpint(alice->keys->pn, ==, 0);
 
-  result = otrng_send_message(&to_send_3, "it's me", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_3, "it's me", NULL, 0, alice);
   assert_message_sent(result, to_send_3);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -365,7 +362,7 @@ static void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(bob->keys->pn, ==, 0);
 
   // Bob sends a data message
-  result = otrng_send_message(&to_send_4, "oh, hi", &warn, NULL, 0, bob);
+  result = otrng_send_message(&to_send_4, "oh, hi", NULL, 0, bob);
   assert_message_sent(result, to_send_4);
 
   g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -388,7 +385,7 @@ static void test_double_ratchet_new_ratchet_out_of_order(void) {
   g_assert_cmpint(alice->keys->pn, ==, 4);
 
   // Alice sends a data message
-  result = otrng_send_message(&to_send_5, "good", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_5, "good", NULL, 0, alice);
   assert_message_sent(result, to_send_5);
 
   g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 0);
@@ -451,7 +448,7 @@ static void test_double_ratchet_corrupted_ratchet(void) {
   otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends a data message
-  result = otrng_send_message(&to_send_1, "hi", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send_1, "hi", NULL, 0, alice);
   assert_message_sent(result, to_send_1);
   otrng_assert(!alice->keys->old_mac_keys);
 

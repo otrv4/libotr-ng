@@ -78,7 +78,6 @@ INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
                                             const string_p msg, otrng_s *otr);
 
 INTERNAL otrng_result otrng_send_message(string_p *to_send, const string_p msg,
-                                         otrng_warning *warn,
                                          /*@null@*/ const tlv_list_s *tlvs,
                                          uint8_t flags, otrng_s *otr);
 

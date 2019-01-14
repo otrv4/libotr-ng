@@ -59,7 +59,7 @@ static void test_api_interactive_conversation(void) {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Alice sends a data message
-    result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
+    result = otrng_send_message(&to_send, "hi", NULL, 0, alice);
     assert_message_sent(result, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
@@ -95,7 +95,7 @@ static void test_api_interactive_conversation(void) {
   // Next message Bob sends is a new DH ratchet
   for (message_id = 1; message_id < 4; message_id++) {
     // Bob sends a data message
-    result = otrng_send_message(&to_send, "hello", &warn, NULL, 0, bob);
+    result = otrng_send_message(&to_send, "hello", NULL, 0, bob);
     assert_message_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -254,7 +254,7 @@ static void test_otrng_send_offline_message() {
   otrng_result result;
 
   for (message_id = 1; message_id < 4; message_id++) {
-    result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
+    result = otrng_send_message(&to_send, "hi", NULL, 0, alice);
     assert_message_sent(result, to_send);
     otrng_assert(!alice->keys->old_mac_keys);
 
@@ -281,7 +281,7 @@ static void test_otrng_send_offline_message() {
 
   for (message_id = 1; message_id < 4; message_id++) {
     // Alice sends a data message
-    result = otrng_send_message(&to_send, "hello", &warn, NULL, 0, bob);
+    result = otrng_send_message(&to_send, "hello", NULL, 0, bob);
     assert_message_sent(result, to_send);
 
     g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
@@ -406,10 +406,10 @@ static void test_otrng_incorrect_offline_dake() {
   otrng_result result;
 
   // Alice is unable to send a data message
-  result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, bob);
+  result = otrng_send_message(&to_send, "hi", NULL, 0, bob);
   otrng_assert_is_error(result);
   otrng_assert(!to_send);
-  g_assert_cmpint(warn, ==, OTRNG_WARN_SEND_NOT_ENCRYPTED);
+  // g_assert_cmpint(warn, ==, OTRNG_WARN_SEND_NOT_ENCRYPTED);
 
   g_assert_cmpint(alice->keys->i, ==, 0);
   g_assert_cmpint(alice->keys->j, ==, 0);
@@ -444,8 +444,7 @@ static void test_api_whitespace_tag(void) {
   /* Alice sends plaintext and the policy adds the whitespace tag */
   string_p to_send = NULL;
   otrng_warning warn = OTRNG_WARN_NONE;
-  otrng_result result =
-      otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
+  otrng_result result = otrng_send_message(&to_send, "hi", NULL, 0, alice);
 
   const char *expected_tag =
       " \t  \t\t\t\t \t \t \t    \t\t \t    \t\t  \t\thi";
@@ -591,7 +590,7 @@ static void test_api_conversation_errors_1(void) {
   otrng_result result;
 
   // Alice sends a data message
-  result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", NULL, 0, alice);
 
   assert_message_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
@@ -631,7 +630,7 @@ static void test_api_conversation_errors_1(void) {
   to_send = NULL;
 
   // Alice sends another data message
-  result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", NULL, 0, alice);
   assert_message_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -900,8 +899,7 @@ static void test_api_conversation_v3(void) {
   otrng_warning warn = OTRNG_WARN_NONE;
 
   // Alice sends a data message
-  otrng_assert_is_success(
-      otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice));
+  otrng_assert_is_success(otrng_send_message(&to_send, "hi", NULL, 0, alice));
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
@@ -916,8 +914,7 @@ static void test_api_conversation_v3(void) {
   free_message_and_response(response_to_alice, &to_send);
 
   // Bob sends a data message
-  otrng_assert_is_success(
-      otrng_send_message(&to_send, "hi", &warn, NULL, 0, bob));
+  otrng_assert_is_success(otrng_send_message(&to_send, "hi", NULL, 0, bob));
   otrng_assert(to_send);
   otrng_assert_cmpmem("?OTR:AAMD", to_send, 9);
 
@@ -1238,7 +1235,7 @@ static void test_api_extra_sym_key(void) {
   otrng_warning warn = OTRNG_WARN_NONE;
   otrng_result result;
 
-  result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", NULL, 0, alice);
   assert_message_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
@@ -1313,7 +1310,7 @@ static void test_heartbeat_messages(void) {
   otrng_warning warn = OTRNG_WARN_NONE;
   otrng_result result;
 
-  result = otrng_send_message(&to_send, "hi", &warn, NULL, 0, alice);
+  result = otrng_send_message(&to_send, "hi", NULL, 0, alice);
   assert_message_sent(result, to_send);
   otrng_assert(!alice->keys->old_mac_keys);
 
