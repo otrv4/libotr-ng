@@ -651,9 +651,8 @@ static void test_api_conversation_errors_1(void) {
   response_to_alice = otrng_response_new();
   result = otrng_receive_message(response_to_alice, &warn, to_send, bob);
 
-  // otrng_assert(result == MESSAGE_NOT_VALID);
   otrng_assert(response_to_alice->to_send == NULL);
-  otrng_assert(response_to_alice->warning == OTRNG_WARN_RECEIVED_NOT_VALID);
+  otrng_assert_is_error(result);
 
   free_message_and_response(response_to_alice, &to_send);
   otrng_global_state_free(alice_client->global_state);

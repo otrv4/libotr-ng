@@ -52,7 +52,9 @@ typedef enum {
   OTRNG_MSG_EVENT_HEARTBEAT_SENT = 4,
   OTRNG_MSG_EVENT_WRONG_INSTANCE = 5,
   OTRNG_MSG_EVENT_INCORRECT_AMMOUNT_PREKEYS = 6,
+  /* Flagged when trying to send a data message not in an encrypted state. */
   OTRNG_MSG_EVENT_SENDING_NOT_IN_ENCRYPTED_STATE = 7,
+  OTRNG_MSG_EVENT_INVALID_MSG = 8,
 } otrng_msg_event;
 
 typedef struct otrng_shared_session_state_s {

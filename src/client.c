@@ -416,13 +416,6 @@ API otrng_result otrng_client_receive(char **new_msg, char **to_display,
 
   result = otrng_receive_message(response, &warn, msg, conv->conn);
 
-  if (warn == OTRNG_WARN_RECEIVED_NOT_VALID) {
-    //    return OTRNG_CLIENT_RESULT_ERROR_NOT_VALID;
-    // TODO: @error fix this
-    otrng_response_free(response);
-    return OTRNG_ERROR;
-  }
-
   if (response->to_send) {
     *new_msg = otrng_xstrdup(response->to_send);
   }

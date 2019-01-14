@@ -2051,10 +2051,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       }
       otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
-      response->warning = OTRNG_WARN_RECEIVED_NOT_VALID;
-      if (warn) {
-        *warn = OTRNG_WARN_RECEIVED_NOT_VALID;
-      }
+      otrng_client_callbacks_handle_event(otr->client->global_state->callbacks,
+                                          OTRNG_MSG_EVENT_INVALID_MSG);
 
       return OTRNG_ERROR;
     }
