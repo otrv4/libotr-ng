@@ -61,5 +61,4 @@ otrnginc_HEADERS = ../alloc.h \
                    ../smp_protocol.h \
                    ../str.h \
                    ../tlv.h \
-                   ../v3.h \
-                   ../warn.h
+                   ../v3.h

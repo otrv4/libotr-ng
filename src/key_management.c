@@ -30,7 +30,6 @@
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
-#include "warn.h"
 
 #include "debug.h"
 
@@ -948,7 +947,7 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
                                     const uint32_t until,
                                     const unsigned int max_skip,
                                     const char ratchet_type,
-                                    otrng_warning *warn) {
+                                    const otrng_client_callbacks_s *cb) {
   uint8_t zero_buffer[CHAIN_KEY_BYTES];
   goldilocks_shake256_ctx_p hd;
   uint8_t *extra_key = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
@@ -958,9 +957,8 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
   memset(zero_buffer, 0, CHAIN_KEY_BYTES);
 
   if ((tmp_receiving_ratchet->k + max_skip) < until) {
-    if (warn) {
-      *warn = OTRNG_WARN_STORAGE_FULL;
-    }
+    otrng_client_callbacks_handle_event(cb,
+                                        OTRNG_MSG_EVENT_MSG_KEYS_STORAGE_FULL);
 
     otrng_secure_free(extra_key);
     return OTRNG_SUCCESS;
@@ -1077,12 +1075,12 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
 INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
     k_msg_enc enc_key, k_msg_mac mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, unsigned int max_skip,
-    uint32_t msg_id, const char action, otrng_warning *warn) {
+    uint32_t msg_id, const char action, const otrng_client_callbacks_s *cb) {
 
   assert(action == 's' || action == 'r');
   if (action == 'r') {
     if (!store_enc_keys(enc_key, tmp_receiving_ratchet, msg_id, max_skip, 'c',
-                        warn)) {
+                        cb)) {
       return OTRNG_ERROR;
     }
   }
@@ -1118,7 +1116,8 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
 INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, unsigned int max_skip,
     receiving_ratchet_s *tmp_receiving_ratchet, uint32_t msg_id,
-    uint32_t previous_n, const char action, otrng_warning *warn) {
+    uint32_t previous_n, const char action,
+    const otrng_client_callbacks_s *cb) {
   /* Derive new ECDH and DH keys */
   k_msg_enc enc_key;
 
@@ -1127,7 +1126,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
     if (action == 'r') {
       /* Store any message keys from the previous DH Ratchet */
       if (!store_enc_keys(enc_key, tmp_receiving_ratchet, previous_n, max_skip,
-                          'd', warn)) {
+                          'd', cb)) {
         return OTRNG_ERROR;
       }
     }

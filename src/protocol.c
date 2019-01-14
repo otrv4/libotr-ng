@@ -207,8 +207,7 @@ tstatic otrng_result serialize_and_encode_data_message(
 
 tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
                                        size_t msg_len, otrng_s *otr,
-                                       unsigned char flags,
-                                       otrng_warning *warn) {
+                                       unsigned char flags) {
   data_message_s *data_msg = NULL;
   uint32_t ratchet_id = otr->keys->i;
   k_msg_enc enc_key;
@@ -217,16 +216,16 @@ tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
   /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(
           otr->keys, otr->client->max_stored_msg_keys, NULL, otr->keys->j, 0,
-          's', warn)) {
+          's', otr->client->global_state->callbacks)) {
     return OTRNG_ERROR;
   }
 
   memset(enc_key, 0, ENC_KEY_BYTES);
   memset(mac_key, 0, MAC_KEY_BYTES);
 
-  if (!otrng_key_manager_derive_chain_keys(enc_key, mac_key, otr->keys, NULL,
-                                           otr->client->max_stored_msg_keys, 0,
-                                           's', warn)) {
+  if (!otrng_key_manager_derive_chain_keys(
+          enc_key, mac_key, otr->keys, NULL, otr->client->max_stored_msg_keys,
+          0, 's', otr->client->global_state->callbacks)) {
     return OTRNG_ERROR;
   }
 
@@ -375,9 +374,7 @@ INTERNAL otrng_result otrng_prepare_to_send_data_message(string_p *to_send,
     return OTRNG_ERROR;
   }
 
-  otrng_warning warn;
-
-  result = send_data_message(to_send, msg2, msg_len, otr, flags, &warn);
+  result = send_data_message(to_send, msg2, msg_len, otr, flags);
 
   otr->last_sent = time(NULL);
 

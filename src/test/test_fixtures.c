@@ -248,7 +248,6 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_response_s *response_to_bob = otrng_response_new();
   otrng_response_s *response_to_alice = otrng_response_new();
   string_p query_message = NULL;
-  otrng_warning warn = OTRNG_WARN_NONE;
 
   otrng_assert(alice->state == OTRNG_STATE_START);
   otrng_assert(bob->state == OTRNG_STATE_START);
@@ -261,7 +260,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
 
   /* Bob receives a Query Message */
   otrng_assert_is_success(
-      otrng_receive_message(response_to_alice, &warn, query_message, bob));
+      otrng_receive_message(response_to_alice, query_message, bob));
   otrng_free(query_message);
 
   otrng_assert(!response_to_alice->to_display);
@@ -274,7 +273,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
 
   /* Alice receives an Identity Message */
   otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, &warn, response_to_alice->to_send, alice));
+      response_to_bob, response_to_alice->to_send, alice));
   otrng_free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
@@ -292,8 +291,8 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   otrng_assert_cmpmem("?OTR:AAQ2", response_to_bob->to_send, 9);
 
   /* Bob receives an Auth-R message */
-  otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
-                                                response_to_bob->to_send, bob));
+  otrng_assert_is_success(
+      otrng_receive_message(response_to_alice, response_to_bob->to_send, bob));
   otrng_free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 
@@ -320,7 +319,7 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
 
   /* Alice receives an Auth-I message */
   otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, &warn, response_to_alice->to_send, alice));
+      response_to_bob, response_to_alice->to_send, alice));
   otrng_free(response_to_alice->to_send);
   response_to_alice->to_send = NULL;
 
@@ -341,8 +340,8 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   g_assert_cmpint(alice->keys->k, ==, 0);
 
   /* Bob receives the initial data message */
-  otrng_assert_is_success(otrng_receive_message(response_to_alice, &warn,
-                                                response_to_bob->to_send, bob));
+  otrng_assert_is_success(
+      otrng_receive_message(response_to_alice, response_to_bob->to_send, bob));
   otrng_free(response_to_bob->to_send);
   response_to_bob->to_send = NULL;
 

@@ -391,7 +391,6 @@ API otrng_result otrng_client_receive(char **new_msg, char **to_display,
   otrng_result result = OTRNG_ERROR;
   otrng_response_s *response = NULL;
   otrng_conversation_s *conv = NULL;
-  otrng_warning warn;
 
   *should_ignore = otrng_false;
 
@@ -412,9 +411,8 @@ API otrng_result otrng_client_receive(char **new_msg, char **to_display,
   }
 
   response = otrng_response_new();
-  warn = OTRNG_WARN_NONE;
 
-  result = otrng_receive_message(response, &warn, msg, conv->conn);
+  result = otrng_receive_message(response, msg, conv->conn);
 
   if (response->to_send) {
     *new_msg = otrng_xstrdup(response->to_send);

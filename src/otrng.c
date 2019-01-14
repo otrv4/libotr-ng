@@ -409,8 +409,6 @@ tstatic otrng_bool message_is_otr_error(const string_p msg) {
 INTERNAL otrng_response_s *otrng_response_new(void) {
   otrng_response_s *response = otrng_xmalloc_z(sizeof(otrng_response_s));
 
-  response->warning = OTRNG_WARN_NONE;
-
   return response;
 }
 
@@ -433,7 +431,8 @@ tstatic void receive_plaintext(otrng_response_s *response, const string_p msg,
   set_to_display(response, msg);
 
   if (otr->state != OTRNG_STATE_START) {
-    response->warning = OTRNG_WARN_RECEIVED_UNENCRYPTED;
+    otrng_client_callbacks_handle_event(otr->client->global_state->callbacks,
+                                        OTRNG_MSG_EVENT_RCV_UNENCRYPTED);
   }
 }
 
@@ -1061,7 +1060,6 @@ static otrng_bool valid_receiver_instance_tag(uint32_t instance_tag) {
 }
 
 tstatic otrng_result prekey_message_received(const prekey_message_s *msg,
-                                             otrng_warning *warn,
                                              otrng_s *otr) {
   if (!otr->their_client_profile) {
     return OTRNG_ERROR;
@@ -1073,9 +1071,8 @@ tstatic otrng_result prekey_message_received(const prekey_message_s *msg,
 
   if (received_sender_instance_tag(msg->sender_instance_tag, otr) !=
       OTRNG_SUCCESS) {
-    if (warn) {
-      *warn = OTRNG_WARN_MALFORMED;
-    }
+    otrng_client_callbacks_handle_event(otr->client->global_state->callbacks,
+                                        OTRNG_MSG_EVENT_MALFORMED_PREKEY);
     return OTRNG_ERROR;
   }
 
@@ -1113,11 +1110,8 @@ tstatic otrng_result ensure_client_profile_version(char *versions,
   return OTRNG_ERROR;
 }
 
-tstatic otrng_result receive_prekey_ensemble(string_p *dst,
-                                             const prekey_ensemble_s *ensemble,
+tstatic otrng_result receive_prekey_ensemble(const prekey_ensemble_s *ensemble,
                                              otrng_s *otr) {
-  otrng_warning warn;
-
   if (!otrng_prekey_ensemble_validate(ensemble)) {
     return OTRNG_ERROR;
   }
@@ -1137,12 +1131,8 @@ tstatic otrng_result receive_prekey_ensemble(string_p *dst,
     return OTRNG_ERROR;
   }
 
-  warn = OTRNG_WARN_NONE;
   /* Set their ephemeral keys, instance tag, and their_prekeys_id */
-  if (!prekey_message_received(ensemble->message, &warn, otr)) {
-    if (warn == OTRNG_WARN_MALFORMED) {
-      otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
-    }
+  if (!prekey_message_received(ensemble->message, otr)) {
     return OTRNG_ERROR;
   }
 
@@ -1154,7 +1144,7 @@ API otrng_result otrng_send_non_interactive_auth(
   otrng_fingerprint fp;
   *dst = NULL;
 
-  if (!receive_prekey_ensemble(dst, ensemble, otr)) {
+  if (!receive_prekey_ensemble(ensemble, otr)) {
     return OTRNG_ERROR; // TODO: should unset the stored things from ensemble
   }
 
@@ -1794,6 +1784,7 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
 
   if (received_sender_instance_tag(auth.sender_instance_tag, otr) !=
       OTRNG_SUCCESS) {
+    otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     otrng_dake_auth_i_destroy(&auth);
     return OTRNG_ERROR;
   }
@@ -1972,8 +1963,8 @@ tstatic otrng_result receive_tlvs(otrng_response_s *response, otrng_s *otr) {
 }
 
 tstatic otrng_result otrng_receive_data_message_after_dake(
-    otrng_response_s *response, otrng_warning *warn, const uint8_t *buffer,
-    size_t buff_len, otrng_s *otr) {
+    otrng_response_s *response, const uint8_t *buffer, size_t buff_len,
+    otrng_s *otr) {
   data_message_s *msg = otrng_data_message_new();
   k_msg_enc enc_key;
   k_msg_mac mac_key;
@@ -2004,6 +1995,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
   if (otrng_failed(
           received_sender_instance_tag(msg->sender_instance_tag, otr))) {
     otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
+    otrng_data_message_free(msg);
     return OTRNG_ERROR;
   }
 
@@ -2027,7 +2019,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       if (otrng_failed(otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->client->max_stored_msg_keys,
               tmp_receiving_ratchet, msg->message_id, msg->previous_chain_n,
-              'r', warn))) {
+              'r', otr->client->global_state->callbacks))) {
         otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
         return OTRNG_ERROR;
@@ -2035,7 +2027,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
       if (otrng_failed(otrng_key_manager_derive_chain_keys(
               enc_key, mac_key, otr->keys, tmp_receiving_ratchet,
-              otr->client->max_stored_msg_keys, msg->message_id, 'r', warn))) {
+              otr->client->max_stored_msg_keys, msg->message_id, 'r',
+              otr->client->global_state->callbacks))) {
         return OTRNG_ERROR;
       }
 
@@ -2132,11 +2125,10 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 }
 
 tstatic otrng_result otrng_receive_data_message(otrng_response_s *response,
-                                                otrng_warning *warn,
                                                 const uint8_t *buffer,
                                                 size_t buff_len, otrng_s *otr) {
   if (otr->state == OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE) {
-    if (otrng_receive_data_message_after_dake(response, warn, buffer, buff_len,
+    if (otrng_receive_data_message_after_dake(response, buffer, buff_len,
                                               otr)) {
       otr->state = OTRNG_STATE_ENCRYPTED_MESSAGES;
       return OTRNG_SUCCESS;
@@ -2150,8 +2142,7 @@ tstatic otrng_result otrng_receive_data_message(otrng_response_s *response,
     return OTRNG_ERROR;
   }
 
-  return otrng_receive_data_message_after_dake(response, warn, buffer, buff_len,
-                                               otr);
+  return otrng_receive_data_message_after_dake(response, buffer, buff_len, otr);
 }
 
 static otrng_result extract_header(otrng_header_s *dst, const uint8_t *buffer,
@@ -2180,7 +2171,6 @@ static otrng_result extract_header(otrng_header_s *dst, const uint8_t *buffer,
 }
 
 tstatic otrng_result receive_decoded_message(otrng_response_s *response,
-                                             otrng_warning *warn,
                                              const uint8_t *decoded,
                                              size_t dec_len, otrng_s *otr) {
   otrng_header_s header;
@@ -2215,7 +2205,7 @@ tstatic otrng_result receive_decoded_message(otrng_response_s *response,
     return receive_non_interactive_auth_message(response, decoded, dec_len,
                                                 otr);
   case DATA_MSG_TYPE:
-    return otrng_receive_data_message(response, warn, decoded, dec_len, otr);
+    return otrng_receive_data_message(response, decoded, dec_len, otr);
   default:
     /* error. bad message type */
     return OTRNG_ERROR;
@@ -2223,7 +2213,6 @@ tstatic otrng_result receive_decoded_message(otrng_response_s *response,
 }
 
 tstatic otrng_result receive_encoded_message(otrng_response_s *response,
-                                             otrng_warning *warn,
                                              const string_p msg, otrng_s *otr) {
   size_t dec_len = 0;
   uint8_t *decoded = NULL;
@@ -2233,7 +2222,7 @@ tstatic otrng_result receive_encoded_message(otrng_response_s *response,
     return OTRNG_ERROR;
   }
 
-  result = receive_decoded_message(response, warn, decoded, dec_len, otr);
+  result = receive_decoded_message(response, decoded, dec_len, otr);
   otrng_free(decoded);
 
   return result;
@@ -2288,7 +2277,6 @@ static int get_message_type(const string_p msg) {
 }
 
 tstatic otrng_result receive_message_v4_only(otrng_response_s *response,
-                                             otrng_warning *warn,
                                              const string_p msg, otrng_s *otr) {
   switch (get_message_type(msg)) {
   case MSG_PLAINTEXT:
@@ -2302,7 +2290,7 @@ tstatic otrng_result receive_message_v4_only(otrng_response_s *response,
     return receive_query_message(response, msg, otr);
 
   case MSG_OTR_ENCODED:
-    return receive_encoded_message(response, warn, msg, otr);
+    return receive_encoded_message(response, msg, otr);
 
   case MSG_OTR_ERROR:
     return receive_error_message(response, msg + strlen(ERROR_PREFIX), otr);
@@ -2314,7 +2302,6 @@ tstatic otrng_result receive_message_v4_only(otrng_response_s *response,
 }
 
 static otrng_result receive_defragmented_message(otrng_response_s *response,
-                                                 otrng_warning *warn,
                                                  const string_p msg,
                                                  otrng_s *otr) {
 
@@ -2338,18 +2325,16 @@ static otrng_result receive_defragmented_message(otrng_response_s *response,
   case OTRNG_PROTOCOL_VERSION_4:
   default:
     // V4 handles every message BUT v3 messages
-    return receive_message_v4_only(response, warn, msg, otr);
+    return receive_message_v4_only(response, msg, otr);
   }
 }
 
 /* Receive a possibly OTR message. */
 INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
-                                            otrng_warning *warn,
                                             const string_p msg, otrng_s *otr) {
   char *defrag = NULL;
   otrng_result ret;
 
-  response->warning = OTRNG_WARN_NONE;
   response->to_display = NULL;
 
   if (otrng_failed(otrng_unfragment_message(&defrag, &otr->pending_fragments,
@@ -2357,7 +2342,7 @@ INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
     return OTRNG_ERROR;
   }
 
-  ret = receive_defragmented_message(response, warn, defrag, otr);
+  ret = receive_defragmented_message(response, defrag, otr);
   otrng_free(defrag);
   return ret;
 }

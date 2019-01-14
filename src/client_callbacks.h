@@ -55,6 +55,9 @@ typedef enum {
   /* Flagged when trying to send a data message not in an encrypted state. */
   OTRNG_MSG_EVENT_SENDING_NOT_IN_ENCRYPTED_STATE = 7,
   OTRNG_MSG_EVENT_INVALID_MSG = 8,
+  OTRNG_MSG_EVENT_MALFORMED_PREKEY = 9,
+  OTRNG_MSG_EVENT_MSG_KEYS_STORAGE_FULL = 10,
+  OTRNG_MSG_EVENT_RCV_UNENCRYPTED = 11,
 } otrng_msg_event;
 
 typedef struct otrng_shared_session_state_s {
@@ -68,7 +71,7 @@ typedef struct otrng_policy_s {
   uint8_t type;
 } otrng_policy_s;
 
-// Forward declaration
+/* Forward declaration */
 struct otrng_client_s;
 struct otrng_s;
 struct otrng_client_id_s;

@@ -52,7 +52,6 @@ typedef struct otrng_response_s {
   string_p to_display;
   string_p to_send;
   tlv_list_s *tlvs;
-  otrng_warning warning;
 } otrng_response_s;
 
 typedef struct otrng_header_s {
@@ -74,7 +73,6 @@ INTERNAL otrng_response_s *otrng_response_new(void);
 INTERNAL void otrng_response_free(otrng_response_s *response);
 
 INTERNAL otrng_result otrng_receive_message(otrng_response_s *response,
-                                            otrng_warning *warn,
                                             const string_p msg, otrng_s *otr);
 
 INTERNAL otrng_result otrng_send_message(string_p *to_send, const string_p msg,

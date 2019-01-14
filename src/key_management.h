@@ -21,13 +21,13 @@
 #ifndef OTRNG_KEY_MANAGEMENT_H
 #define OTRNG_KEY_MANAGEMENT_H
 
+#include "client_callbacks.h"
 #include "constants.h"
 #include "dh.h"
 #include "ed448.h"
 #include "keys.h"
 #include "list.h"
 #include "shared.h"
-#include "warn.h"
 
 /* the different kind of keys for the key management */
 typedef uint8_t k_brace[BRACE_KEY_BYTES];
@@ -303,7 +303,7 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
 INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
     k_msg_enc enc_key, k_msg_mac mac_key, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet, unsigned int max_skip,
-    uint32_t msg_id, const char action, otrng_warning *warn);
+    uint32_t msg_id, const char action, const otrng_client_callbacks_s *cb);
 
 /**
  * @brief Derive the dh ratchet keys.
@@ -316,7 +316,7 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
 INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, unsigned int max_skip,
     receiving_ratchet_s *tmp_receiving_ratchet, uint32_t msg_id,
-    uint32_t previous_n, const char action, otrng_warning *warn);
+    uint32_t previous_n, const char action, const otrng_client_callbacks_s *cb);
 
 /**
  * @brief Store old mac keys to reveal later.
