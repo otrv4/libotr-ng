@@ -46,18 +46,28 @@ typedef enum {
 
 typedef enum {
   OTRNG_MSG_EVENT_NONE = 0,
+  /* Flagged when trying to send a plaintext message with a policy that requires
+     encryption. */
   OTRNG_MSG_EVENT_ENCRYPTION_REQUIRED = 1,
+  /* Flagged when there was an error while trying to encrypt a data message. */
   OTRNG_MSG_EVENT_ENCRYPTION_ERROR = 2,
   OTRNG_MSG_EVENT_HEARTBEAT_RECEIVED = 3,
+  /* Flagged when a heartbeat message is sent. */
   OTRNG_MSG_EVENT_HEARTBEAT_SENT = 4,
   OTRNG_MSG_EVENT_WRONG_INSTANCE = 5,
+  /* Flagged when trying to publish too many prekey messages. */
   OTRNG_MSG_EVENT_INCORRECT_AMMOUNT_PREKEYS = 6,
   /* Flagged when trying to send a data message not in an encrypted state. */
   OTRNG_MSG_EVENT_SENDING_NOT_IN_ENCRYPTED_STATE = 7,
+  /* Flagged when received an invalid data message. */
   OTRNG_MSG_EVENT_INVALID_MSG = 8,
+  /* Flagged when received a prekey message with an incorrect instance tag. */
   OTRNG_MSG_EVENT_MALFORMED_PREKEY = 9,
+  /* Flagged when trying to store more message keys than allowed. */
   OTRNG_MSG_EVENT_MSG_KEYS_STORAGE_FULL = 10,
+  /* Flagged when receiving a message unencrypted. */
   OTRNG_MSG_EVENT_RCV_UNENCRYPTED = 11,
+  /* Flagged when received a data message in the FINISH state. */
   OTRNG_MSG_EVENT_CONNECTION_ENDED = 12,
 } otrng_msg_event;
 
