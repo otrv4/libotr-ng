@@ -58,6 +58,7 @@ typedef enum {
   OTRNG_MSG_EVENT_MALFORMED_PREKEY = 9,
   OTRNG_MSG_EVENT_MSG_KEYS_STORAGE_FULL = 10,
   OTRNG_MSG_EVENT_RCV_UNENCRYPTED = 11,
+  OTRNG_MSG_EVENT_CONNECTION_ENDED = 12,
 } otrng_msg_event;
 
 typedef struct otrng_shared_session_state_s {

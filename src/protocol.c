@@ -359,6 +359,8 @@ INTERNAL otrng_result otrng_prepare_to_send_data_message(string_p *to_send,
   otrng_result result;
 
   if (otr->state == OTRNG_STATE_FINISHED) {
+    otrng_client_callbacks_handle_event(otr->client->global_state->callbacks,
+                                        OTRNG_MSG_EVENT_CONNECTION_ENDED);
     return OTRNG_ERROR; /* Should restart */
   }
 
@@ -375,10 +377,17 @@ INTERNAL otrng_result otrng_prepare_to_send_data_message(string_p *to_send,
   }
 
   result = send_data_message(to_send, msg2, msg_len, otr, flags);
+  if (result == OTRNG_ERROR) {
+    otrng_client_callbacks_handle_event(otr->client->global_state->callbacks,
+                                        OTRNG_MSG_EVENT_ENCRYPTION_ERROR);
+    otrng_free(msg2);
+
+    return OTRNG_ERROR;
+  }
 
   otr->last_sent = time(NULL);
 
   otrng_free(msg2);
 
-  return result;
+  return OTRNG_SUCCESS;
 }
