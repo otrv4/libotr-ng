@@ -1115,22 +1115,30 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
 
 INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, unsigned int max_skip,
-    receiving_ratchet_s *tmp_receiving_ratchet, uint32_t msg_id,
+    receiving_ratchet_s *tmp_receiving_ratchet, ec_point msg_ecdh,
     uint32_t previous_n, const char action,
     const otrng_client_callbacks_s *cb) {
   /* Derive new ECDH and DH keys */
   k_msg_enc enc_key;
 
-  if (msg_id == 0) {
-    assert(action == 's' || action == 'r');
-    if (action == 'r') {
+  assert(action == 's' || action == 'r');
+
+  if (action == 's') {
+
+    if (manager->j == 0) {
+      return rotate_keys(manager, tmp_receiving_ratchet, action);
+    }
+
+  } else if (action == 'r') {
+    if (goldilocks_448_point_eq(msg_ecdh, manager->their_ecdh) ==
+        GOLDILOCKS_FALSE) {
       /* Store any message keys from the previous DH Ratchet */
       if (!store_enc_keys(enc_key, tmp_receiving_ratchet, previous_n, max_skip,
                           'd', cb)) {
         return OTRNG_ERROR;
       }
+      return rotate_keys(manager, tmp_receiving_ratchet, action);
     }
-    return rotate_keys(manager, tmp_receiving_ratchet, action);
   }
 
   return OTRNG_SUCCESS;

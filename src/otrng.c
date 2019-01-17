@@ -2018,8 +2018,8 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
       /* if a new ratchet */
       if (otrng_failed(otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->client->max_stored_msg_keys,
-              tmp_receiving_ratchet, msg->message_id, msg->previous_chain_n,
-              'r', otr->client->global_state->callbacks))) {
+              tmp_receiving_ratchet, msg->ecdh, msg->previous_chain_n, 'r',
+              otr->client->global_state->callbacks))) {
         otrng_receiving_ratchet_destroy(tmp_receiving_ratchet);
 
         return OTRNG_ERROR;

@@ -315,7 +315,7 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
  */
 INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
     key_manager_s *manager, unsigned int max_skip,
-    receiving_ratchet_s *tmp_receiving_ratchet, uint32_t msg_id,
+    receiving_ratchet_s *tmp_receiving_ratchet, ec_point msg_ecdh,
     uint32_t previous_n, const char action, const otrng_client_callbacks_s *cb);
 
 /**

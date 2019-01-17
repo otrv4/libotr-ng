@@ -426,6 +426,162 @@ static void test_double_ratchet_new_ratchet_out_of_order(void) {
   otrng_conn_free_all(alice, bob);
 }
 
+/* Test the out-of-order when a new DH ratchet has happened  2 */
+static void test_double_ratchet_new_ratchet_out_of_order_2(void) {
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
+
+  otrng_s *alice = set_up(alice_client, 1);
+  otrng_s *bob = set_up(bob_client, 2);
+
+  // DAKE has finished
+  do_dake_fixture(alice, bob);
+
+  otrng_response_s *response_to_alice = NULL;
+  otrng_response_s *response_to_bob = NULL;
+
+  string_p to_send_1 = NULL;
+  string_p to_send_2 = NULL;
+  string_p to_send_3 = NULL;
+  string_p to_send_4 = NULL;
+  string_p to_send_5 = NULL;
+  string_p to_send_6 = NULL;
+  otrng_result result;
+
+  // Alice sends a data message
+  result = otrng_send_message(&to_send_1, "hi", NULL, 0, alice);
+  assert_message_sent(result, to_send_1);
+  otrng_assert(!alice->keys->old_mac_keys);
+
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 2);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
+
+  result = otrng_send_message(&to_send_2, "how are you?", NULL, 0, alice);
+  assert_message_sent(result, to_send_2);
+  otrng_assert(!alice->keys->old_mac_keys);
+
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 3);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
+
+  result = otrng_send_message(&to_send_3, "it's me", NULL, 0, alice);
+  assert_message_sent(result, to_send_3);
+  otrng_assert(!alice->keys->old_mac_keys);
+
+  g_assert_cmpint(alice->keys->i, ==, 1);
+  g_assert_cmpint(alice->keys->j, ==, 4);
+  g_assert_cmpint(alice->keys->k, ==, 0);
+  g_assert_cmpint(alice->keys->pn, ==, 0);
+
+  // Bob receives 2 data messages
+  response_to_alice = otrng_response_new();
+  result = otrng_receive_message(response_to_alice, to_send_1, bob);
+  assert_message_rec(result, "hi", response_to_alice);
+  otrng_assert(bob->keys->old_mac_keys);
+
+  free_message_and_response(response_to_alice, &to_send_1);
+
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+  g_assert_cmpint(bob->keys->i, ==, 1);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 2);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+
+  response_to_alice = otrng_response_new();
+  result = otrng_receive_message(response_to_alice, to_send_2, bob);
+  assert_message_rec(result, "how are you?", response_to_alice);
+
+  free_message_and_response(response_to_alice, &to_send_2);
+
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 3);
+  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 0);
+  g_assert_cmpint(bob->keys->i, ==, 1);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 3);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+
+  // Bob sends a data message
+  result = otrng_send_message(&to_send_4, "oh, hi", NULL, 0, bob);
+  assert_message_sent(result, to_send_4);
+
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
+
+  g_assert_cmpint(bob->keys->i, ==, 2);
+  g_assert_cmpint(bob->keys->j, ==, 1);
+  g_assert_cmpint(bob->keys->k, ==, 3);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+
+  // Bob sends another data message
+  result = otrng_send_message(&to_send_6, "and test", NULL, 0, bob);
+  assert_message_sent(result, to_send_6);
+
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 0);
+
+  g_assert_cmpint(bob->keys->i, ==, 2);
+  g_assert_cmpint(bob->keys->j, ==, 2);
+  g_assert_cmpint(bob->keys->k, ==, 3);
+  g_assert_cmpint(bob->keys->pn, ==, 0);
+
+  // Alice receives a data message
+  response_to_bob = otrng_response_new();
+  result = otrng_receive_message(response_to_bob, to_send_6, alice);
+  assert_message_rec(result, "and test", response_to_bob);
+  g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 1);
+
+  free_message_and_response(response_to_bob, &to_send_6);
+  g_assert_cmpint(alice->keys->i, ==, 2);
+  g_assert_cmpint(alice->keys->j, ==, 0);
+  g_assert_cmpint(alice->keys->k, ==, 2);
+  g_assert_cmpint(alice->keys->pn, ==, 4);
+
+  // Alice sends a data message
+  result = otrng_send_message(&to_send_5, "good", NULL, 0, alice);
+  assert_message_sent(result, to_send_5);
+
+  g_assert_cmpint(otrng_list_len(alice->keys->old_mac_keys), ==, 0);
+
+  g_assert_cmpint(alice->keys->i, ==, 3);
+  g_assert_cmpint(alice->keys->j, ==, 1);
+  g_assert_cmpint(alice->keys->k, ==, 2);
+  g_assert_cmpint(alice->keys->pn, ==, 4);
+
+  // Bob receives the data message
+  response_to_alice = otrng_response_new();
+  result = otrng_receive_message(response_to_alice, to_send_5, bob);
+  assert_message_rec(result, "good", response_to_alice);
+  otrng_assert(bob->keys->old_mac_keys);
+
+  free_message_and_response(response_to_alice, &to_send_5);
+
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 1);
+  g_assert_cmpint(bob->keys->i, ==, 3);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->pn, ==, 2);
+  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 1);
+
+  // Bob receives the previous data message
+  response_to_alice = otrng_response_new();
+  result = otrng_receive_message(response_to_alice, to_send_3, bob);
+  assert_message_rec(result, "it's me", response_to_alice);
+
+  free_message_and_response(response_to_alice, &to_send_3);
+
+  g_assert_cmpint(otrng_list_len(bob->keys->old_mac_keys), ==, 2);
+  g_assert_cmpint(otrng_list_len(bob->keys->skipped_keys), ==, 0);
+  g_assert_cmpint(bob->keys->i, ==, 3);
+  g_assert_cmpint(bob->keys->j, ==, 0);
+  g_assert_cmpint(bob->keys->k, ==, 1);
+  g_assert_cmpint(bob->keys->pn, ==, 2);
+
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_conn_free_all(alice, bob);
+}
+
 /* Test the double ratchet when a corrupted message arrives */
 static void test_double_ratchet_corrupted_ratchet(void) {
   otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
@@ -513,6 +669,8 @@ void functionals_double_ratchet_add_tests(void) {
                   test_double_ratchet_same_ratchet_out_of_order);
   g_test_add_func("/double_ratchet/out_of_order/new_ratchet/v4",
                   test_double_ratchet_new_ratchet_out_of_order);
+  g_test_add_func("/double_ratchet/out_of_order/new_ratchet_2/v4",
+                  test_double_ratchet_new_ratchet_out_of_order_2);
   g_test_add_func("/double_ratchet/corrupted_ratchet/v4",
                   test_double_ratchet_corrupted_ratchet);
 }

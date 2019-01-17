@@ -51,6 +51,7 @@ typedef enum {
   OTRNG_MSG_EVENT_ENCRYPTION_REQUIRED = 1,
   /* Flagged when there was an error while trying to encrypt a data message. */
   OTRNG_MSG_EVENT_ENCRYPTION_ERROR = 2,
+  /* Flagged when a heartbeat message is received. */
   OTRNG_MSG_EVENT_HEARTBEAT_RECEIVED = 3,
   /* Flagged when a heartbeat message is sent. */
   OTRNG_MSG_EVENT_HEARTBEAT_SENT = 4,

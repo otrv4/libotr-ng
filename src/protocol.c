@@ -215,8 +215,8 @@ tstatic otrng_result send_data_message(string_p *to_send, const uint8_t *msg,
 
   /* if j == 0 */
   if (!otrng_key_manager_derive_dh_ratchet_keys(
-          otr->keys, otr->client->max_stored_msg_keys, NULL, otr->keys->j, 0,
-          's', otr->client->global_state->callbacks)) {
+          otr->keys, otr->client->max_stored_msg_keys, NULL, NULL, 0, 's',
+          otr->client->global_state->callbacks)) {
     return OTRNG_ERROR;
   }
 
