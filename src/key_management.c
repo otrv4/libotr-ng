@@ -942,12 +942,10 @@ tstatic otrng_result calculate_extra_key(
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
-                                    receiving_ratchet_s *tmp_receiving_ratchet,
-                                    const uint32_t until,
-                                    const unsigned int max_skip,
-                                    const char ratchet_type,
-                                    const otrng_client_callbacks_s *cb) {
+tstatic otrng_result store_enc_keys(
+    k_msg_enc enc_key, receiving_ratchet_s *tmp_receiving_ratchet,
+    const uint32_t until, const unsigned int max_skip, const char ratchet_type,
+    const otrng_client_callbacks_s *cb, key_manager_s *manager) {
   uint8_t zero_buffer[CHAIN_KEY_BYTES];
   goldilocks_shake256_ctx_p hd;
   uint8_t *extra_key = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
@@ -966,6 +964,7 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
 
   if (!(memcmp(tmp_receiving_ratchet->chain_r, zero_buffer, CHAIN_KEY_BYTES) ==
         0)) {
+
     while (tmp_receiving_ratchet->k < until) {
       if (!shake_256_kdf1(enc_key, ENC_KEY_BYTES, usage_message_key,
                           tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES)) {
@@ -1004,14 +1003,16 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
       skipped_msg_enc_key = otrng_secure_alloc(sizeof(skipped_keys_s));
 
       assert(ratchet_type == 'd' || ratchet_type == 'c');
+
       if (ratchet_type == 'd') {
-        skipped_msg_enc_key->i = tmp_receiving_ratchet->i -
-                                 1; /* ratchet_id - 1 for the dh ratchet */
+        otrng_ec_point_copy(skipped_msg_enc_key->their_ecdh,
+                            manager->their_ecdh);
       } else if (ratchet_type == 'c') {
-        skipped_msg_enc_key->i = tmp_receiving_ratchet->i;
+        otrng_ec_point_copy(skipped_msg_enc_key->their_ecdh,
+                            tmp_receiving_ratchet->their_ecdh);
       }
 
-      skipped_msg_enc_key->j = tmp_receiving_ratchet->k;
+      skipped_msg_enc_key->k = tmp_receiving_ratchet->k;
 
       memcpy(skipped_msg_enc_key->extra_symmetric_key, extra_key,
              EXTRA_SYMMETRIC_KEY_BYTES);
@@ -1038,7 +1039,7 @@ tstatic otrng_result store_enc_keys(k_msg_enc enc_key,
    MKmac = KDF_1(usage_mac_key || MKenc, 64).
 */
 INTERNAL otrng_result otrng_key_get_skipped_keys(
-    k_msg_enc enc_key, k_msg_mac mac_key, unsigned int ratchet_id,
+    k_msg_enc enc_key, k_msg_mac mac_key, ec_point msg_ecdh,
     unsigned int msg_id, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet) {
   list_element_s *current = tmp_receiving_ratchet->skipped_keys;
@@ -1047,7 +1048,9 @@ INTERNAL otrng_result otrng_key_get_skipped_keys(
   while (current) {
     skipped_keys_s *skipped_keys = current->data;
 
-    if (skipped_keys->i == ratchet_id && skipped_keys->j == msg_id) {
+    if ((goldilocks_448_point_eq(msg_ecdh, skipped_keys->their_ecdh) ==
+         GOLDILOCKS_TRUE) &&
+        skipped_keys->k == msg_id) {
       memcpy(enc_key, skipped_keys->enc_key, ENC_KEY_BYTES);
       if (!shake_256_kdf1(mac_key, MAC_KEY_BYTES, usage_mac_key, enc_key,
                           ENC_KEY_BYTES)) {
@@ -1080,7 +1083,7 @@ INTERNAL otrng_result otrng_key_manager_derive_chain_keys(
   assert(action == 's' || action == 'r');
   if (action == 'r') {
     if (!store_enc_keys(enc_key, tmp_receiving_ratchet, msg_id, max_skip, 'c',
-                        cb)) {
+                        cb, manager)) {
       return OTRNG_ERROR;
     }
   }
@@ -1134,7 +1137,7 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
         GOLDILOCKS_FALSE) {
       /* Store any message keys from the previous DH Ratchet */
       if (!store_enc_keys(enc_key, tmp_receiving_ratchet, previous_n, max_skip,
-                          'd', cb)) {
+                          'd', cb, manager)) {
         return OTRNG_ERROR;
       }
       return rotate_keys(manager, tmp_receiving_ratchet, action);

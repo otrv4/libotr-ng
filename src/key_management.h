@@ -50,8 +50,8 @@ typedef struct ratchet_s {
 
 /* the list of stored message and extra symmetric keys */
 typedef struct skipped_keys_s {
-  uint32_t i; /* Counter of the ratchet */
-  uint32_t j; /* Counter of the sending messages */
+  ec_point their_ecdh; /* Current their_ecdh key */
+  uint32_t k;          /* Counter of the receiving messages */
   k_extra_symmetric extra_symmetric_key;
   k_msg_enc enc_key;
 } skipped_keys_s;
@@ -286,7 +286,7 @@ INTERNAL otrng_result otrng_key_manager_ratcheting_init(key_manager_s *manager,
  * @param [manager]     The key manager.
  */
 INTERNAL otrng_result otrng_key_get_skipped_keys(
-    k_msg_enc enc_key, k_msg_mac mac_key, unsigned int ratchet_id,
+    k_msg_enc enc_key, k_msg_mac mac_key, ec_point msg_ecdh,
     unsigned int msg_id, key_manager_s *manager,
     receiving_ratchet_s *tmp_receiving_ratchet);
 

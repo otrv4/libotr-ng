@@ -2012,9 +2012,9 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
   do {
     /* Try to decrypt the message with a stored skipped message key */
-    if (otrng_failed(otrng_key_get_skipped_keys(
-            enc_key, mac_key, msg->ratchet_id, msg->message_id, otr->keys,
-            tmp_receiving_ratchet))) {
+    if (otrng_failed(otrng_key_get_skipped_keys(enc_key, mac_key, msg->ecdh,
+                                                msg->message_id, otr->keys,
+                                                tmp_receiving_ratchet))) {
       /* if a new ratchet */
       if (otrng_failed(otrng_key_manager_derive_dh_ratchet_keys(
               otr->keys, otr->client->max_stored_msg_keys,
