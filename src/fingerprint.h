@@ -56,7 +56,6 @@ typedef struct otrng_known_fingerprints_s {
   list_element_s *fps;
 } otrng_known_fingerprints_s;
 
-API void otrng_known_fingerprint_free(otrng_known_fingerprint_s *kf);
 API void otrng_known_fingerprints_free(otrng_known_fingerprints_s *kf);
 
 API otrng_result otrng_fingerprint_hash_to_human(char *human,
