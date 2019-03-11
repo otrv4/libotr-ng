@@ -747,49 +747,54 @@ tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
   return result;
 }
 
-tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
+tstatic otrng_result generate_tmp_key(uint8_t *dst, otrng_s *otr,
+                                      otrng_bool is_i) {
+  k_ecdh ecdh_key;
   k_ecdh tmp_ecdh_k1;
   k_ecdh tmp_ecdh_k2;
-  k_ecdh ecdh_key;
   dh_shared_secret dh_key;
-  size_t k_dh_len = 0;
+  size_t dh_key_len = 0;
   k_brace brace_key;
+  ec_scalar priv;
+  ec_point pub;
 
-  // TODO: @refactoring this will be calculated again later
+  // TODO: @refactoring this workaround is not the nicest there is
   if (!otrng_ecdh_shared_secret(ecdh_key, ED448_POINT_BYTES,
                                 otr->keys->our_ecdh->priv,
                                 otr->keys->their_ecdh)) {
     return OTRNG_ERROR;
   }
 
-  // TODO: @refactoring this will be calculated again later
-  if (!otrng_dh_shared_secret(dh_key, &k_dh_len, otr->keys->our_dh->priv,
+  if (!otrng_dh_shared_secret(dh_key, &dh_key_len, otr->keys->our_dh->priv,
                               otr->keys->their_dh)) {
     return OTRNG_ERROR;
   }
 
-  hash_hash(brace_key, BRACE_KEY_BYTES, dh_key, k_dh_len);
+  hash_hash(brace_key, BRACE_KEY_BYTES, dh_key, dh_key_len);
 
   otrng_secure_wipe(dh_key, DH3072_MOD_LEN_BYTES);
 
-#ifdef DEBUG
-  debug_print("\n");
-  debug_print("GENERATING TEMP KEY R\n");
-  debug_print("ECDH key = ");
-  otrng_memdump(ecdh_key, ED448_POINT_BYTES);
-  debug_print("brace_key = ");
-  otrng_memdump(brace_key, BRACE_KEY_BYTES);
-#endif
+  if (is_i) {
+    *priv = *our_shared_prekey(otr)->priv;
+    *pub = *their_ecdh(otr);
+  } else {
+    *priv = *otr->keys->our_ecdh->priv;
+    *pub = *otr->keys->their_shared_prekey;
+  }
 
-  if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, ED448_POINT_BYTES,
-                                otr->keys->our_ecdh->priv,
-                                otr->keys->their_shared_prekey)) {
+  if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, ED448_POINT_BYTES, priv, pub)) {
     return OTRNG_ERROR;
   }
 
-  if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, ED448_POINT_BYTES,
-                                otr->keys->our_ecdh->priv,
-                                otr->their_client_profile->long_term_pub_key)) {
+  if (is_i) {
+    *priv = *otr->client->keypair->priv;
+    *pub = *their_ecdh(otr);
+  } else {
+    *priv = *otr->keys->our_ecdh->priv;
+    *pub = *otr->their_client_profile->long_term_pub_key;
+  }
+
+  if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, ED448_POINT_BYTES, priv, pub)) {
     return OTRNG_ERROR;
   }
 
@@ -799,18 +804,14 @@ tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
   }
 
   otrng_secure_wipe(brace_key, BRACE_KEY_BYTES);
-
-#ifdef DEBUG
-  debug_print("\n");
-  debug_print("GENERATING TEMP KEY R\n");
-  debug_print("tmp_key_r = ");
-  otrng_memdump(dst, HASH_BYTES);
-#endif
-
   otrng_secure_wipe(tmp_ecdh_k1, ED448_POINT_BYTES);
   otrng_secure_wipe(tmp_ecdh_k2, ED448_POINT_BYTES);
 
   return OTRNG_SUCCESS;
+}
+
+tstatic otrng_result generate_tmp_key_r(uint8_t *dst, otrng_s *otr) {
+  return generate_tmp_key(dst, otr, otrng_false);
 }
 
 tstatic otrng_result serialize_and_encode_non_interactive_auth(
@@ -1159,67 +1160,7 @@ API otrng_result otrng_send_non_interactive_auth(
 }
 
 tstatic otrng_result generate_tmp_key_i(uint8_t *dst, otrng_s *otr) {
-  k_ecdh ecdh_key;
-  k_ecdh tmp_ecdh_k1;
-  k_ecdh tmp_ecdh_k2;
-  dh_shared_secret dh_key;
-  size_t dh_key_len = 0;
-  k_brace brace_key;
-
-  // TODO: @refactoring this workaround is not the nicest there is
-  if (!otrng_ecdh_shared_secret(ecdh_key, ED448_POINT_BYTES,
-                                otr->keys->our_ecdh->priv,
-                                otr->keys->their_ecdh)) {
-    return OTRNG_ERROR;
-  }
-
-  if (!otrng_dh_shared_secret(dh_key, &dh_key_len, otr->keys->our_dh->priv,
-                              otr->keys->their_dh)) {
-    return OTRNG_ERROR;
-  }
-
-  hash_hash(brace_key, BRACE_KEY_BYTES, dh_key, dh_key_len);
-
-  otrng_secure_wipe(dh_key, DH3072_MOD_LEN_BYTES);
-
-#ifdef DEBUG
-  debug_print("\n");
-  debug_print("GENERATING TEMP KEY I\n");
-  debug_print("K_ecdh = ");
-  otrng_memdump(ecdh_key, ED448_POINT_BYTES);
-  debug_print("brace_key = ");
-  otrng_memdump(brace_key, BRACE_KEY_BYTES);
-#endif
-
-  if (!otrng_ecdh_shared_secret(tmp_ecdh_k1, ED448_POINT_BYTES,
-                                our_shared_prekey(otr)->priv,
-                                their_ecdh(otr))) {
-    return OTRNG_ERROR;
-  }
-
-  if (!otrng_ecdh_shared_secret(tmp_ecdh_k2, ED448_POINT_BYTES,
-                                otr->client->keypair->priv, their_ecdh(otr))) {
-    return OTRNG_ERROR;
-  }
-
-  if (!otrng_key_manager_calculate_tmp_key(dst, ecdh_key, brace_key,
-                                           tmp_ecdh_k1, tmp_ecdh_k2)) {
-    return OTRNG_ERROR;
-  }
-
-  otrng_secure_wipe(brace_key, BRACE_KEY_BYTES);
-
-#ifdef DEBUG
-  debug_print("\n");
-  debug_print("GENERATING TEMP KEY I\n");
-  debug_print("tmp_key_i = ");
-  otrng_memdump(dst, HASH_BYTES);
-#endif
-
-  otrng_secure_wipe(tmp_ecdh_k1, ED448_POINT_BYTES);
-  otrng_secure_wipe(tmp_ecdh_k2, ED448_POINT_BYTES);
-
-  return OTRNG_SUCCESS;
+  return generate_tmp_key(dst, otr, otrng_true);
 }
 
 tstatic otrng_bool verify_non_interactive_auth_message(
