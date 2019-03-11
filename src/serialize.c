@@ -200,7 +200,6 @@ INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys) {
 
 INTERNAL size_t otrng_serialize_phi(uint8_t *dst,
                                     const char *shared_session_state,
-                                    const char *init_msg,
                                     uint16_t sender_instance_tag,
                                     uint16_t receiver_instance_tag) {
   uint8_t *cursor = dst;
@@ -215,8 +214,5 @@ INTERNAL size_t otrng_serialize_phi(uint8_t *dst,
 
   cursor += otrng_serialize_data(cursor, (const uint8_t *)shared_session_state,
                                  strlen(shared_session_state));
-  cursor += otrng_serialize_data(cursor, (const uint8_t *)init_msg,
-                                 init_msg ? strlen(init_msg) : 0);
-
   return cursor - dst;
 }

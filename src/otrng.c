@@ -603,42 +603,38 @@ static const char *get_shared_session_state(otrng_s *otr) {
 
 static otrng_result generate_phi_serialized(uint8_t **dst, size_t *dst_len,
                                             const char *phi_prime,
-                                            const char *init_msg,
                                             uint16_t instance_tag1,
                                             uint16_t instance_tag2) {
-  size_t init_msg_len, phi_prime_len, size;
+  size_t phi_prime_len, size;
 
   if (!phi_prime) {
     return OTRNG_ERROR;
   }
 
   /*
-   * phi = smaller instance tag || larger instance tag || DATA(query msg)
-   *       || phi'
+   * phi = smaller instance tag || larger instance tag || phi'
    */
-  init_msg_len = init_msg ? strlen(init_msg) + 1 : 0;
   phi_prime_len = strlen(phi_prime) + 1;
-  size = 4 + 4 + (4 + init_msg_len) + (4 + phi_prime_len);
+  size = 4 + 4 + (4 + phi_prime_len);
   *dst = otrng_xmalloc_z(size);
 
-  *dst_len = otrng_serialize_phi(*dst, phi_prime, init_msg, instance_tag1,
-                                 instance_tag2);
+  *dst_len = otrng_serialize_phi(*dst, phi_prime, instance_tag1, instance_tag2);
 
   return OTRNG_SUCCESS;
 }
 
 static otrng_result generate_phi_receiving(uint8_t **dst, size_t *dst_len,
                                            otrng_s *otr) {
-  return generate_phi_serialized(
-      dst, dst_len, get_shared_session_state(otr), otr->receiving_init_message,
-      our_instance_tag(otr), otr->their_instance_tag);
+  return generate_phi_serialized(dst, dst_len, get_shared_session_state(otr),
+                                 our_instance_tag(otr),
+                                 otr->their_instance_tag);
 }
 
 static otrng_result generate_phi_sending(uint8_t **dst, size_t *dst_len,
                                          otrng_s *otr) {
-  return generate_phi_serialized(
-      dst, dst_len, get_shared_session_state(otr), otr->sending_init_message,
-      our_instance_tag(otr), otr->their_instance_tag);
+  return generate_phi_serialized(dst, dst_len, get_shared_session_state(otr),
+                                 our_instance_tag(otr),
+                                 otr->their_instance_tag);
 }
 
 static otrng_result generate_sending_rsig_tag(uint8_t **dst, size_t *dst_len,
