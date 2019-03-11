@@ -1174,7 +1174,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   }
 
   /* RVrf({F_b, H_a, Y}, sigma, message) */
-  if (!otrng_rsig_verify(auth->sigma, *otr->client->forging_key, /* H_b */
+  if (!otrng_rsig_verify(auth->sigma, *otr->client->forging_key, /* F_b */
                          auth->profile->long_term_pub_key,       /* H_a */
                          our_ecdh(otr),                          /* Y  */
                          t, t_len)) {
