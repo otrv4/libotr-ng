@@ -85,7 +85,7 @@ INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
   return OTRNG_SUCCESS;
 }
 
-static void otrng_known_fingerprint_free(otrng_known_fingerprint_s *kf) {
+tstatic void otrng_known_fingerprint_free(otrng_known_fingerprint_s *kf) {
   otrng_free(kf->username);
   otrng_free(kf);
 }
