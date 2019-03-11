@@ -23,12 +23,12 @@
 
 #include <stddef.h>
 
-#include "shared.h"
 #include "error.h"
+#include "shared.h"
 
 /* This function tests whether the array is empty. It is NOT constant time. */
-INTERNAL otrng_bool otrng_is_empty_array(const uint8_t *buf, const size_t buf_len);
-
+INTERNAL otrng_bool otrng_is_empty_array(const uint8_t *buf,
+                                         const size_t buf_len);
 
 #ifdef OTRNG_UTIL_PRIVATE
 #endif

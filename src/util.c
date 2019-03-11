@@ -25,7 +25,8 @@
 #include "util.h"
 
 /* This function tests whether the array is empty. It is NOT constant time. */
-INTERNAL otrng_bool otrng_is_empty_array(const uint8_t *buf, const size_t buf_len) {
+INTERNAL otrng_bool otrng_is_empty_array(const uint8_t *buf,
+                                         const size_t buf_len) {
   size_t i;
   for (i = 0; i < buf_len; i++) {
     if (buf[i] != 0) {
