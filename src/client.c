@@ -1018,6 +1018,7 @@ otrng_client_delete_my_prekey_message_by_id(uint32_t id,
 
   client->our_prekeys = otrng_list_remove_element(node, client->our_prekeys);
   otrng_list_free(node, prekey_message_free_from_list);
+  client->global_state->callbacks->store_prekey_messages(client);
 }
 
 API void otrng_client_set_should_heartbeat(otrng_bool (*heartbeat)(long),

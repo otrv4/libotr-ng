@@ -117,6 +117,8 @@ void store_fingerprints_v3_cb_empty(struct otrng_client_s *client);
 void load_fingerprints_v4_cb_empty(struct otrng_client_s *client);
 void load_fingerprints_v3_cb_empty(struct otrng_client_s *client);
 
+void store_prekey_messages_cb_empty(struct otrng_client_s *client);
+
 extern otrng_client_callbacks_s test_callbacks[];
 
 #endif // __TEST_FIXTURES_H__
