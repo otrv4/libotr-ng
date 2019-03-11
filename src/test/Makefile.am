@@ -56,6 +56,7 @@ otrng_sources = ../alloc.c \
                     ../smp.c \
                     ../smp_protocol.c \
                     ../str.c \
+                    ../util.c \
                     ../tlv.c
 
 functional_sources = \

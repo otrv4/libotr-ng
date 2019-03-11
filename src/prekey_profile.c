@@ -28,6 +28,7 @@
 #include "deserialize.h"
 #include "instance_tag.h"
 #include "serialize.h"
+#include "util.h"
 
 INTERNAL void otrng_prekey_profile_destroy(otrng_prekey_profile_s *dst) {
   otrng_shared_prekey_pair_free(dst->keys);
@@ -344,13 +345,11 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
                                       const otrng_public_key pub) {
   uint8_t *body = NULL;
   size_t body_len = 0;
-  uint8_t zero_buffer[ED448_SIGNATURE_BYTES];
   uint8_t pubkey[ED448_POINT_BYTES];
   otrng_bool valid;
 
-  memset(zero_buffer, 0, ED448_SIGNATURE_BYTES);
-
-  if (memcmp(profile->signature, zero_buffer, ED448_SIGNATURE_BYTES) == 0) {
+  if (otrng_bool_is_true(
+          otrng_is_empty_array(profile->signature, ED448_SIGNATURE_BYTES))) {
     return otrng_false;
   }
 

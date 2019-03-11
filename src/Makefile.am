@@ -56,6 +56,7 @@ libotr_ng_la_SOURCES = alloc.c \
 		     smp.c \
 		     smp_protocol.c \
 		     str.c \
+		     util.c \
 		     tlv.c
 
 libotr_ng_la_CFLAGS = $(AM_CFLAGS) @LIBGOLDILOCKS_CFLAGS@ \

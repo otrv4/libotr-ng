@@ -34,6 +34,7 @@
 #include "deserialize.h"
 #include "instance_tag.h"
 #include "serialize.h"
+#include "util.h"
 
 tstatic otrng_client_profile_s *client_profile_new(const char *versions) {
   otrng_client_profile_s *client_profile;
@@ -540,13 +541,11 @@ client_profile_verify_signature(const otrng_client_profile_s *client_profile) {
   size_t bodylen = 0;
   uint8_t pubkey[ED448_POINT_BYTES];
   otrng_bool valid;
-  uint8_t zero_buffer[ED448_SIGNATURE_BYTES];
 
   memset(pubkey, 0, ED448_POINT_BYTES);
-  memset(zero_buffer, 0, ED448_SIGNATURE_BYTES);
 
-  if (memcmp(client_profile->signature, zero_buffer, ED448_SIGNATURE_BYTES) ==
-      0) {
+  if (otrng_bool_is_true(otrng_is_empty_array(client_profile->signature,
+                                              ED448_SIGNATURE_BYTES))) {
     return otrng_false;
   }
 

@@ -30,6 +30,7 @@
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
+#include "util.h"
 
 #include "debug.h"
 
@@ -946,13 +947,10 @@ tstatic otrng_result store_enc_keys(
     k_msg_enc enc_key, receiving_ratchet_s *tmp_receiving_ratchet,
     const uint32_t until, const unsigned int max_skip, const char ratchet_type,
     const otrng_client_callbacks_s *cb, key_manager_s *manager) {
-  uint8_t zero_buffer[CHAIN_KEY_BYTES];
   goldilocks_shake256_ctx_p hd;
   uint8_t *extra_key = otrng_secure_alloc(EXTRA_SYMMETRIC_KEY_BYTES);
   uint8_t magic[1] = {0xFF};
   skipped_keys_s *skipped_msg_enc_key;
-
-  memset(zero_buffer, 0, CHAIN_KEY_BYTES);
 
   if ((tmp_receiving_ratchet->k + max_skip) < until) {
     otrng_client_callbacks_handle_event(cb,
@@ -962,9 +960,8 @@ tstatic otrng_result store_enc_keys(
     return OTRNG_SUCCESS;
   }
 
-  if (!(memcmp(tmp_receiving_ratchet->chain_r, zero_buffer, CHAIN_KEY_BYTES) ==
-        0)) {
-
+  if (!otrng_bool_is_true(otrng_is_empty_array(tmp_receiving_ratchet->chain_r,
+                                               CHAIN_KEY_BYTES))) {
     while (tmp_receiving_ratchet->k < until) {
       if (!shake_256_kdf1(enc_key, ENC_KEY_BYTES, usage_message_key,
                           tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES)) {

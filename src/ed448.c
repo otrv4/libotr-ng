@@ -27,6 +27,7 @@
 #include "alloc.h"
 #include "ed448.h"
 #include "shake.h"
+#include "util.h"
 
 INTERNAL void otrng_ec_scalar_copy(ec_scalar dst, const ec_scalar a) {
   goldilocks_448_scalar_copy(dst, a);
@@ -186,16 +187,12 @@ INTERNAL void otrng_ecdh_keypair_destroy(ecdh_keypair_s *keypair) {
 
 static otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
                                           size_t shared_secret_len) {
-  uint8_t zero_buffer[ED448_POINT_BYTES];
-
-  memset(zero_buffer, 0, ED448_POINT_BYTES);
-
   if (shared_secret_len < ED448_POINT_BYTES) {
     return otrng_false;
   }
 
-  // TODO: I think this is a horrible way to check for zero values
-  if (memcmp(shared_secret, zero_buffer, ED448_POINT_BYTES) == 0) {
+  if (otrng_bool_is_true(
+          otrng_is_empty_array(shared_secret, ED448_POINT_BYTES))) {
     return otrng_false;
   }
 
