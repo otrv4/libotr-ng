@@ -92,6 +92,8 @@ check-valgrind-drd: check
 splint:
 	splint $(top_builddir)/src/*.{c,h}
 
+all-checks: test code-style splint
+
 # Finds todo items
 TODO_TYPES ?= HACK TODO @todo FIXME BUG XXX PERF FUTURE REMOVE MAGIC UNIFY
 TODO_LOCATIONS ?= src/*.c src/test/*.c Makefile.am src/*.h src/test/*.h src/test/Makefile.am src/test/functionals/*.c src/test/units/*.c
