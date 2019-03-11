@@ -86,9 +86,6 @@ typedef struct otrng_s {
 
   list_element_s *pending_fragments;
 
-  string_p sending_init_message;
-  string_p receiving_init_message;
-
   time_t last_sent; // TODO: @refactoring not sure if the best place to put
 
   char *shared_session_state;

@@ -614,14 +614,6 @@ static void test_valid_identity_message_in_waiting_auth_r() {
   otrng_client_receive(&alices_id, &to_display, query_message_to_alice,
                        BOB_ACCOUNT, alice, &ignore);
 
-  g_assert_cmpstr(bob_to_alice->conn->sending_init_message, ==,
-                  alice_to_bob->conn->receiving_init_message);
-  g_assert_cmpstr(bob_to_alice->conn->sending_init_message, ==,
-                  "?OTRv43? Hi bob");
-  g_assert_cmpstr(alice_to_bob->conn->sending_init_message, ==,
-                  "?OTRv43? Hi alice");
-  otrng_assert(bob_to_alice->conn->receiving_init_message == NULL);
-
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_WAITING_AUTH_R);
 
   otrng_assert(!ignore);
@@ -637,15 +629,6 @@ static void test_valid_identity_message_in_waiting_auth_r() {
   // Bob receives query message, sends identity message
   otrng_client_receive(&bobs_id, &to_display, query_message_to_bob,
                        ALICE_ACCOUNT, bob, &ignore);
-
-  g_assert_cmpstr(bob_to_alice->conn->sending_init_message, ==,
-                  alice_to_bob->conn->receiving_init_message);
-  g_assert_cmpstr(alice_to_bob->conn->sending_init_message, ==,
-                  bob_to_alice->conn->receiving_init_message);
-  g_assert_cmpstr(alice_to_bob->conn->sending_init_message, ==,
-                  "?OTRv43? Hi alice");
-  g_assert_cmpstr(bob_to_alice->conn->sending_init_message, ==,
-                  "?OTRv43? Hi bob");
 
   otrng_assert(!ignore);
   otrng_assert(bobs_id);
@@ -689,15 +672,6 @@ static void test_valid_identity_message_in_waiting_auth_r() {
                          alice, &ignore);
     otrng_free(bobs_auth_i);
     bobs_auth_i = NULL;
-
-    g_assert_cmpstr(bob_to_alice->conn->sending_init_message, ==,
-                    alice_to_bob->conn->receiving_init_message);
-    g_assert_cmpstr(alice_to_bob->conn->sending_init_message, ==,
-                    bob_to_alice->conn->receiving_init_message);
-    g_assert_cmpstr(alice_to_bob->conn->sending_init_message, ==,
-                    "?OTRv43? Hi alice");
-    g_assert_cmpstr(bob_to_alice->conn->sending_init_message, ==,
-                    "?OTRv43? Hi bob");
 
     // Bob receives initial data message
     otrng_client_receive(&bob_last, &to_display, alice_last, ALICE_ACCOUNT, bob,
@@ -766,15 +740,6 @@ static void test_valid_identity_message_in_waiting_auth_r() {
     alices_auth_i = NULL;
 
     otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
-
-    g_assert_cmpstr(bob_to_alice->conn->sending_init_message, ==,
-                    alice_to_bob->conn->receiving_init_message);
-    g_assert_cmpstr(alice_to_bob->conn->sending_init_message, ==,
-                    bob_to_alice->conn->receiving_init_message);
-    g_assert_cmpstr(alice_to_bob->conn->sending_init_message, ==,
-                    "?OTRv43? Hi alice");
-    g_assert_cmpstr(bob_to_alice->conn->sending_init_message, ==,
-                    "?OTRv43? Hi bob");
 
     otrng_assert(!ignore);
     otrng_assert(bob_last);
@@ -849,13 +814,6 @@ static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
   otrng_conversation_s *bob_to_alice =
       otrng_client_get_conversation(NOT_FORCE_CREATE_CONV, ALICE_ACCOUNT, bob);
 
-  g_assert_cmpstr(alice_to_bob->conn->sending_init_message, ==,
-                  bob_to_alice->conn->receiving_init_message);
-  g_assert_cmpstr(alice_to_bob->conn->sending_init_message, ==,
-                  "?OTRv43? Hi bob");
-  otrng_assert(bob_to_alice->conn->sending_init_message == NULL);
-  otrng_assert(alice_to_bob->conn->receiving_init_message == NULL);
-
   otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_START);
   otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_AUTH_R);
 
@@ -888,9 +846,6 @@ static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
   // Alice receives Auth-I message, sends initial data message
   otrng_client_receive(&alice_last, &to_display, bobs_auth_i, BOB_ACCOUNT,
                        alice, &ignore);
-
-  g_assert_cmpstr(alice_to_bob->conn->sending_init_message, ==,
-                  bob_to_alice->conn->receiving_init_message);
 
   otrng_assert(!ignore);
   otrng_assert(alice_last);

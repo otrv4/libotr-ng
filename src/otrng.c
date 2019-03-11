@@ -195,14 +195,6 @@ tstatic void otrng_destroy(/*@only@ */ otrng_s *otr) {
 
   otrng_free(otr->shared_session_state);
   otr->shared_session_state = NULL;
-
-  // TODO: @freeing should we free this after being used by phi?
-  otrng_free(otr->sending_init_message);
-  otr->sending_init_message = NULL;
-
-  // TODO: @freeing should we free this after being used by phi?;
-  otrng_free(otr->receiving_init_message);
-  otr->receiving_init_message = NULL;
 }
 
 INTERNAL void otrng_conn_free(/*@only@ */ otrng_s *otr) {
@@ -248,12 +240,6 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
     return OTRNG_ERROR; /* could not zero-terminate the string */
   }
 
-  if (otr->sending_init_message) {
-    otrng_free(otr->sending_init_message);
-  }
-
-  otr->sending_init_message = otrng_xstrdup(buffer);
-
   *dst = buffer;
 
   return OTRNG_SUCCESS;
@@ -291,18 +277,9 @@ API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
 
   res = otrng_stpcpy(cursor, msg);
   if (!res) {
-    if (otr->sending_init_message) {
-      otrng_free(otr->sending_init_message);
-    }
     otrng_free(buffer);
     return OTRNG_ERROR;
   }
-
-  if (otr->sending_init_message) {
-    otrng_free(otr->sending_init_message);
-  }
-
-  otr->sending_init_message = otrng_xstrdup(buffer);
 
   *whitespace_tag = buffer;
 
@@ -493,10 +470,6 @@ tstatic otrng_result receive_tagged_plaintext(otrng_response_s *response,
                                               otrng_s *otr) {
   set_running_version_from_tag(otr, msg);
 
-  if (!otr->receiving_init_message) {
-    otr->receiving_init_message = otrng_xstrdup(msg);
-  }
-
   switch (otr->running_version) {
   case OTRNG_PROTOCOL_VERSION_4:
     if (otr->policy_type & OTRNG_WHITESPACE_START_DAKE) {
@@ -519,10 +492,6 @@ tstatic otrng_result receive_tagged_plaintext(otrng_response_s *response,
 tstatic otrng_result receive_query_message(otrng_response_s *response,
                                            const string_p msg, otrng_s *otr) {
   set_running_version_from_query_message(otr, msg);
-
-  if (!otr->receiving_init_message) {
-    otr->receiving_init_message = otrng_xstrdup(msg);
-  }
 
   switch (otr->running_version) {
   case OTRNG_PROTOCOL_VERSION_4:
