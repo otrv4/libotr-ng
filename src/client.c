@@ -269,6 +269,23 @@ tstatic otrng_result send_message(char **new_msg, const char *msg,
   return result;
 }
 
+tstatic string_p
+localize_error_message(struct otrng_client_s *client,
+                       otrng_localized_error_message_type message_type) {
+  if (client->global_state->callbacks->localized_error_message != NULL) {
+    return client->global_state->callbacks->localized_error_message(
+        client, message_type);
+  }
+
+  switch (message_type) {
+  case OTRNG_ERROR_MESSAGE_FAILURE_START:
+    return otrng_xstrdup(
+        "Failed to start an Off-the-Record private conversation.");
+  default:
+    return otrng_xstrdup("(((UNKNOWN ERROR MESSAGE TYPE FOR L10N)))");
+  }
+}
+
 API char *otrng_client_query_message(const char *recipient, const char *msg,
                                      otrng_client_s *client) {
   char *ret = NULL;
@@ -279,11 +296,7 @@ API char *otrng_client_query_message(const char *recipient, const char *msg,
   }
 
   if (otrng_failed(otrng_build_query_message(&ret, msg, conv->conn))) {
-    // TODO: @client This should come from the client (a callback maybe?)
-    // because it knows in which language this should be sent, for example.
-    char *error = otrng_xstrdup(
-        "Failed to start an Off-the-Record private conversation.");
-    return error;
+    return localize_error_message(client, OTRNG_ERROR_MESSAGE_FAILURE_START);
   }
 
   return ret;

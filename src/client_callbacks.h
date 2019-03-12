@@ -83,6 +83,12 @@ typedef struct otrng_policy_s {
   uint8_t type;
 } otrng_policy_s;
 
+typedef enum {
+  /* This error message type will be used when it's impossible to start a
+     conversation through a query message */
+  OTRNG_ERROR_MESSAGE_FAILURE_START = 0,
+} otrng_localized_error_message_type;
+
 /* Forward declaration */
 struct otrng_client_s;
 struct otrng_s;
@@ -244,6 +250,11 @@ typedef struct otrng_client_callbacks_s {
 
   /* REQUIRED */
   void (*load_fingerprints_v3)(struct otrng_client_s *client);
+
+  /* OPTIONAL - the string returned will transfer ownership to the caller */
+  string_p (*localized_error_message)(
+      struct otrng_client_s *client,
+      otrng_localized_error_message_type message_type);
 } otrng_client_callbacks_s;
 
 INTERNAL int
