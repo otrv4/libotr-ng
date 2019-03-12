@@ -23,6 +23,8 @@
 
 #ifdef OTRNG_PERSISTENCE_PRIVATE
 
+#include "messaging.h"
+
 INTERNAL otrng_result
 otrng_client_private_key_v4_read_from(otrng_client_s *client, FILE *privf);
 
@@ -84,6 +86,23 @@ INTERNAL otrng_result otrng_client_fingerprint_v4_read_from(
 
 INTERNAL otrng_result
 otrng_client_fingerprints_v4_write_to(const otrng_client_s *client, FILE *fp);
+
+/* This function will export the private identity necessary to reform it on
+   another device in a standard format.
+   It will export the private v4 long term key, and the public forging key. The
+   format is a simple delimited format, where each entry is separated by a
+   colon. The format looks like this: "v4:privatekey:forgingkey:hash". The last
+   three entries are all hexadecimal representations of their data. The hash is
+   SHAKE-256 with output length 256 of the two bytes "v4", followed by the raw
+   bytes of the privatekey and forgingkey (not their hexadecimal
+   representation). */
+API otrng_result otrng_client_export_v4_identity(otrng_client_s *client,
+                                                 FILE *fp);
+
+/* This function imports data that is in the same format as specified for
+ * otrng_client_export_v4_identity */
+API otrng_result otrng_client_import_v4_identity(otrng_client_s *client,
+                                                 FILE *fp);
 
 #endif
 

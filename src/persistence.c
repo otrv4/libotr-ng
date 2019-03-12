@@ -27,6 +27,8 @@
 #include "persistence.h"
 #include "serialize.h"
 
+#include "goldilocks/shake.h"
+
 static size_t otrng_client_get_storage_id_len(const otrng_client_s *client) {
   return strlen(client->client_id.protocol) +
          strlen(client->client_id.account) + 1;
@@ -270,6 +272,19 @@ static const unsigned int hextable[] = {
     0,  0,  0,  0, 0, 0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0,  0,  0,
     0,  0,  0,  0, 0, 0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0,  0,  0,
     0,  0,  0,  0, 0, 0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0};
+
+static const unsigned int hextable_ok[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 tstatic void fingerprint_hex_to_bytes(otrng_known_fingerprint_s *fp,
                                       const char *hex) {
@@ -888,6 +903,144 @@ otrng_client_fingerprints_v4_write_to(const otrng_client_s *client, FILE *fp) {
   }
 
   otrng_list_foreach(client->fingerprints->fps, add_fingerprint_to_file, &ctx);
+
+  return OTRNG_SUCCESS;
+}
+
+API otrng_result otrng_client_export_v4_identity(otrng_client_s *client,
+                                                 FILE *fp) {
+  int i;
+  uint8_t forg_ser[ED448_POINT_BYTES];
+  uint8_t hash_ser[32];
+  goldilocks_shake256_ctx_p hd;
+  const char *domain = "v4";
+
+  if (!fp || !client->keypair || !client->forging_key) {
+    return OTRNG_ERROR;
+  }
+
+  memset(forg_ser, 0, ED448_POINT_BYTES);
+  otrng_serialize_ec_point(forg_ser, *client->forging_key);
+
+  fprintf(fp, "v4:");
+  for (i = 0; i < ED448_PRIVATE_BYTES; i++) {
+    fprintf(fp, "%02x", client->keypair->sym[i]);
+  }
+  fprintf(fp, ":");
+
+  for (i = 0; i < ED448_POINT_BYTES; i++) {
+    fprintf(fp, "%02x", forg_ser[i]);
+  }
+  fprintf(fp, ":");
+
+  goldilocks_shake256_init(hd);
+  goldilocks_shake256_update(hd, (const unsigned char *)domain, strlen(domain));
+  goldilocks_shake256_update(hd, client->keypair->sym, ED448_PRIVATE_BYTES);
+  goldilocks_shake256_update(hd, forg_ser, ED448_POINT_BYTES);
+  goldilocks_shake256_final(hd, hash_ser, 32);
+  goldilocks_shake256_destroy(hd);
+
+  for (i = 0; i < 32; i++) {
+    fprintf(fp, "%02x", hash_ser[i]);
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+tstatic otrng_result read_hex_bytes_from(uint8_t *buf, size_t len, FILE *fp) {
+  size_t i;
+  int one, two;
+
+  for (i = 0; i < len; i++) {
+    one = fgetc(fp);
+    two = fgetc(fp);
+
+    if (one < 0 || two < 0) {
+      return OTRNG_ERROR;
+    }
+
+    if (hextable_ok[one] == 0 || hextable_ok[two] == 0) {
+      return OTRNG_ERROR;
+    }
+
+    buf[i] = (hextable[one] << 4) + hextable[two];
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+API otrng_result otrng_client_import_v4_identity(otrng_client_s *client,
+                                                 FILE *fp) {
+  uint8_t read_version[2];
+  uint8_t read_private_key[ED448_PRIVATE_BYTES];
+  uint8_t read_forging_key[ED448_POINT_BYTES];
+  uint8_t read_hash[32];
+  uint8_t read_colon[1];
+  otrng_public_key forging_key;
+  uint8_t hash_val[32];
+  goldilocks_shake256_ctx_p hd;
+
+  if (fread(read_version, 1, 2, fp) != 2) { /* version */
+    return OTRNG_ERROR;
+  }
+
+  if (read_version[0] != 'v' || read_version[1] != '4') {
+    return OTRNG_ERROR;
+  }
+
+  read_colon[0] = 0;
+  if (fread(read_colon, 1, 1, fp) != 1 || read_colon[0] != ':') { /* : */
+    return OTRNG_ERROR;
+  }
+
+  if (otrng_failed(
+          read_hex_bytes_from(read_private_key, ED448_PRIVATE_BYTES, fp))) {
+    return OTRNG_ERROR;
+  }
+
+  read_colon[0] = 0;
+  if (fread(read_colon, 1, 1, fp) != 1 || read_colon[0] != ':') { /* : */
+    return OTRNG_ERROR;
+  }
+
+  if (otrng_failed(
+          read_hex_bytes_from(read_forging_key, ED448_POINT_BYTES, fp))) {
+    return OTRNG_ERROR;
+  }
+
+  read_colon[0] = 0;
+  if (fread(read_colon, 1, 1, fp) != 1 || read_colon[0] != ':') { /* : */
+    return OTRNG_ERROR;
+  }
+
+  if (otrng_failed(read_hex_bytes_from(read_hash, 32, fp))) {
+    return OTRNG_ERROR;
+  }
+
+  goldilocks_shake256_init(hd);
+  goldilocks_shake256_update(hd, read_version, 2);
+  goldilocks_shake256_update(hd, read_private_key, ED448_PRIVATE_BYTES);
+  goldilocks_shake256_update(hd, read_forging_key, ED448_POINT_BYTES);
+  goldilocks_shake256_final(hd, hash_val, 32);
+  goldilocks_shake256_destroy(hd);
+
+  if (memcmp(hash_val, read_hash, 32) != 0) {
+    return OTRNG_ERROR;
+  }
+
+  otrng_keypair_free(client->keypair);
+  client->keypair = otrng_keypair_new();
+  otrng_keypair_generate(client->keypair, read_private_key);
+
+  otrng_deserialize_ec_point(forging_key, read_forging_key, ED448_POINT_BYTES);
+
+  if (client->forging_key) {
+    otrng_ec_point_destroy(*client->forging_key);
+    otrng_free(client->forging_key);
+    client->forging_key = NULL;
+  }
+
+  otrng_client_add_forging_key(client, forging_key);
 
   return OTRNG_SUCCESS;
 }

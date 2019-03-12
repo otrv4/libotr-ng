@@ -83,6 +83,7 @@ unit_sources = \
 			units/test_non_interactive_messages.c \
 			units/test_orchestration.c \
 			units/test_otrng.c \
+			units/test_persistence.c \
 			units/test_prekey_ensemble.c \
 			units/test_prekey_messages.c \
 			units/test_prekey_profile.c \
