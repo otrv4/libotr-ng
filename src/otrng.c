@@ -2158,11 +2158,6 @@ tstatic otrng_result receive_error_message(otrng_response_s *response,
     display_error_message_cb(error_event, &response->to_display, otr);
 
     if (otr->policy_type & OTRNG_ERROR_START_DAKE) {
-      uint8_t *ser_mac_keys = otrng_reveal_mac_keys_on_tlv(otr->keys);
-      otr->keys->skipped_keys = NULL;
-
-      otrng_secure_free(ser_mac_keys);
-
       forget_our_keys(otr);
       otr->state = OTRNG_STATE_START;
       gone_insecure_cb_v4(otr);
