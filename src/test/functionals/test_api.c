@@ -623,32 +623,6 @@ static void test_api_conversation_errors_1(void) {
   otrng_free(to_send);
   to_send = NULL;
 
-  // Alice sends another data message
-  // result = otrng_send_message(&to_send, "hi", NULL, 0, alice);
-  // assert_message_sent(result, to_send);
-  // otrng_assert(!alice->keys->old_mac_keys);
-
-  //// Restore Bob's state
-  // bob->state = OTRNG_STATE_ENCRYPTED_MESSAGES;
-
-  //// Corrupt message
-  // size_t dec_len = 0;
-  // uint8_t *decoded = NULL;
-  // otrl_base64_otr_decode(to_send, &decoded, &dec_len);
-  // otrng_free(to_send);
-
-  // decoded[dec_len - 1] = decoded[dec_len - 1] + 3;
-  // to_send = otrl_base64_otr_encode(decoded, dec_len);
-  // otrng_free(decoded);
-
-  //// Bob receives a non valid data message
-  // response_to_alice = otrng_response_new();
-  // result = otrng_receive_message(response_to_alice, to_send, bob);
-
-  // otrng_assert(response_to_alice->to_send == NULL);
-  // otrng_assert_is_error(result);
-
-  // free_message_and_response(response_to_alice, &to_send);
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
   otrng_conn_free_all(alice, bob);
@@ -705,6 +679,49 @@ static void test_api_conversation_errors_2(void) {
 
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);
+
+  otrng_global_state_free(alice_client->global_state);
+  otrng_global_state_free(bob_client->global_state);
+  otrng_conn_free_all(alice, bob);
+}
+
+static void test_api_conversation_errors_3(void) {
+  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
+
+  otrng_s *alice = set_up(alice_client, 1);
+  otrng_s *bob = set_up(bob_client, 2);
+
+  // DAKE HAS FINISHED
+  do_dake_fixture(alice, bob);
+
+  otrng_response_s *response_to_alice = NULL;
+  string_p to_send = NULL;
+  otrng_result result;
+
+  // Alice sends a data message
+  result = otrng_send_message(&to_send, "hi", NULL, 0, alice);
+  assert_message_sent(result, to_send);
+  otrng_assert(!alice->keys->old_mac_keys);
+
+  // Corrupt message
+  size_t dec_len = 0;
+  uint8_t *decoded = NULL;
+  otrl_base64_otr_decode(to_send, &decoded, &dec_len);
+  otrng_free(to_send);
+
+  decoded[dec_len - 1] = decoded[dec_len - 1] + 3;
+  to_send = otrl_base64_otr_encode(decoded, dec_len);
+  otrng_free(decoded);
+
+  // Bob receives a non valid data message
+  response_to_alice = otrng_response_new();
+  result = otrng_receive_message(response_to_alice, to_send, bob);
+
+  otrng_assert(response_to_alice->to_send == NULL);
+  otrng_assert_is_error(result);
+
+  free_message_and_response(response_to_alice, &to_send);
 
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
@@ -1354,6 +1371,7 @@ void functionals_api_add_tests(void) {
   g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
   g_test_add_func("/api/conversation_errors_1", test_api_conversation_errors_1);
   g_test_add_func("/api/conversation_errors_2", test_api_conversation_errors_2);
+  g_test_add_func("/api/conversation_errors_3", test_api_conversation_errors_3);
   g_test_add_func("/api/conversation_errors_with_policies",
                   test_api_conversation_errors_with_policies);
   g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
