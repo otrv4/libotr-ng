@@ -510,7 +510,8 @@ API otrng_result otrng_client_get_our_fingerprint(
     return OTRNG_ERROR;
   }
 
-  return otrng_serialize_fingerprint(fp, client->keypair->pub);
+  return otrng_serialize_fingerprint(fp, client->keypair->pub,
+                                     *client->forging_key);
 }
 
 tstatic otrng_result

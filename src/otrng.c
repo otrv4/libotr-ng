@@ -1116,8 +1116,9 @@ API otrng_result otrng_send_non_interactive_auth(
 
   otr->running_version = OTRNG_PROTOCOL_VERSION_4;
 
-  if (otrng_serialize_fingerprint(
-          fp, otr->their_client_profile->long_term_pub_key)) {
+  if (otrng_serialize_fingerprint(fp,
+                                  otr->their_client_profile->long_term_pub_key,
+                                  otr->their_client_profile->forging_pub_key)) {
     fingerprint_seen_cb_v4(fp, otr);
   }
 
@@ -1316,8 +1317,9 @@ tstatic otrng_result non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
-  if (otrng_serialize_fingerprint(
-          fp, otr->their_client_profile->long_term_pub_key)) {
+  if (otrng_serialize_fingerprint(fp,
+                                  otr->their_client_profile->long_term_pub_key,
+                                  otr->their_client_profile->forging_pub_key)) {
     fingerprint_seen_cb_v4(fp, otr);
   }
 
@@ -1626,8 +1628,9 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buffer,
 
   otrng_dake_auth_r_destroy(&auth);
 
-  if (otrng_serialize_fingerprint(
-          fp, otr->their_client_profile->long_term_pub_key)) {
+  if (otrng_serialize_fingerprint(fp,
+                                  otr->their_client_profile->long_term_pub_key,
+                                  otr->their_client_profile->forging_pub_key)) {
     fingerprint_seen_cb_v4(fp, otr);
   }
 
@@ -1707,8 +1710,9 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
 
   otrng_dake_auth_i_destroy(&auth);
 
-  if (otrng_serialize_fingerprint(
-          fp, otr->their_client_profile->long_term_pub_key)) {
+  if (otrng_serialize_fingerprint(fp,
+                                  otr->their_client_profile->long_term_pub_key,
+                                  otr->their_client_profile->forging_pub_key)) {
     fingerprint_seen_cb_v4(fp, otr);
   }
 

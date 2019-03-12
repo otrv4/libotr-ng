@@ -61,8 +61,9 @@ API void otrng_known_fingerprints_free(otrng_known_fingerprints_s *kf);
 API otrng_result otrng_fingerprint_hash_to_human(char *human,
                                                  const unsigned char *hash);
 
-INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
-                                                  const otrng_public_key pub);
+INTERNAL otrng_result otrng_serialize_fingerprint(
+    otrng_fingerprint fp, const otrng_public_key long_term_pub_key,
+    const otrng_public_key long_term_forging_pub_key);
 
 struct otrng_client_s;
 struct otrng_s;

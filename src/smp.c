@@ -182,13 +182,14 @@ otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
     return tlv;
   }
 
-  if (!otrng_serialize_fingerprint(our_fp,
-                                   initiator_profile->long_term_pub_key)) {
+  if (!otrng_serialize_fingerprint(our_fp, initiator_profile->long_term_pub_key,
+                                   initiator_profile->forging_pub_key)) {
     return NULL;
   }
 
   if (!otrng_serialize_fingerprint(their_fp,
-                                   responder_profile->long_term_pub_key)) {
+                                   responder_profile->long_term_pub_key,
+                                   responder_profile->forging_pub_key)) {
     return NULL;
   }
 
@@ -291,12 +292,14 @@ otrng_smp_provide_secret(otrng_smp_event *event, smp_protocol_s *smp,
     return NULL;
   }
 
-  if (!otrng_serialize_fingerprint(our_fp, our_profile->long_term_pub_key)) {
+  if (!otrng_serialize_fingerprint(our_fp, our_profile->long_term_pub_key,
+                                   our_profile->forging_pub_key)) {
     return NULL;
   }
 
   if (!otrng_serialize_fingerprint(their_fp,
-                                   their_client_profile->long_term_pub_key)) {
+                                   their_client_profile->long_term_pub_key,
+                                   their_client_profile->forging_pub_key)) {
     return NULL;
   }
 

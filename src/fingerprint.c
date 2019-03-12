@@ -53,28 +53,48 @@ API otrng_result otrng_fingerprint_hash_to_human(char *human,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result otrng_serialize_fingerprint(otrng_fingerprint fp,
-                                                  const otrng_public_key pub) {
-  uint8_t ser[ED448_POINT_BYTES];
+INTERNAL otrng_result otrng_serialize_fingerprint(
+    otrng_fingerprint fp, const otrng_public_key long_term_pub_key,
+    const otrng_public_key long_term_forging_pub_key) {
+  uint8_t long_term_pub_ser[ED448_POINT_BYTES];
+  uint8_t long_term_forging_pub_ser[ED448_POINT_BYTES];
   uint8_t usage_fingerprint = 0x00;
   goldilocks_shake256_ctx_p hd;
 
-  memset(ser, 0, ED448_POINT_BYTES);
+  memset(long_term_pub_ser, 0, ED448_POINT_BYTES);
+  memset(long_term_forging_pub_ser, 0, ED448_POINT_BYTES);
 
   if (fp == NULL) {
     return OTRNG_ERROR;
   }
 
-  if (otrng_serialize_ec_point(ser, pub) != ED448_POINT_BYTES) {
+  // TODO: should this be serialized only as a point or as the actual pub key?
+  if (otrng_serialize_ec_point(long_term_pub_ser, long_term_pub_key) !=
+      ED448_POINT_BYTES) {
     return OTRNG_ERROR;
   }
 
-  /* KDF_1(usage_fingerprint || byte(H), 56) */
+  // TODO: should this be serialized only as a point or as the actual forging
+  // pub key?
+  if (otrng_serialize_ec_point(long_term_forging_pub_ser,
+                               long_term_forging_pub_key) !=
+      ED448_POINT_BYTES) {
+    return OTRNG_ERROR;
+  }
+
+  /* KDF_1(usage_fingerprint || byte(H) || byte(F), 56) */
   if (!hash_init_with_usage(hd, usage_fingerprint)) {
     return OTRNG_ERROR;
   }
 
-  if (hash_update(hd, ser, ED448_POINT_BYTES) == GOLDILOCKS_FAILURE) {
+  if (hash_update(hd, long_term_pub_ser, ED448_POINT_BYTES) ==
+      GOLDILOCKS_FAILURE) {
+    hash_destroy(hd);
+    return OTRNG_ERROR;
+  }
+
+  if (hash_update(hd, long_term_forging_pub_ser, ED448_POINT_BYTES) ==
+      GOLDILOCKS_FAILURE) {
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
@@ -219,7 +239,8 @@ otrng_fingerprint_get_current(const otrng_s *conn) {
   }
 
   if (otrng_failed(otrng_serialize_fingerprint(
-          fp, conn->their_client_profile->long_term_pub_key))) {
+          fp, conn->their_client_profile->long_term_pub_key,
+          conn->their_client_profile->forging_pub_key))) {
     return NULL;
   }
 

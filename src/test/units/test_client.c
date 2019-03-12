@@ -37,7 +37,8 @@ static void test_client_get_our_fingerprint() {
   set_up_client(alice, 1);
 
   otrng_fingerprint expected_fp = {0};
-  otrng_assert(otrng_serialize_fingerprint(expected_fp, alice->keypair->pub));
+  otrng_assert(otrng_serialize_fingerprint(expected_fp, alice->keypair->pub,
+                                           *alice->forging_key));
 
   otrng_fingerprint our_fp = {0};
   otrng_assert_is_success(otrng_client_get_our_fingerprint(our_fp, alice));
