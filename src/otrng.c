@@ -673,10 +673,10 @@ tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
   size_t t_len = 0;
   otrng_result result;
 
-  msg.sender_instance_tag=0;
-  msg.receiver_instance_tag=0;
-  msg.profile=NULL;
-  msg.sigma=NULL;
+  msg.sender_instance_tag = 0;
+  msg.receiver_instance_tag = 0;
+  msg.profile = NULL;
+  msg.sigma = NULL;
 
   otrng_dake_auth_r_init(&msg);
 
@@ -1435,9 +1435,9 @@ tstatic otrng_result receive_identity_message(string_p *dst,
   otrng_result result = OTRNG_ERROR;
   dake_identity_message_s msg;
   msg.profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
-  msg.sender_instance_tag=0;
-  msg.receiver_instance_tag=0;
-  msg.B=NULL;
+  msg.sender_instance_tag = 0;
+  msg.receiver_instance_tag = 0;
+  msg.B = NULL;
 
   if (!otrng_dake_identity_message_deserialize(&msg, buffer, buff_len)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);

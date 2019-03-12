@@ -381,7 +381,7 @@ tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
     }
 
   } else if (participant == 't') {
-    dh_keypair_s tmp_their_dh = {.pub=NULL, .priv=NULL};
+    dh_keypair_s tmp_their_dh = {.pub = NULL, .priv = NULL};
 
     if (!shake_256_kdf1(random_buffer, ED448_PRIVATE_BYTES,
                         usage_ECDH_first_ephemeral, manager->shared_secret,

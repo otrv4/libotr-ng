@@ -99,7 +99,7 @@ INTERNAL otrng_result otrng_serialize_dh_mpi_otr(uint8_t *dst, size_t dst_len,
                                                  const dh_mpi mpi) {
   uint8_t buffer[DH3072_MOD_LEN_BYTES];
   size_t w = 0;
-  otrng_mpi_s otr_mpi = {.len=0, .data=NULL};
+  otrng_mpi_s otr_mpi = {.len = 0, .data = NULL};
 
   memset(buffer, 0, DH3072_MOD_LEN_BYTES);
 

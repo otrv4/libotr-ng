@@ -227,12 +227,12 @@ INTERNAL otrng_result otrng_unfragment_message_generic(
     char **unfrag_msg, list_element_s **contexts, const string_p msg,
     const uint32_t our_instance_tag, const char *prefix, const char *format) {
   int start = 0, end = 0;
-  uint32_t fragment_identifier=0, sender_tag=0, receiver_tag=0;
-  uint16_t i=0, t=0;
+  uint32_t fragment_identifier = 0, sender_tag = 0, receiver_tag = 0;
+  uint16_t i = 0, t = 0;
   fragment_context_s *context = NULL;
-  list_element_s *current=NULL;
-  fragment_context_s *ctx=NULL;
-  uint32_t fragment_len=0;
+  list_element_s *current = NULL;
+  fragment_context_s *ctx = NULL;
+  uint32_t fragment_len = 0;
 
   *unfrag_msg = NULL;
 

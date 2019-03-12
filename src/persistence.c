@@ -209,8 +209,8 @@ static int get_limited_line(char **buf, FILE *f) {
 tstatic otrng_result otrng_client_read_from_prefix(FILE *fp, uint8_t **dec,
                                                    size_t *dec_len) {
 
-  char *line=NULL;
-  int len=0;
+  char *line = NULL;
+  int len = 0;
 
   assert(fp != NULL);
 
@@ -301,8 +301,8 @@ INTERNAL otrng_result otrng_client_fingerprint_v4_read_from(
     otrng_global_state_s *gs, FILE *fp,
     otrng_client_s *(*get_client)(otrng_global_state_s *,
                                   const otrng_client_id_s)) {
-  char *line=NULL;
-  int len=0;
+  char *line = NULL;
+  int len = 0;
   uint8_t **items = NULL;
   size_t item_len = 0;
   uint8_t *fp_human;
@@ -402,8 +402,8 @@ otrng_client_private_key_v4_read_from(otrng_client_s *client, FILE *privf) {
 
 INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
                                                          FILE *fp) {
-  uint8_t *dec=NULL;
-  size_t dec_len=0;
+  uint8_t *dec = NULL;
+  size_t dec_len = 0;
   otrng_public_key key;
   otrng_result result = otrng_client_read_from_prefix(fp, &dec, &dec_len);
 
@@ -470,8 +470,8 @@ otrng_client_private_key_v3_read_from(const otrng_client_s *client, FILE *fp) {
 
 INTERNAL otrng_result
 otrng_client_client_profile_read_from(otrng_client_s *client, FILE *fp) {
-  uint8_t *dec=NULL;
-  size_t dec_len=0;
+  uint8_t *dec = NULL;
+  size_t dec_len = 0;
   otrng_client_profile_s profile;
   otrng_result result = otrng_client_read_from_prefix(fp, &dec, &dec_len);
 
@@ -499,8 +499,8 @@ otrng_client_client_profile_read_from(otrng_client_s *client, FILE *fp) {
 
 INTERNAL otrng_result otrng_client_expired_client_profile_read_from(
     otrng_client_s *client, FILE *fp) {
-  uint8_t *dec=NULL;
-  size_t dec_len=0;
+  uint8_t *dec = NULL;
+  size_t dec_len = 0;
   otrng_client_profile_s exp_profile;
   otrng_result result = otrng_client_read_from_prefix(fp, &dec, &dec_len);
 
