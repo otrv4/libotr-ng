@@ -349,7 +349,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
 
   p_curr = p;
   for (i = 0; i < values_len; i++) {
-    gcry_mpi_t t;
+    gcry_mpi_t t = NULL;
     if (!otrng_dh_mpi_deserialize(&t, p_curr, PREKEY_PROOF_LAMBDA, &w)) {
       otrng_free(p);
       gcry_mpi_release(a);

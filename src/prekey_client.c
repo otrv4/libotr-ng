@@ -1068,6 +1068,8 @@ tstatic char *send_dake3(const otrng_prekey_dake2_message_s *dake_2,
   uint8_t mac[HASH_BYTES];
   otrng_prekey_client_s *prekey_client = client->prekey_client;
 
+  dake_3.sigma = NULL;
+
   otrng_prekey_dake3_message_init(&dake_3);
   dake_3.client_instance_tag = prekey_client->instance_tag;
 

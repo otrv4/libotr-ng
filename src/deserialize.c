@@ -159,7 +159,7 @@ INTERNAL otrng_result otrng_deserialize_dh_mpi_otr(dh_mpi *dst,
                                                    const uint8_t *buffer,
                                                    size_t buff_len,
                                                    size_t *read) {
-  otrng_mpi_s mpi; // no need to free, because nothing is copied now
+  otrng_mpi_s mpi = {.len=0, .data=NULL}; // no need to free, because nothing is copied now
   size_t w = 0;
   otrng_result ret;
 

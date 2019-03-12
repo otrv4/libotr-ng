@@ -673,6 +673,11 @@ tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
   size_t t_len = 0;
   otrng_result result;
 
+  msg.sender_instance_tag=0;
+  msg.receiver_instance_tag=0;
+  msg.profile=NULL;
+  msg.sigma=NULL;
+
   otrng_dake_auth_r_init(&msg);
 
   msg.sender_instance_tag = our_instance_tag(otr);
@@ -1430,6 +1435,9 @@ tstatic otrng_result receive_identity_message(string_p *dst,
   otrng_result result = OTRNG_ERROR;
   dake_identity_message_s msg;
   msg.profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
+  msg.sender_instance_tag=0;
+  msg.receiver_instance_tag=0;
+  msg.B=NULL;
 
   if (!otrng_dake_identity_message_deserialize(&msg, buffer, buff_len)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
@@ -1507,6 +1515,8 @@ tstatic otrng_result reply_with_auth_i_message(
   size_t t_len = 0;
   otrng_result result;
 
+  msg.sigma = NULL;
+
   otrng_dake_auth_i_init(&msg);
   msg.sender_instance_tag = our_instance_tag(otr);
   msg.receiver_instance_tag = otr->their_instance_tag;
@@ -1574,6 +1584,11 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buffer,
   dake_auth_r_s auth;
   otrng_fingerprint fp;
   otrng_result ret;
+
+  auth.receiver_instance_tag = 0;
+  auth.sender_instance_tag = 0;
+  auth.A = NULL;
+  auth.profile = NULL;
 
   otrng_dake_auth_r_init(&auth);
 
@@ -1673,6 +1688,9 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
                                     size_t buff_len, otrng_s *otr) {
   dake_auth_i_s auth;
   otrng_fingerprint fp;
+
+  auth.receiver_instance_tag = 0;
+  auth.sender_instance_tag = 0;
 
   otrng_dake_auth_i_init(&auth);
   if (otr->state != OTRNG_STATE_WAITING_AUTH_I) {
@@ -2087,6 +2105,8 @@ tstatic otrng_result receive_decoded_message(otrng_response_s *response,
                                              size_t dec_len, otrng_s *otr) {
   otrng_header_s header;
   int v3_allowed, v4_allowed;
+
+  header.version = 0;
 
   if (otrng_failed(extract_header(&header, decoded, dec_len))) {
     return OTRNG_ERROR;

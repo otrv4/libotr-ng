@@ -345,7 +345,7 @@ static otrng_result deserialize_dsa_key_field(otrng_client_profile_s *target,
   }
 
   for (i = 0; i < 4; i++) {
-    otrng_mpi_s mpi;
+    otrng_mpi_s mpi = {.len = 0, .data = NULL};
     if (!otrng_mpi_deserialize_no_copy(&mpi, buffer + w, buff_len - w, &read)) {
       return OTRNG_ERROR;
     }

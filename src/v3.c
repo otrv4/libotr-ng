@@ -846,7 +846,7 @@ static gcry_error_t make_pubkey(unsigned char **pubbufp, size_t *publenp,
                                 gcry_sexp_t privkey) {
   gcry_mpi_t p, q, g, y;
   gcry_sexp_t dsas, ps, qs, gs, ys;
-  size_t np, nq, ng, ny;
+  size_t np=0, nq=0, ng=0, ny=0;
   enum gcry_mpi_format format = GCRYMPI_FMT_USG;
   unsigned char *bufp;
   size_t lenp;
