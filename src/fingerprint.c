@@ -56,8 +56,8 @@ API otrng_result otrng_fingerprint_hash_to_human(char *human,
 INTERNAL otrng_result otrng_serialize_fingerprint(
     otrng_fingerprint fp, const otrng_public_key long_term_pub_key,
     const otrng_public_key long_term_forging_pub_key) {
-  uint8_t long_term_pub_ser[ED448_POINT_BYTES];
-  uint8_t long_term_forging_pub_ser[ED448_POINT_BYTES];
+  uint8_t long_term_pub_ser[ED448_PUBKEY_BYTES];
+  uint8_t long_term_forging_pub_ser[ED448_PUBKEY_BYTES];
   uint8_t usage_fingerprint = 0x00;
   goldilocks_shake256_ctx_p hd;
 
@@ -68,17 +68,14 @@ INTERNAL otrng_result otrng_serialize_fingerprint(
     return OTRNG_ERROR;
   }
 
-  // TODO: should this be serialized only as a point or as the actual pub key?
-  if (otrng_serialize_ec_point(long_term_pub_ser, long_term_pub_key) !=
-      ED448_POINT_BYTES) {
+  if (otrng_serialize_public_key(long_term_pub_ser, long_term_pub_key) !=
+      ED448_PUBKEY_BYTES) {
     return OTRNG_ERROR;
   }
 
-  // TODO: should this be serialized only as a point or as the actual forging
-  // pub key?
-  if (otrng_serialize_ec_point(long_term_forging_pub_ser,
-                               long_term_forging_pub_key) !=
-      ED448_POINT_BYTES) {
+  if (otrng_serialize_forging_key(long_term_forging_pub_ser,
+                                  long_term_forging_pub_key) !=
+      ED448_PUBKEY_BYTES) {
     return OTRNG_ERROR;
   }
 
@@ -87,13 +84,13 @@ INTERNAL otrng_result otrng_serialize_fingerprint(
     return OTRNG_ERROR;
   }
 
-  if (hash_update(hd, long_term_pub_ser, ED448_POINT_BYTES) ==
+  if (hash_update(hd, long_term_pub_ser, ED448_PUBKEY_BYTES) ==
       GOLDILOCKS_FAILURE) {
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
 
-  if (hash_update(hd, long_term_forging_pub_ser, ED448_POINT_BYTES) ==
+  if (hash_update(hd, long_term_forging_pub_ser, ED448_PUBKEY_BYTES) ==
       GOLDILOCKS_FAILURE) {
     hash_destroy(hd);
     return OTRNG_ERROR;
