@@ -27,6 +27,7 @@
 #include "client.h"
 #include "dake.h"
 #include "deserialize.h"
+#include "prekey_fragment.h"
 #include "prekey_proofs.h"
 #include "serialize.h"
 #include "shake.h"
@@ -158,6 +159,8 @@ API void otrng_prekey_client_init(otrng_prekey_client_s *client,
       minimum_stored_prekey_message;
 }
 
+static void free_fragment_context(void *p) { otrng_fragment_context_free(p); }
+
 API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
   if (!client) {
     return;
@@ -169,6 +172,9 @@ API void otrng_prekey_client_free(otrng_prekey_client_s *client) {
   otrng_free(client->our_identity);
   otrng_free(client->publication_policy);
 
+  otrng_list_free(client->pending_fragments, free_fragment_context);
+  client->pending_fragments = NULL;
+
   otrng_secure_free(client);
 }
 
@@ -176,7 +182,7 @@ static otrng_result prekey_decode(const char *msg, uint8_t **buffer,
                                   size_t *buff_len) {
   size_t len = strlen(msg);
 
-  if (!len || '.' != msg[len - 1]) {
+  if (!msg || !len || '.' != msg[len - 1]) {
     return OTRNG_ERROR;
   }
 
@@ -1712,6 +1718,7 @@ API otrng_bool otrng_prekey_client_receive(char **to_send, const char *server,
                                            otrng_client_s *client) {
   uint8_t *ser = NULL;
   size_t ser_len = 0;
+  char *defrag = NULL;
 
   assert(client != NULL);
   assert(client->prekey_client != NULL);
@@ -1723,12 +1730,18 @@ API otrng_bool otrng_prekey_client_receive(char **to_send, const char *server,
     return otrng_false;
   }
 
-  // TODO: process fragmented messages
-
-  /* If it fails to decode it was not a prekey server message. */
-  if (!prekey_decode(msg, &ser, &ser_len)) {
+  if (otrng_failed(otrng_fragment_message_receive(
+          &defrag, &client->prekey_client->pending_fragments, msg,
+          otrng_client_get_instance_tag(client)))) {
     return otrng_false;
   }
+
+  /* If it fails to decode it was not a prekey server message. */
+  if (!prekey_decode(defrag, &ser, &ser_len)) {
+    otrng_free(defrag);
+    return otrng_false;
+  }
+  otrng_free(defrag);
 
   /* In any other case, it returns SUCCESS because we processed the message.
      Even if there was an error processing it. We should consider informing the

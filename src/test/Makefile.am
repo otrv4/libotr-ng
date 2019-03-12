@@ -45,6 +45,7 @@ otrng_sources = ../alloc.c \
                     ../otrng.c \
                     ../padding.c \
                     ../prekey_client.c \
+                    ../prekey_fragment.c \
                     ../prekey_message.c \
                     ../prekey_ensemble.c \
                     ../prekey_profile.c \

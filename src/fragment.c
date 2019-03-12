@@ -181,8 +181,8 @@ INTERNAL otrng_result otrng_fragment_message(int max_size,
   return OTRNG_SUCCESS;
 }
 
-tstatic otrng_bool is_fragment(const string_p msg) {
-  if (msg != NULL && strstr(msg, "?OTR|") == msg) {
+tstatic otrng_bool is_fragment_generic(const string_p msg, const char *prefix) {
+  if (msg != NULL && strstr(msg, prefix) == msg) {
     return otrng_true;
   }
 
@@ -223,9 +223,9 @@ tstatic otrng_result copy_fragment_to_context(fragment_context_s *context,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_result
-otrng_unfragment_message(char **unfrag_msg, list_element_s **contexts,
-                         const string_p msg, const uint32_t our_instance_tag) {
+INTERNAL otrng_result otrng_unfragment_message_generic(
+    char **unfrag_msg, list_element_s **contexts, const string_p msg,
+    const uint32_t our_instance_tag, const char *prefix, const char *format) {
   int start = 0, end = 0;
   uint32_t fragment_identifier, sender_tag, receiver_tag;
   uint16_t i, t;
@@ -240,16 +240,21 @@ otrng_unfragment_message(char **unfrag_msg, list_element_s **contexts,
     return OTRNG_ERROR;
   }
 
-  if (!is_fragment(msg)) {
+  if (!is_fragment_generic(msg, prefix)) {
     *unfrag_msg = otrng_xstrdup(msg);
 
     return OTRNG_SUCCESS;
   }
 
-  if (sscanf(msg, UNFRAGMENT_FORMAT, &fragment_identifier, &sender_tag,
-             &receiver_tag, &i, &t, &start, &end) == EOF) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+  if (sscanf(msg, format, &fragment_identifier, &sender_tag, &receiver_tag, &i,
+             &t, &start, &end) == EOF) {
     return OTRNG_ERROR;
   }
+#pragma GCC diagnostic error "-Wformat-nonliteral"
+#pragma clang diagnostic pop
 
   if (our_instance_tag != receiver_tag && 0 != receiver_tag) {
     return OTRNG_SUCCESS;
@@ -319,6 +324,12 @@ otrng_unfragment_message(char **unfrag_msg, list_element_s **contexts,
   }
 
   return OTRNG_SUCCESS;
+}
+INTERNAL otrng_result
+otrng_unfragment_message(char **unfrag_msg, list_element_s **contexts,
+                         const string_p msg, const uint32_t our_instance_tag) {
+  return otrng_unfragment_message_generic(
+      unfrag_msg, contexts, msg, our_instance_tag, "?OTR|", UNFRAGMENT_FORMAT);
 }
 
 INTERNAL otrng_result otrng_expire_fragments(time_t now, double expiration_time,

@@ -514,6 +514,13 @@ API otrng_result otrng_client_expire_fragments(uint32_t expiration_time,
     }
   }
 
+  if (client->prekey_client) {
+    if (otrng_failed(otrng_expire_fragments(
+            now, expiration_time, &client->prekey_client->pending_fragments))) {
+      return OTRNG_ERROR;
+    }
+  }
+
   return OTRNG_SUCCESS;
 }
 

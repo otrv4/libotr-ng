@@ -22,6 +22,7 @@
 #define OTRNG_PREKEY_CLIENT_H
 
 #include "constants.h"
+#include "list.h"
 #include "prekey_ensemble.h"
 #include "prekey_message.h"
 #include "prekey_profile.h"
@@ -154,6 +155,8 @@ typedef struct {
   const otrng_client_profile_s *client_profile;
   const otrng_prekey_profile_s *prekey_profile;
   ecdh_keypair_s *ephemeral_ecdh;
+
+  list_element_s *pending_fragments;
 
   otrng_prekey_publication_policy_s *publication_policy;
 
