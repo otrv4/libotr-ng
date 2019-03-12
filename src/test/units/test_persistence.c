@@ -85,6 +85,8 @@ static void test_persistence_export_v4() {
   client->forging_key = NULL;
   otrng_secure_free(forging_key);
   otrng_client_free(client);
+  otrng_free((char *)client_id.protocol);
+  otrng_free((char *)client_id.account);
 }
 
 static void test_persistence_export_v4_failure1() {
@@ -110,6 +112,8 @@ static void test_persistence_export_v4_failure1() {
   client->forging_key = NULL;
   otrng_secure_free(forging_key);
   otrng_client_free(client);
+  otrng_free((char *)client_id.protocol);
+  otrng_free((char *)client_id.account);
 }
 
 static void test_persistence_export_v4_failure2() {
@@ -130,6 +134,8 @@ static void test_persistence_export_v4_failure2() {
   fclose(fp);
 
   otrng_client_free(client);
+  otrng_free((char *)client_id.protocol);
+  otrng_free((char *)client_id.account);
 }
 
 static void test_persistence_export_v4_failure3() {
@@ -156,6 +162,8 @@ static void test_persistence_export_v4_failure3() {
   client->forging_key = NULL;
   otrng_secure_free(forging_key);
   otrng_client_free(client);
+  otrng_free((char *)client_id.protocol);
+  otrng_free((char *)client_id.account);
 }
 
 static void test_persistence_import_v4() {
@@ -207,6 +215,8 @@ static void test_persistence_import_v4() {
   otrng_secure_free(forging_key);
   otrng_secure_free(forging_key_compare);
   otrng_client_free(client);
+  otrng_free((char *)client_id.protocol);
+  otrng_free((char *)client_id.account);
 }
 
 static void test_persistence_import_v4_failures() {
@@ -462,6 +472,8 @@ static void test_persistence_import_v4_failures() {
   otrng_secure_free(forging_key);
   otrng_secure_free(forging_key_compare);
   otrng_client_free(client);
+  otrng_free((char *)client_id.protocol);
+  otrng_free((char *)client_id.account);
 }
 
 void units_persistence_add_tests(void) {
