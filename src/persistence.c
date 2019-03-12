@@ -920,7 +920,9 @@ API otrng_result otrng_client_export_v4_identity(otrng_client_s *client,
   }
 
   memset(forg_ser, 0, ED448_POINT_BYTES);
-  otrng_serialize_ec_point(forg_ser, *client->forging_key);
+  if (otrng_failed(otrng_serialize_ec_point(forg_ser, *client->forging_key))) {
+    return OTRNG_ERROR;
+  }
 
   fprintf(fp, "v4:");
   for (i = 0; i < ED448_PRIVATE_BYTES; i++) {
@@ -934,9 +936,21 @@ API otrng_result otrng_client_export_v4_identity(otrng_client_s *client,
   fprintf(fp, ":");
 
   goldilocks_shake256_init(hd);
-  goldilocks_shake256_update(hd, (const unsigned char *)domain, strlen(domain));
-  goldilocks_shake256_update(hd, client->keypair->sym, ED448_PRIVATE_BYTES);
-  goldilocks_shake256_update(hd, forg_ser, ED448_POINT_BYTES);
+  if (goldilocks_shake256_update(hd, (const unsigned char *)domain,
+                                 strlen(domain)) == GOLDILOCKS_FAILURE) {
+    goldilocks_shake256_destroy(hd);
+    return OTRNG_ERROR;
+  }
+  if (goldilocks_shake256_update(hd, client->keypair->sym,
+                                 ED448_PRIVATE_BYTES) == GOLDILOCKS_FAILURE) {
+    goldilocks_shake256_destroy(hd);
+    return OTRNG_ERROR;
+  }
+  if (goldilocks_shake256_update(hd, forg_ser, ED448_POINT_BYTES) ==
+      GOLDILOCKS_FAILURE) {
+    goldilocks_shake256_destroy(hd);
+    return OTRNG_ERROR;
+  }
   goldilocks_shake256_final(hd, hash_ser, 32);
   goldilocks_shake256_destroy(hd);
 
@@ -1018,9 +1032,20 @@ API otrng_result otrng_client_import_v4_identity(otrng_client_s *client,
   }
 
   goldilocks_shake256_init(hd);
-  goldilocks_shake256_update(hd, read_version, 2);
-  goldilocks_shake256_update(hd, read_private_key, ED448_PRIVATE_BYTES);
-  goldilocks_shake256_update(hd, read_forging_key, ED448_POINT_BYTES);
+  if (goldilocks_shake256_update(hd, read_version, 2) == GOLDILOCKS_FAILURE) {
+    goldilocks_shake256_destroy(hd);
+    return OTRNG_ERROR;
+  }
+  if (goldilocks_shake256_update(hd, read_private_key, ED448_PRIVATE_BYTES) ==
+      GOLDILOCKS_FAILURE) {
+    goldilocks_shake256_destroy(hd);
+    return OTRNG_ERROR;
+  }
+  if (goldilocks_shake256_update(hd, read_forging_key, ED448_POINT_BYTES) ==
+      GOLDILOCKS_FAILURE) {
+    goldilocks_shake256_destroy(hd);
+    return OTRNG_ERROR;
+  }
   goldilocks_shake256_final(hd, hash_val, 32);
   goldilocks_shake256_destroy(hd);
 
@@ -1030,9 +1055,14 @@ API otrng_result otrng_client_import_v4_identity(otrng_client_s *client,
 
   otrng_keypair_free(client->keypair);
   client->keypair = otrng_keypair_new();
-  otrng_keypair_generate(client->keypair, read_private_key);
+  if (otrng_failed(otrng_keypair_generate(client->keypair, read_private_key))) {
+    return OTRNG_ERROR;
+  }
 
-  otrng_deserialize_ec_point(forging_key, read_forging_key, ED448_POINT_BYTES);
+  if (otrng_failed(otrng_deserialize_ec_point(forging_key, read_forging_key,
+                                              ED448_POINT_BYTES))) {
+    return OTRNG_ERROR;
+  }
 
   if (client->forging_key) {
     otrng_ec_point_destroy(*client->forging_key);
@@ -1040,7 +1070,5 @@ API otrng_result otrng_client_import_v4_identity(otrng_client_s *client,
     client->forging_key = NULL;
   }
 
-  otrng_client_add_forging_key(client, forging_key);
-
-  return OTRNG_SUCCESS;
+  return otrng_client_add_forging_key(client, forging_key);
 }
