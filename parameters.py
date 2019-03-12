@@ -7,6 +7,7 @@ def sha512(s):
 
 # Base field Z_p
 p = 2**448 - 2**224 - 1
+print("p", hex(p))
 
 def modp_inv(x):
     return pow(x, p-2, p)
@@ -15,7 +16,8 @@ def modp_inv(x):
 d = -39081
 
 # Group order
-q = 2**446 + 13818066809895115352007386748515426880336692474882178609894547503885
+q = 2**446 - 13818066809895115352007386748515426880336692474882178609894547503885
+print("y", hex(q))
 
 def sha512_modq(s):
     return int.from_bytes(sha512(s), "little") % q
