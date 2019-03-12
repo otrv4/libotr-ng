@@ -65,11 +65,11 @@ static const char *DH3072_MODULUS_SQ =
     "5DF08BABBD30AEB63B84C4605D6CA371047127D03A72D598"
     "A1EDADFE707E884725C16890549D69657FFFFFFFFFFFFFFF";
 
-static gcry_mpi_t DH3072_MODULUS = NULL;
-static gcry_mpi_t DH3072_MODULUS_Q = NULL;
-static gcry_mpi_t DH3072_MODULUS_MINUS_2 = NULL;
+static /*@null@*/ gcry_mpi_t DH3072_MODULUS = NULL;
+static /*@null@*/ gcry_mpi_t DH3072_MODULUS_Q = NULL;
+static /*@null@*/ gcry_mpi_t DH3072_MODULUS_MINUS_2 = NULL;
 static const char *DH3072_GENERATOR_S = "0x02";
-static gcry_mpi_t DH3072_GENERATOR = NULL;
+static /*@null@*/ gcry_mpi_t DH3072_GENERATOR = NULL;
 
 static int dh_initialized = 0;
 
