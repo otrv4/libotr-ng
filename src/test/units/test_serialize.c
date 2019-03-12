@@ -96,6 +96,23 @@ static void test_ser_des_otrng_public_key() {
   otrng_assert(otrng_ec_point_eq(deser, keypair.pub));
 }
 
+static void test_ser_des_otrng_forging_public_key() {
+  otrng_keypair_s keypair;
+  otrng_public_key deser;
+  uint8_t sym[ED448_PRIVATE_BYTES] = {1};
+  otrng_assert_is_success(otrng_keypair_generate(&keypair, sym));
+
+  uint8_t ser[ED448_PUBKEY_BYTES] = {0};
+  g_assert_cmpint(otrng_serialize_forging_key(ser, keypair.pub), ==,
+                  ED448_PUBKEY_BYTES);
+  otrng_assert_is_success(
+      otrng_deserialize_forging_key(deser, ser, ED448_PUBKEY_BYTES, NULL));
+
+  otrng_assert(otrng_ec_point_valid(deser));
+
+  otrng_assert(otrng_ec_point_eq(deser, keypair.pub));
+}
+
 static void test_ser_des_otrng_shared_prekey() {
   otrng_shared_prekey_pair_s *shared_prekey = otrng_shared_prekey_pair_new();
   otrng_shared_prekey_pub deser;
@@ -214,8 +231,10 @@ void units_serialize_add_tests(void) {
                   test_otrng_serialize_dh_public_key);
   g_test_add_func("/serialize/otrng-symmetric-key",
                   test_serialize_otrng_symmetric_key);
-  g_test_add_func("/serialize_and_deserialize/ed448-shared-prekey",
-                  test_ser_des_otrng_shared_prekey);
   g_test_add_func("/serialize_and_deserialize/ed448-public-key",
                   test_ser_des_otrng_public_key);
+  g_test_add_func("/serialize_and_deserialize/ed448-forging-public-key",
+                  test_ser_des_otrng_forging_public_key);
+  g_test_add_func("/serialize_and_deserialize/ed448-shared-prekey",
+                  test_ser_des_otrng_shared_prekey);
 }
