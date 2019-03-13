@@ -328,6 +328,10 @@ API otrng_result otrng_build_identity_message(string_p *dst, otrng_s *otr) {
   result = serialize_and_encode_identity_message(dst, msg);
   otrng_dake_identity_message_free(msg);
 
+  if (result == OTRNG_ERROR) {
+    return result;
+  }
+
   otr->state = OTRNG_STATE_WAITING_AUTH_R;
 
   return OTRNG_SUCCESS;
