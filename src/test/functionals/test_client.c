@@ -359,6 +359,8 @@ static void test_initiate_with_identity_msg() {
   otrng_assert(alice_to_bob->conn->state ==
                OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
 
+  otrng_free(bob_auth_r);
+
   // Bob receives auth_i message, sends dake data message
   otrng_client_receive(&bob_dake_data_msg, &to_display, alice_auth_i,
                        ALICE_ACCOUNT, bob, &ignore);
