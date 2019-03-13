@@ -318,6 +318,89 @@ static void test_conversation_with_multiple_locations() {
   otrng_global_state_free(bob->global_state);
 }
 
+static void test_initiate_with_identity_msg() {
+  otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
+  otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
+
+  set_up_client(alice, 1);
+  set_up_client(bob, 2);
+
+  char *identity_message_to_bob =
+      otrng_client_identity_message(BOB_ACCOUNT, alice);
+
+  otrng_bool ignore = otrng_false;
+  char *to_display = NULL, *bob_auth_r = NULL, *alice_auth_i = NULL,
+       *bob_dake_data_msg = NULL, *empty_msg = NULL, *disconnected_msg = NULL;
+
+  // Bob receives identity message, sends auth-r message
+  otrng_client_receive(&bob_auth_r, &to_display, identity_message_to_bob,
+                       ALICE_ACCOUNT, bob, &ignore);
+  otrng_assert(!ignore);
+  otrng_assert(!to_display);
+
+  free(identity_message_to_bob);
+
+  otrng_conversation_s *alice_to_bob =
+      otrng_client_get_conversation(NOT_FORCE_CREATE_CONV, BOB_ACCOUNT, alice);
+  otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_WAITING_AUTH_R);
+
+  otrng_conversation_s *bob_to_alice =
+      otrng_client_get_conversation(NOT_FORCE_CREATE_CONV, ALICE_ACCOUNT, bob);
+  otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_WAITING_AUTH_I);
+
+  otrng_assert(bob_auth_r);
+  otrng_assert(!ignore);
+  otrng_assert(!to_display);
+
+  // Alice receives the auth-r message, sends auth-i message
+  otrng_client_receive(&alice_auth_i, &to_display, bob_auth_r, BOB_ACCOUNT,
+                       alice, &ignore);
+
+  otrng_assert(alice_to_bob->conn->state ==
+               OTRNG_STATE_WAITING_DAKE_DATA_MESSAGE);
+
+  // Bob receives auth_i message, sends dake data message
+  otrng_client_receive(&bob_dake_data_msg, &to_display, alice_auth_i,
+                       ALICE_ACCOUNT, bob, &ignore);
+  otrng_free(alice_auth_i);
+
+  otrng_assert(bob_to_alice->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+
+  // Alice receives a dake_data_msg message
+  otrng_client_receive(&empty_msg, &to_display, bob_dake_data_msg, BOB_ACCOUNT,
+                       alice, &ignore);
+  otrng_free(bob_dake_data_msg);
+
+  otrng_assert(!ignore);
+  otrng_assert(!empty_msg);
+  otrng_assert(!to_display);
+
+  otrng_assert(alice_to_bob->conn->state == OTRNG_STATE_ENCRYPTED_MESSAGES);
+
+  // Alice sends a disconnected to Bob
+  otrng_result err =
+      otrng_client_disconnect(&disconnected_msg, BOB_ACCOUNT, alice);
+  otrng_assert_is_success(err);
+  otrng_assert(disconnected_msg);
+
+  // We've deleted the conversation
+  otrng_assert(!otrng_client_get_conversation(NOT_FORCE_CREATE_CONV,
+                                              BOB_ACCOUNT, alice));
+
+  // Bob receives the disconnected from Alice
+  otrng_client_receive(&empty_msg, &to_display, disconnected_msg, ALICE_ACCOUNT,
+                       bob, &ignore);
+  otrng_free(disconnected_msg);
+
+  otrng_assert(!ignore);
+  otrng_assert(!empty_msg);
+  otrng_assert(!to_display);
+
+  // Free memory
+  otrng_global_state_free(alice->global_state);
+  otrng_global_state_free(bob->global_state);
+}
+
 static void test_valid_identity_message_in_waiting_auth_i() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
@@ -1049,6 +1132,8 @@ void functionals_client_add_tests(void) {
                   test_client_expires_old_fragments);
   g_test_add_func("/client/receives_fragments",
                   test_client_receives_fragmented_message);
+  g_test_add_func("/client/initiate with identity message",
+                  test_initiate_with_identity_msg);
   g_test_add_func("/client/invalid_auth_r_message_in_not_waiting_auth_r",
                   test_invalid_auth_r_message_in_not_waiting_auth_r);
   g_test_add_func("/client/invalid_auth_i_message_in_not_waiting_auth_i",

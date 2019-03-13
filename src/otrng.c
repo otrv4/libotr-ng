@@ -286,6 +286,53 @@ API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
   return OTRNG_SUCCESS;
 }
 
+tstatic otrng_result serialize_and_encode_identity_message(
+    string_p *dst, const dake_identity_message_s *msg) {
+  uint8_t *buffer = NULL;
+  size_t len = 0;
+
+  if (!otrng_dake_identity_message_serialize(&buffer, &len, msg)) {
+    return OTRNG_ERROR;
+  }
+
+  *dst = otrl_base64_otr_encode(buffer, len);
+
+  otrng_free(buffer);
+  return OTRNG_SUCCESS;
+}
+
+API otrng_result otrng_build_identity_message(string_p *dst, otrng_s *otr) {
+  dake_identity_message_s *msg = NULL;
+  otrng_result result;
+
+  // TODO: add policy check
+  otr->running_version = OTRNG_PROTOCOL_VERSION_4;
+
+  if (otrng_key_manager_generate_ephemeral_keys(otr->keys) == OTRNG_ERROR) {
+    return OTRNG_ERROR;
+  }
+
+  maybe_create_keys(otr->client);
+
+  msg = otrng_dake_identity_message_new(get_my_client_profile(otr));
+  if (!msg) {
+    return OTRNG_ERROR;
+  }
+
+  msg->sender_instance_tag = our_instance_tag(otr);
+  msg->receiver_instance_tag = otr->their_instance_tag;
+
+  otrng_ec_point_copy(msg->Y, our_ecdh(otr));
+  msg->B = otrng_dh_mpi_copy(our_dh(otr));
+
+  result = serialize_and_encode_identity_message(dst, msg);
+  otrng_dake_identity_message_free(msg);
+
+  otr->state = OTRNG_STATE_WAITING_AUTH_R;
+
+  return OTRNG_SUCCESS;
+}
+
 tstatic otrng_bool message_contains_tag(const string_p msg) {
   return strstr(msg, tag_base) != NULL;
 }
@@ -411,21 +458,6 @@ tstatic void receive_plaintext(otrng_response_s *response, const string_p msg,
     otrng_client_callbacks_handle_event(otr->client->global_state->callbacks,
                                         OTRNG_MSG_EVENT_RCV_UNENCRYPTED);
   }
-}
-
-tstatic otrng_result serialize_and_encode_identity_message(
-    string_p *dst, const dake_identity_message_s *msg) {
-  uint8_t *buffer = NULL;
-  size_t len = 0;
-
-  if (!otrng_dake_identity_message_serialize(&buffer, &len, msg)) {
-    return OTRNG_ERROR;
-  }
-
-  *dst = otrl_base64_otr_encode(buffer, len);
-
-  otrng_free(buffer);
-  return OTRNG_SUCCESS;
 }
 
 tstatic otrng_result reply_with_identity_message(otrng_response_s *response,
@@ -2245,7 +2277,6 @@ tstatic otrng_result receive_message_v4_only(otrng_response_s *response,
 static otrng_result receive_defragmented_message(otrng_response_s *response,
                                                  const string_p msg,
                                                  otrng_s *otr) {
-
   if (!msg || !response) {
     return OTRNG_ERROR;
   }

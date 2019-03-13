@@ -302,6 +302,22 @@ API char *otrng_client_query_message(const char *recipient, const char *msg,
   return ret;
 }
 
+API char *otrng_client_identity_message(const char *recipient,
+                                        otrng_client_s *client) {
+  char *ret = NULL;
+  otrng_conversation_s *conv = NULL;
+  conv = get_or_create_conversation_with(recipient, client);
+  if (!conv) {
+    return NULL;
+  }
+
+  if (otrng_failed(otrng_build_identity_message(&ret, conv->conn))) {
+    return localize_error_message(client, OTRNG_ERROR_MESSAGE_FAILURE_START);
+  }
+
+  return ret;
+}
+
 API otrng_result otrng_client_send(char **new_msg, const char *msg,
                                    const char *recipient,
                                    otrng_client_s *client) {

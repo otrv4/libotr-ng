@@ -68,6 +68,11 @@ INTERNAL otrng_result otrng_build_query_message(string_p *dst,
                                                 const string_p msg,
                                                 otrng_s *otr);
 
+API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
+                                            const string_p msg, otrng_s *otr);
+
+API otrng_result otrng_build_identity_message(string_p *dst, otrng_s *otr);
+
 INTERNAL otrng_response_s *otrng_response_new(void);
 
 INTERNAL void otrng_response_free(otrng_response_s *response);
@@ -82,9 +87,6 @@ INTERNAL otrng_result otrng_send_message(string_p *to_send, const string_p msg,
 INTERNAL otrng_result otrng_close(string_p *to_send, otrng_s *otr);
 
 INTERNAL otrng_result otrng_expire_session(string_p *to_send, otrng_s *otr);
-
-API otrng_result otrng_build_whitespace_tag(string_p *whitespace_tag,
-                                            const string_p msg, otrng_s *otr);
 
 API otrng_result otrng_send_symkey_message(string_p *to_send, unsigned int use,
                                            const unsigned char *usedata,
