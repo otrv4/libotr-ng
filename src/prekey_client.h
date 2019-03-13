@@ -18,6 +18,17 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * The functions in this file only operate on their arguments, and doesn't touch
+ * any global state. It is safe to call these functions concurrently from
+ * different threads, as long as arguments pointing to the same memory areas are
+ * not used from different threads.
+ *
+ * Since the prekey client is a large subsystem, it touches on a lot of OTR
+ * structures. Thus, to be safe, it's better to follow the same recommendations
+ * as outlined in messaging.h
+ */
+
 #ifndef OTRNG_PREKEY_CLIENT_H
 #define OTRNG_PREKEY_CLIENT_H
 

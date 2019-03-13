@@ -18,6 +18,16 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * The functions in this file only operate on their arguments, and doesn't touch
+ * any global state. It is safe to call these functions concurrently from
+ * different threads, as long as arguments pointing to the same memory areas are
+ * not used from different threads. However, since the global state points to
+ * everything related to a specific OTR clients functionality, it has a lot of
+ * references to subordinate objects. To be on the safe side, it's a good idea
+ * to serialize access.
+ */
+
 #ifndef OTRNG_MESSAGING_H_
 #define OTRNG_MESSAGING_H_
 

@@ -25,6 +25,16 @@
 
 #include "shared.h"
 
+/**
+ * @brief The function given to this function will be called if there is no
+ * memory left.
+ *
+ * It will be called before xmalloc exits the process.
+ * This function is not thread safe, and if you call it
+ * concurrently from more than one thread with different
+ * arguments, there is no guarantee which function will be
+ * the final out of memory handler.
+ */
 API void otrng_register_out_of_memory_handler(
     /*@null@*/ void (*handler)(void)) /*@modifies internalState @*/;
 

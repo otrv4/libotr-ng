@@ -18,6 +18,15 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * This debug interface allows you to turn on and off debug printing for
+ * the internals of libotr-ng. This should not be used in production
+ * applications but can be very useful when building integrations for clients.
+ *
+ * This interface is not thread safe. The calling application needs to make sure
+ * that no concurrent calls to this API will happen.
+ */
+
 #ifndef __OTRNG_DEBUG_H
 #define __OTRNG_DEBUG_H
 

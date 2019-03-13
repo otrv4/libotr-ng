@@ -18,6 +18,11 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * The functions in this file only operate on their arguments, and doesn't touch
+ * any global state. They are safe to use concurrently from different threads.
+ */
+
 #ifndef OTRNG_ERROR_H
 #define OTRNG_ERROR_H
 

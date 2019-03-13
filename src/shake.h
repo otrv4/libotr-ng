@@ -18,6 +18,13 @@
  *  along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * The functions in this file only operate on their arguments, and doesn't touch
+ * any global state. It is safe to call these functions concurrently from
+ * different threads, as long as arguments pointing to the same memory areas are
+ * not used from different threads.
+ */
+
 #ifndef OTRNG_SHAKE_H
 #define OTRNG_SHAKE_H
 
