@@ -322,8 +322,8 @@ static void test_initiate_with_identity_msg() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
-  set_up(alice, 1);
-  set_up(bob, 2);
+  set_up_client(alice, 1);
+  set_up_client(bob, 2);
 
   char *identity_message_to_bob =
       otrng_client_identity_message(BOB_ACCOUNT, alice);
