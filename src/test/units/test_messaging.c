@@ -66,6 +66,7 @@ static otrng_client_callbacks_s empty_callbacks[1] = {{
     .store_expired_client_profile = &write_expired_client_profile_cb_empty,
     .store_expired_prekey_profile = &write_expired_prekey_profile_cb_empty,
     .display_error_message = &display_error_message_cb_empty,
+    .define_policy = &define_policy_empty_cb,
     .load_privkey_v4 = &load_privkey_v4_cb_empty,
     .load_client_profile = &load_client_profile_cb_empty,
     .load_prekey_profile = &load_prekey_profile_cb_empty,

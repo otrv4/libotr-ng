@@ -112,24 +112,34 @@ static void display_error_message_cb(const otrng_error_event event,
   }
 }
 
+static otrng_policy_s define_policy_cb(struct otrng_client_s *client) {
+  (void)client;
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
+                           .type = OTRNG_POLICY_ALWAYS};
+  return policy;
+}
+
 otrng_client_callbacks_s test_callbacks[1] = {{
+    .create_instag = &create_instag_cb_empty,
     .create_privkey_v3 = &create_privkey_v3_cb_empty,
     .create_privkey_v4 = &create_privkey_v4_cb_empty,
     .create_forging_key = &create_forging_key_cb_empty,
     .create_client_profile = &create_client_profile_cb,
     .store_expired_client_profile = &write_expired_client_profile_cb_empty,
-    .create_prekey_profile = &create_prekey_profile_cb,
+    .load_expired_client_profile = &load_expired_client_profile_cb_empty,
     .store_expired_prekey_profile = &write_expired_prekey_profile_cb_empty,
-    .get_shared_session_state = &get_shared_session_state_cb,
+    .create_prekey_profile = &create_prekey_profile_cb,
     .display_error_message = &display_error_message_cb,
+    .get_shared_session_state = &get_shared_session_state_cb,
     .load_privkey_v4 = &load_privkey_v4_cb_empty,
     .load_client_profile = &load_client_profile_cb_empty,
     .load_prekey_profile = &load_prekey_profile_cb_empty,
-    .load_fingerprints_v4 = &load_fingerprints_v4_cb_empty,
-    .store_fingerprints_v4 = &store_fingerprints_v4_cb_empty,
-    .load_fingerprints_v3 = &load_fingerprints_v3_cb_empty,
-    .store_fingerprints_v3 = &store_fingerprints_v3_cb_empty,
     .store_prekey_messages = &store_prekey_messages_cb_empty,
+    .define_policy = &define_policy_cb,
+    .store_fingerprints_v4 = &store_fingerprints_v4_cb_empty,
+    .load_fingerprints_v4 = &load_fingerprints_v4_cb_empty,
+    .store_fingerprints_v3 = &store_fingerprints_v3_cb_empty,
+    .load_fingerprints_v3 = &load_fingerprints_v3_cb_empty,
 }};
 
 otrng_public_key *
@@ -411,6 +421,8 @@ void load_fingerprints_v3_cb_empty(otrng_client_s *client) { (void)client; }
 
 void store_prekey_messages_cb_empty(otrng_client_s *client) { (void)client; }
 
+void create_instag_cb_empty(otrng_client_s *client) { (void)client; }
+
 void create_privkey_v3_cb_empty(otrng_client_s *client) { (void)client; }
 
 void create_privkey_v4_cb_empty(otrng_client_s *client) { (void)client; }
@@ -444,12 +456,24 @@ get_shared_session_state_cb_empty(const struct otrng_s *conv) {
   return result;
 }
 
+void load_expired_client_profile_cb_empty(otrng_client_s *client) {
+  (void)client;
+}
+
 void display_error_message_cb_empty(const otrng_error_event event,
                                     string_p *to_display,
                                     const struct otrng_s *otr) {
   (void)event;
   (void)to_display;
   (void)otr;
+}
+
+otrng_policy_s define_policy_empty_cb(struct otrng_client_s *client) {
+  (void)client;
+
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
+                           .type = OTRNG_POLICY_ALWAYS};
+  return policy;
 }
 
 void load_privkey_v4_cb_empty(struct otrng_client_s *client) { (void)client; }

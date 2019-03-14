@@ -311,6 +311,11 @@ API char *otrng_client_identity_message(const char *recipient,
     return NULL;
   }
 
+  if (!(conv->conn->policy_type & OTRNG_IDENTITY_START_DAKE)) {
+    conversation_free(conv);
+    return NULL;
+  }
+
   if (otrng_failed(otrng_build_identity_message(&ret, conv->conn))) {
     return localize_error_message(client, OTRNG_ERROR_MESSAGE_FAILURE_START);
   }

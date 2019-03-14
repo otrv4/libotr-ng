@@ -56,6 +56,10 @@ otrng_shared_session_state_s get_shared_session_state_cb(const otrng_s *conv);
 
 void create_client_profile_cb(struct otrng_client_s *client);
 
+otrng_policy_s define_policy_empty_cb(struct otrng_client_s *client);
+
+void load_expired_client_profile_cb_empty(otrng_client_s *client);
+
 void create_prekey_profile_cb(struct otrng_client_s *client);
 otrng_public_key *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]);
@@ -83,6 +87,8 @@ void free_message_and_response(otrng_response_s *response, string_p *message);
 otrng_result
 get_account_and_protocol_cb_empty(char **account, char **protocol,
                                   const struct otrng_client_id_s client_id);
+
+void create_instag_cb_empty(otrng_client_s *client);
 
 void create_privkey_v3_cb_empty(otrng_client_s *client);
 

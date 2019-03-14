@@ -236,6 +236,7 @@ typedef struct otrng_client_callbacks_s {
   /* REQUIRED */
   void (*store_forging_key)(struct otrng_client_s *client);
 
+  /* OPTIONAL */
   /* Return the OTRv4 policy for the given client. */
   otrng_policy_s (*define_policy)(struct otrng_client_s *client);
 
