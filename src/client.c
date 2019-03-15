@@ -504,6 +504,7 @@ tstatic uint32_t get_session_expiry_time_from(otrng_s *otr) {
 
 INTERNAL void otrng_client_expire_session(otrng_conversation_s *conv) {
   string_p msg = NULL;
+  otrng_result res;
   otrng_expiration_policy expiration_policy = OTRNG_SESSION_EXPIRY_DO_TEARDOWN;
   otrng_s *otr = conv->conn;
 
@@ -515,8 +516,8 @@ INTERNAL void otrng_client_expire_session(otrng_conversation_s *conv) {
 
   switch (expiration_policy) {
   case OTRNG_SESSION_EXPIRY_DO_TEARDOWN:
-    otrng_client_disconnect_conversation(&msg, conv);
-    if (msg != NULL) {
+    res = otrng_client_disconnect_conversation(&msg, conv);
+    if (msg != NULL && !otrng_failed(res)) {
       otr->client->global_state->callbacks->inject_message(otr, msg);
     }
     break;

@@ -619,15 +619,15 @@ API void otrng_global_state_do_all_fingerprints_v3(
 }
 
 tstatic void poll_for_client(list_element_s *node, void *context) {
-  (void)context;
   otrng_client_s *client = node->data;
-  otrng_client_expire_fragments(client);
+  (void)context;
+  otrng_client_expire_sessions(client);
+  (void)otrng_client_expire_fragments(client);
 }
 
 API void otrng_poll(otrng_global_state_s *gs) {
   otrng_list_foreach(gs->clients, poll_for_client, NULL);
   otrl_message_poll(gs->user_state_v3, NULL, NULL);
-  // - sessions should be expired
 }
 
 INTERNAL void
