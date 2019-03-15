@@ -25,6 +25,50 @@ int dh_mpi_cmp(const dh_mpi m1, const dh_mpi m2) {
   return gcry_mpi_cmp(m1, m2);
 }
 
+otrng_bool test_should_heartbeat(long last_sent) {
+  (void)last_sent;
+  return otrng_true;
+}
+
+otrng_bool test_should_not_heartbeat(long last_sent) {
+  (void)last_sent;
+  return otrng_false;
+}
+
+void free_message_and_response(otrng_response_s *response, string_p *message) {
+  otrng_response_free(response);
+  otrng_free(*message);
+  *message = NULL;
+}
+
+otrng_result
+get_account_and_protocol_cb_empty(char **account, char **protocol,
+                                  const struct otrng_client_id_s client_id) {
+  (void)account;
+  (void)protocol;
+  (void)client_id;
+
+  return OTRNG_SUCCESS;
+}
+
+void set_up_client(otrng_client_s *client, int byte) {
+  client->global_state = otrng_global_state_new(test_callbacks, otrng_false);
+  client->global_state->clients =
+      otrng_list_add(client, client->global_state->clients);
+
+  uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
+  uint8_t forging_sym[ED448_PRIVATE_BYTES] = {byte + 0xD};
+
+  otrng_client_add_private_key_v4(client, long_term_priv);
+  otrng_public_key *forging_key = create_forging_key_from(forging_sym);
+  otrng_client_add_forging_key(client, *forging_key);
+  otrng_free(forging_key);
+  otrng_client_add_instance_tag(client, 0x100 + byte);
+
+  client->client_profile = otrng_client_build_default_client_profile(client);
+  client->should_heartbeat = test_should_not_heartbeat;
+}
+
 otrng_s *set_up(struct otrng_client_s *client, int byte) {
   set_up_client(client, byte);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
@@ -41,15 +85,23 @@ otrng_client_id_s create_client_id(const char *protocol, const char *account) {
   return cid;
 }
 
-otrng_shared_session_state_s get_shared_session_state_cb(const otrng_s *conv) {
-  (void)conv;
-  otrng_shared_session_state_s ret = {
-      .identifier1 = otrng_xstrdup("alice"),
-      .identifier2 = otrng_xstrdup("bob"),
-      .password = NULL,
-  };
+void create_instag_cb_empty(otrng_client_s *client) { (void)client; }
 
-  return ret;
+void create_privkey_v3_cb_empty(otrng_client_s *client) { (void)client; }
+
+void create_privkey_v4_cb_empty(otrng_client_s *client) { (void)client; }
+
+void create_forging_key_cb_empty(otrng_client_s *client) { (void)client; }
+
+otrng_public_key *
+create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  otrng_keypair_s *key_pair = otrng_keypair_new();
+  otrng_assert_is_success(otrng_keypair_generate(key_pair, sym));
+  otrng_public_key *pub = otrng_xmalloc_z(sizeof(otrng_public_key));
+  otrng_ec_point_copy(*pub, key_pair->pub);
+  otrng_keypair_free(key_pair);
+
+  return pub;
 }
 
 void create_client_profile_cb(struct otrng_client_s *client) {
@@ -76,6 +128,22 @@ void create_client_profile_cb(struct otrng_client_s *client) {
   otrng_client_profile_free(profile);
 }
 
+void create_client_profile_cb_empty(struct otrng_client_s *client) {
+  (void)client;
+}
+
+void write_expired_client_profile_cb_empty(struct otrng_client_s *client) {
+  (void)client;
+}
+
+void load_expired_client_profile_cb_empty(otrng_client_s *client) {
+  (void)client;
+}
+
+void write_expired_prekey_profile_cb_empty(struct otrng_client_s *client) {
+  (void)client;
+}
+
 void create_prekey_profile_cb(struct otrng_client_s *client) {
   otrng_prekey_profile_s *profile =
       otrng_client_build_default_prekey_profile(client);
@@ -83,6 +151,10 @@ void create_prekey_profile_cb(struct otrng_client_s *client) {
   otrng_client_add_prekey_profile(client, profile);
 
   otrng_prekey_profile_free(profile);
+}
+
+void create_prekey_profile_cb_empty(struct otrng_client_s *client) {
+  (void)client;
 }
 
 static void display_error_message_cb(const otrng_error_event event,
@@ -112,12 +184,70 @@ static void display_error_message_cb(const otrng_error_event event,
   }
 }
 
+void display_error_message_cb_empty(const otrng_error_event event,
+                                    string_p *to_display,
+                                    const struct otrng_s *otr) {
+  (void)event;
+  (void)to_display;
+  (void)otr;
+}
+
+otrng_shared_session_state_s get_shared_session_state_cb(const otrng_s *conv) {
+  (void)conv;
+  otrng_shared_session_state_s ret = {
+      .identifier1 = otrng_xstrdup("alice"),
+      .identifier2 = otrng_xstrdup("bob"),
+      .password = NULL,
+  };
+
+  return ret;
+}
+
+otrng_shared_session_state_s
+get_shared_session_state_cb_empty(const struct otrng_s *conv) {
+  otrng_shared_session_state_s result;
+  result.identifier1 = otrng_xstrdup("one");
+  result.identifier2 = otrng_xstrdup("two");
+  result.password = otrng_xstrdup("three");
+  (void)conv;
+
+  return result;
+}
+
+void load_privkey_v4_cb_empty(struct otrng_client_s *client) { (void)client; }
+
+void load_client_profile_cb_empty(struct otrng_client_s *client) {
+  (void)client;
+}
+
+void load_prekey_profile_cb_empty(struct otrng_client_s *client) {
+  (void)client;
+}
+
+void store_prekey_messages_cb_empty(otrng_client_s *client) { (void)client; }
+
 static otrng_policy_s define_policy_cb(struct otrng_client_s *client) {
   (void)client;
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
                            .type = OTRNG_POLICY_ALWAYS};
   return policy;
 }
+
+otrng_policy_s define_policy_empty_cb(struct otrng_client_s *client) {
+  (void)client;
+
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
+                           .type = OTRNG_POLICY_ALWAYS};
+  return policy;
+}
+
+void store_fingerprints_v4_cb_empty(otrng_client_s *client) { (void)client; }
+
+void load_fingerprints_v4_cb_empty(otrng_client_s *client) { (void)client; }
+
+void store_fingerprints_v3_cb_empty(otrng_client_s *client) { (void)client; }
+
+void load_fingerprints_v3_cb_empty(otrng_client_s *client) { (void)client; }
 
 otrng_client_callbacks_s test_callbacks[1] = {{
     .create_instag = &create_instag_cb_empty,
@@ -141,17 +271,6 @@ otrng_client_callbacks_s test_callbacks[1] = {{
     .store_fingerprints_v3 = &store_fingerprints_v3_cb_empty,
     .load_fingerprints_v3 = &load_fingerprints_v3_cb_empty,
 }};
-
-otrng_public_key *
-create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  otrng_keypair_s *key_pair = otrng_keypair_new();
-  otrng_assert_is_success(otrng_keypair_generate(key_pair, sym));
-  otrng_public_key *pub = otrng_xmalloc_z(sizeof(otrng_public_key));
-  otrng_ec_point_copy(*pub, key_pair->pub);
-  otrng_keypair_free(key_pair);
-
-  return pub;
-}
 
 void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   (void)data;
@@ -368,120 +487,4 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
 
   otrng_response_free(response_to_alice);
   otrng_response_free(response_to_bob);
-}
-
-otrng_bool test_should_heartbeat(long last_sent) {
-  (void)last_sent;
-  return otrng_true;
-}
-
-otrng_bool test_should_not_heartbeat(long last_sent) {
-  (void)last_sent;
-  return otrng_false;
-}
-
-void set_up_client(otrng_client_s *client, int byte) {
-  client->global_state = otrng_global_state_new(test_callbacks, otrng_false);
-  client->global_state->clients =
-      otrng_list_add(client, client->global_state->clients);
-
-  uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
-  uint8_t forging_sym[ED448_PRIVATE_BYTES] = {byte + 0xD};
-
-  otrng_client_add_private_key_v4(client, long_term_priv);
-  otrng_public_key *forging_key = create_forging_key_from(forging_sym);
-  otrng_client_add_forging_key(client, *forging_key);
-  otrng_free(forging_key);
-  otrng_client_add_instance_tag(client, 0x100 + byte);
-
-  client->client_profile = otrng_client_build_default_client_profile(client);
-  client->should_heartbeat = test_should_not_heartbeat;
-}
-
-void free_message_and_response(otrng_response_s *response, string_p *message) {
-  otrng_response_free(response);
-  otrng_free(*message);
-  *message = NULL;
-}
-
-otrng_result
-get_account_and_protocol_cb_empty(char **account, char **protocol,
-                                  const struct otrng_client_id_s client_id) {
-  (void)account;
-  (void)protocol;
-  (void)client_id;
-
-  return OTRNG_SUCCESS;
-}
-
-void store_fingerprints_v4_cb_empty(otrng_client_s *client) { (void)client; }
-void store_fingerprints_v3_cb_empty(otrng_client_s *client) { (void)client; }
-void load_fingerprints_v4_cb_empty(otrng_client_s *client) { (void)client; }
-void load_fingerprints_v3_cb_empty(otrng_client_s *client) { (void)client; }
-
-void store_prekey_messages_cb_empty(otrng_client_s *client) { (void)client; }
-
-void create_instag_cb_empty(otrng_client_s *client) { (void)client; }
-
-void create_privkey_v3_cb_empty(otrng_client_s *client) { (void)client; }
-
-void create_privkey_v4_cb_empty(otrng_client_s *client) { (void)client; }
-
-void create_forging_key_cb_empty(otrng_client_s *client) { (void)client; }
-
-void create_client_profile_cb_empty(struct otrng_client_s *client) {
-  (void)client;
-}
-
-void write_expired_client_profile_cb_empty(struct otrng_client_s *client) {
-  (void)client;
-}
-
-void create_prekey_profile_cb_empty(struct otrng_client_s *client) {
-  (void)client;
-}
-
-void write_expired_prekey_profile_cb_empty(struct otrng_client_s *client) {
-  (void)client;
-}
-
-otrng_shared_session_state_s
-get_shared_session_state_cb_empty(const struct otrng_s *conv) {
-  otrng_shared_session_state_s result;
-  result.identifier1 = otrng_xstrdup("one");
-  result.identifier2 = otrng_xstrdup("two");
-  result.password = otrng_xstrdup("three");
-  (void)conv;
-
-  return result;
-}
-
-void load_expired_client_profile_cb_empty(otrng_client_s *client) {
-  (void)client;
-}
-
-void display_error_message_cb_empty(const otrng_error_event event,
-                                    string_p *to_display,
-                                    const struct otrng_s *otr) {
-  (void)event;
-  (void)to_display;
-  (void)otr;
-}
-
-otrng_policy_s define_policy_empty_cb(struct otrng_client_s *client) {
-  (void)client;
-
-  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
-                           .type = OTRNG_POLICY_ALWAYS};
-  return policy;
-}
-
-void load_privkey_v4_cb_empty(struct otrng_client_s *client) { (void)client; }
-
-void load_client_profile_cb_empty(struct otrng_client_s *client) {
-  (void)client;
-}
-
-void load_prekey_profile_cb_empty(struct otrng_client_s *client) {
-  (void)client;
 }
