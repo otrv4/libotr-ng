@@ -332,7 +332,8 @@ otrng_unfragment_message(char **unfrag_msg, list_element_s **contexts,
       unfrag_msg, contexts, msg, our_instance_tag, "?OTR|", UNFRAGMENT_FORMAT);
 }
 
-INTERNAL otrng_result otrng_expire_fragments(time_t now, uint32_t expiration_time,
+INTERNAL otrng_result otrng_expire_fragments(time_t now,
+                                             uint32_t expiration_time,
                                              list_element_s **contexts) {
   list_element_s *current = *contexts;
 

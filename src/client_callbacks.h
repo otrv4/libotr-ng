@@ -273,7 +273,8 @@ typedef struct otrng_client_callbacks_s {
   uint32_t (*session_expiration_time_for)(const struct otrng_s *);
 
   /* OPTIONAL - if not provided, will tear down the session */
-  otrng_expiration_policy (*session_expiration_policy_for)(const struct otrng_s *);
+  otrng_expiration_policy (*session_expiration_policy_for)(
+      const struct otrng_s *);
 
   /* REQUIRED - Send the given IM to the given conversation */
   void (*inject_message)(const struct otrng_s *, const string_p message);

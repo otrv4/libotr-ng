@@ -476,7 +476,8 @@ tstatic void destroy_client_conversation(const otrng_conversation_s *conv,
   otrng_list_free_nodes(elem);
 }
 
-INTERNAL otrng_result otrng_client_disconnect_conversation(char **new_msg, otrng_conversation_s *conv) {
+INTERNAL otrng_result otrng_client_disconnect_conversation(
+    char **new_msg, otrng_conversation_s *conv) {
   if (otrng_failed(otrng_close(new_msg, conv->conn))) {
     return OTRNG_ERROR;
   }
@@ -489,7 +490,8 @@ INTERNAL otrng_result otrng_client_disconnect_conversation(char **new_msg, otrng
 
 API otrng_result otrng_client_disconnect(char **new_msg, const char *recipient,
                                          otrng_client_s *client) {
-  otrng_conversation_s *conv = get_conversation_with(recipient, client->conversations);
+  otrng_conversation_s *conv =
+      get_conversation_with(recipient, client->conversations);
   if (!conv) {
     return OTRNG_ERROR;
   }
@@ -506,10 +508,12 @@ INTERNAL void otrng_client_expire_session(otrng_conversation_s *conv) {
   otrng_s *otr = conv->conn;
 
   if (otr->client->global_state->callbacks->session_expiration_policy_for) {
-    expiration_policy = otr->client->global_state->callbacks->session_expiration_policy_for(otr);
+    expiration_policy =
+        otr->client->global_state->callbacks->session_expiration_policy_for(
+            otr);
   }
 
-  switch(expiration_policy) {
+  switch (expiration_policy) {
   case OTRNG_SESSION_EXPIRY_DO_TEARDOWN:
     otrng_client_disconnect_conversation(&msg, conv);
     otr->client->global_state->callbacks->inject_message(otr, msg);
@@ -559,7 +563,8 @@ INTERNAL otrng_result otrng_client_expire_fragments(otrng_client_s *client) {
 
   if (client->prekey_client) {
     if (otrng_failed(otrng_expire_fragments(
-            now, client->fragments_exp_time, &client->prekey_client->pending_fragments))) {
+            now, client->fragments_exp_time,
+            &client->prekey_client->pending_fragments))) {
       return OTRNG_ERROR;
     }
   }
