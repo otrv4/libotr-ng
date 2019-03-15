@@ -516,7 +516,9 @@ INTERNAL void otrng_client_expire_session(otrng_conversation_s *conv) {
   switch (expiration_policy) {
   case OTRNG_SESSION_EXPIRY_DO_TEARDOWN:
     otrng_client_disconnect_conversation(&msg, conv);
-    otr->client->global_state->callbacks->inject_message(otr, msg);
+    if (msg != NULL) {
+      otr->client->global_state->callbacks->inject_message(otr, msg);
+    }
     break;
   case OTRNG_SESSION_EXPIRY_DO_NOTHING:
     break;

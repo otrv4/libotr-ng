@@ -276,8 +276,9 @@ typedef struct otrng_client_callbacks_s {
   otrng_expiration_policy (*session_expiration_policy_for)(
       const struct otrng_s *);
 
-  /* REQUIRED - Send the given IM to the given conversation */
-  void (*inject_message)(const struct otrng_s *, const string_p message);
+  /* REQUIRED - Send the given IM to the given conversation - the callback takes
+   * ownership of the message parameter */
+  void (*inject_message)(const struct otrng_s *, string_p message);
 } otrng_client_callbacks_s;
 
 INTERNAL int
