@@ -177,6 +177,15 @@ API void otrng_global_state_do_all_fingerprints_v3(
     void (*fn)(const otrng_client_s *, otrng_known_fingerprint_v3_s *, void *),
     void *context);
 
+/**
+ * @brief This function does cleanup based on timed intervals
+ *
+ * The function should be called every few minutes in order to clean
+ * up expired resources. If it's not called properly, forward secrecy
+ * could be impacted.
+ */
+API void otrng_poll(otrng_global_state_s *gs);
+
 INTERNAL void
 otrng_global_state_fingerprints_v3_loaded(otrng_global_state_s *gs);
 

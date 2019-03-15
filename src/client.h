@@ -77,6 +77,8 @@ typedef struct otrng_client_s {
   uint64_t prekey_profile_exp_time;
   uint64_t profiles_buffer_time;
 
+  uint32_t fragments_exp_time;
+
   otrng_bool (*should_heartbeat)(long last_sent);
   size_t padding;
 
@@ -147,24 +149,21 @@ API otrng_result otrng_client_receive(char **new_msg, char **to_display,
 API otrng_result otrng_client_disconnect(char **new_msg, const char *recipient,
                                          otrng_client_s *client);
 
-API otrng_result otrng_expire_encrypted_session(char **new_msg,
-                                                const char *recipient,
-                                                int expiration_time,
-                                                otrng_client_s *client);
+INTERNAL void otrng_client_expire_session(otrng_conversation_s *conv);
+
+INTERNAL void otrng_client_expire_sessions(otrng_client_s *client);
 
 /**
- * @brief Expires old fragments based on a threshhold in seconds.
+ * @brief Expires old fragments based on the threshold set in the client struct
  *
  *  @params
- *  [expiration_time] The expiration time in seconds
  *  [client] The otrng client instance.
  *
  * @return 0 if success, 2 if any error happened.
  *
  * @details Details around this function if any
  **/
-API otrng_result otrng_client_expire_fragments(uint32_t expiration_time,
-                                               otrng_client_s *client);
+INTERNAL otrng_result otrng_client_expire_fragments(otrng_client_s *client);
 
 API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint fp,
                                                   const otrng_client_s *client);

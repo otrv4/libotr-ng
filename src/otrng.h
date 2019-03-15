@@ -93,8 +93,6 @@ INTERNAL otrng_result otrng_send_message(string_p *to_send, const string_p msg,
 
 INTERNAL otrng_result otrng_close(string_p *to_send, otrng_s *otr);
 
-INTERNAL otrng_result otrng_expire_session(string_p *to_send, otrng_s *otr);
-
 API otrng_result otrng_send_symkey_message(string_p *to_send, unsigned int use,
                                            const unsigned char *usedata,
                                            size_t usedatalen,

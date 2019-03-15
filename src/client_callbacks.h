@@ -72,6 +72,18 @@ typedef enum {
   OTRNG_MSG_EVENT_CONNECTION_ENDED = 12,
 } otrng_msg_event;
 
+typedef enum {
+  /* Tear down the session but don't restart it */
+  OTRNG_SESSION_EXPIRY_DO_TEARDOWN = 0,
+  /* Don't do anything */
+  OTRNG_SESSION_EXPIRY_DO_NOTHING = 1,
+  /* These options are not implemented yet */
+  /* /\* Tear down the session and restart by sending a query message *\/ */
+  /* OTRNG_SESSION_EXPIRY_DO_RESTART_WITH_QUERY = 2, */
+  /* /\* Tear down the session and restart by sending an identity message *\/ */
+  /* OTRNG_SESSION_EXPIRY_DO_RESTART_WITH_IDENTITY = 3, */
+} otrng_expiration_policy;
+
 typedef struct otrng_shared_session_state_s {
   char *identifier1;
   char *identifier2;
@@ -256,6 +268,15 @@ typedef struct otrng_client_callbacks_s {
   string_p (*localized_error_message)(
       struct otrng_client_s *client,
       otrng_localized_error_message_type message_type);
+
+  /* REQUIRED */
+  uint32_t (*session_expiration_time_for)(const struct otrng_s *);
+
+  /* OPTIONAL - if not provided, will tear down the session */
+  otrng_expiration_policy (*session_expiration_policy_for)(const struct otrng_s *);
+
+  /* REQUIRED - Send the given IM to the given conversation */
+  void (*inject_message)(const struct otrng_s *, const string_p message);
 } otrng_client_callbacks_s;
 
 INTERNAL int

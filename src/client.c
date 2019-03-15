@@ -97,6 +97,9 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id) {
 #define PROFILES_CLOSE_TO_EXPIRATION_TIME_SECONDS 57 * 60 /* 57 minutes*/
   client->profiles_buffer_time = PROFILES_CLOSE_TO_EXPIRATION_TIME_SECONDS;
 
+#define FRAGMENTS_EXPIRATION_SECONDS 1 * 7 * 24 * 60 * 60; /* 1 weeks */
+  client->fragments_exp_time = FRAGMENTS_EXPIRATION_SECONDS;
+
   return client;
 }
 
@@ -473,55 +476,74 @@ tstatic void destroy_client_conversation(const otrng_conversation_s *conv,
   otrng_list_free_nodes(elem);
 }
 
-API otrng_result otrng_client_disconnect(char **new_msg, const char *recipient,
-                                         otrng_client_s *client) {
-  otrng_conversation_s *conv = NULL;
-
-  conv = get_conversation_with(recipient, client->conversations);
-  if (!conv) {
-    return OTRNG_ERROR;
-  }
-
+INTERNAL otrng_result otrng_client_disconnect_conversation(char **new_msg, otrng_conversation_s *conv) {
   if (otrng_failed(otrng_close(new_msg, conv->conn))) {
     return OTRNG_ERROR;
   }
 
-  destroy_client_conversation(conv, client);
+  destroy_client_conversation(conv, conv->conn->client);
   conversation_free(conv);
 
   return OTRNG_SUCCESS;
 }
 
-// TODO: @client this depends on how is going to be handled: as a different
-// event or inside process_conv_updated?
-/* expiration time should be set on seconds */
-API otrng_result otrng_expire_encrypted_session(char **new_msg,
-                                                const char *recipient,
-                                                int expiration_time,
-                                                otrng_client_s *client) {
-  otrng_conversation_s *conv = NULL;
-  time_t now;
-
-  conv = get_conversation_with(recipient, client->conversations);
+API otrng_result otrng_client_disconnect(char **new_msg, const char *recipient,
+                                         otrng_client_s *client) {
+  otrng_conversation_s *conv = get_conversation_with(recipient, client->conversations);
   if (!conv) {
     return OTRNG_ERROR;
   }
-
-  now = time(NULL);
-  if (conv->conn->keys->last_generated < now - expiration_time) {
-    if (otrng_failed(otrng_expire_session(new_msg, conv->conn))) {
-      return OTRNG_ERROR;
-    }
-  }
-
-  destroy_client_conversation(conv, client);
-  conversation_free(conv);
-
-  return OTRNG_SUCCESS;
+  return otrng_client_disconnect_conversation(new_msg, conv);
 }
 
-API otrng_result otrng_client_expire_fragments(uint32_t expiration_time,
-                                               otrng_client_s *client) {
+tstatic uint32_t get_session_expiry_time_from(otrng_s *otr) {
+  return otr->client->global_state->callbacks->session_expiration_time_for(otr);
+}
+
+INTERNAL void otrng_client_expire_session(otrng_conversation_s *conv) {
+  string_p msg = NULL;
+  otrng_expiration_policy expiration_policy = OTRNG_SESSION_EXPIRY_DO_TEARDOWN;
+  otrng_s *otr = conv->conn;
+
+  if (otr->client->global_state->callbacks->session_expiration_policy_for) {
+    expiration_policy = otr->client->global_state->callbacks->session_expiration_policy_for(otr);
+  }
+
+  switch(expiration_policy) {
+  case OTRNG_SESSION_EXPIRY_DO_TEARDOWN:
+    otrng_client_disconnect_conversation(&msg, conv);
+    otr->client->global_state->callbacks->inject_message(otr, msg);
+    break;
+  case OTRNG_SESSION_EXPIRY_DO_NOTHING:
+    break;
+  /* case OTRNG_SESSION_EXPIRY_DO_RESTART_WITH_QUERY: */
+  /*   break; */
+  /* case OTRNG_SESSION_EXPIRY_DO_RESTART_WITH_IDENTITY: */
+  /*   break; */
+  default:
+    assert(NULL); /* Shouldn't be possible */
+  }
+}
+
+INTERNAL void otrng_client_expire_sessions(otrng_client_s *client) {
+  const list_element_s *el = NULL;
+  otrng_conversation_s *conv = NULL;
+  time_t now;
+  uint32_t expiration_time;
+
+  now = time(NULL);
+
+  for (el = client->conversations; el; el = el->next) {
+    conv = el->data;
+    expiration_time = get_session_expiry_time_from(conv->conn);
+
+    if (conv->conn->keys->last_generated < now - expiration_time) {
+      otrng_client_expire_session(conv);
+    }
+  }
+}
+
+INTERNAL otrng_result otrng_client_expire_fragments(otrng_client_s *client) {
   const list_element_s *el = NULL;
   otrng_conversation_s *conv = NULL;
   time_t now;
@@ -529,7 +551,7 @@ API otrng_result otrng_client_expire_fragments(uint32_t expiration_time,
   now = time(NULL);
   for (el = client->conversations; el; el = el->next) {
     conv = el->data;
-    if (otrng_failed(otrng_expire_fragments(now, expiration_time,
+    if (otrng_failed(otrng_expire_fragments(now, client->fragments_exp_time,
                                             &conv->conn->pending_fragments))) {
       return OTRNG_ERROR;
     }
@@ -537,7 +559,7 @@ API otrng_result otrng_client_expire_fragments(uint32_t expiration_time,
 
   if (client->prekey_client) {
     if (otrng_failed(otrng_expire_fragments(
-            now, expiration_time, &client->prekey_client->pending_fragments))) {
+            now, client->fragments_exp_time, &client->prekey_client->pending_fragments))) {
       return OTRNG_ERROR;
     }
   }

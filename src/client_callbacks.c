@@ -40,7 +40,8 @@ otrng_client_callbacks_ensure_needed_exist(const otrng_client_callbacks_s *cb) {
       cb->load_forging_key != NULL && cb->load_expired_client_profile != NULL &&
       cb->load_privkey_v3 != NULL && cb->store_privkey_v3 != NULL &&
       cb->store_fingerprints_v4 != NULL && cb->load_fingerprints_v4 != NULL &&
-      cb->load_fingerprints_v3 != NULL && cb->store_fingerprints_v3 != NULL);
+      cb->load_fingerprints_v3 != NULL && cb->store_fingerprints_v3 != NULL &&
+      cb->session_expiration_time_for != NULL && cb->inject_message != NULL);
 }
 
 INTERNAL void

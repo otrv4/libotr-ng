@@ -1778,32 +1778,6 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
   return otrng_send_message(dst, "", NULL, MSG_FLAGS_IGNORE_UNREADABLE, otr);
 }
 
-// TODO: @refactoring this is the same as otrng_close
-INTERNAL otrng_result otrng_expire_session(string_p *to_send, otrng_s *otr) {
-  size_t ser_len = otrng_list_len(otr->keys->skipped_keys) * MAC_KEY_BYTES;
-  uint8_t *ser_mac_keys = otrng_reveal_mac_keys_on_tlv(otr->keys);
-  tlv_list_s *disconnected;
-  otrng_result result;
-
-  otr->keys->skipped_keys = NULL;
-
-  disconnected = otrng_tlv_list_one(
-      otrng_tlv_new(OTRNG_TLV_DISCONNECTED, ser_len, ser_mac_keys));
-  otrng_secure_free(ser_mac_keys);
-
-  if (!disconnected) {
-    return OTRNG_ERROR;
-  }
-
-  result = otrng_send_message(to_send, "", disconnected,
-                              MSG_FLAGS_IGNORE_UNREADABLE, otr);
-
-  forget_our_keys(otr);
-  otr->state = OTRNG_STATE_START;
-  gone_insecure_cb_v4(otr);
-
-  return result;
-}
 
 tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *src, size_t len) {
   uint8_t *tlvs_start = NULL;
