@@ -1029,10 +1029,9 @@ static void test_client_expires_old_fragments(void) {
   set_up_client(alice, 1);
 
   char *to_send = NULL, *to_display = NULL;
-  time_t expiration_time;
   otrng_bool ignore = otrng_false;
 
-  expiration_time = time(NULL) - 3600;
+  alice->fragments_exp_time = 3600;
 
   otrng_client_receive(&to_send, &to_display, fmessage->pieces[0], BOB_ACCOUNT,
                        alice, &ignore);
@@ -1041,7 +1040,7 @@ static void test_client_expires_old_fragments(void) {
       otrng_client_get_conversation(0, BOB_ACCOUNT, alice);
   g_assert_cmpint(otrng_list_len(conv->conn->pending_fragments), ==, 1);
 
-  otrng_client_expire_fragments(expiration_time, alice);
+  otrng_client_expire_fragments(alice);
 
   g_assert_cmpint(otrng_list_len(conv->conn->pending_fragments), ==, 0);
 
