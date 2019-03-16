@@ -229,7 +229,7 @@ void store_prekey_messages_cb_empty(otrng_client_s *client) { (void)client; }
 static otrng_policy_s define_policy_cb(struct otrng_client_s *client) {
   (void)client;
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
-                           .type = OTRNG_POLICY_ALWAYS};
+                           .type = OTRNG_POLICY_OPPORTUNISTIC};
   return policy;
 }
 
@@ -237,7 +237,7 @@ otrng_policy_s define_policy_empty_cb(struct otrng_client_s *client) {
   (void)client;
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
-                           .type = OTRNG_POLICY_ALWAYS};
+                           .type = OTRNG_POLICY_OPPORTUNISTIC};
   return policy;
 }
 
@@ -288,7 +288,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
   otrng_free(forging_key);
 
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V4,
-                           .type = OTRNG_POLICY_ALWAYS};
+                           .type = OTRNG_POLICY_OPPORTUNISTIC};
   otrng_fixture->otr = otrng_new(otrng_fixture->client, policy);
 
   otrng_policy_s policyv3 = {.allows = OTRNG_ALLOW_V3,
@@ -298,7 +298,7 @@ void otrng_fixture_set_up(otrng_fixture_s *otrng_fixture, gconstpointer data) {
       otrng_v3_conn_new(otrng_fixture->client, "they_are_bob");
 
   otrng_policy_s policyv34 = {.allows = OTRNG_ALLOW_V34,
-                              .type = OTRNG_POLICY_ALWAYS};
+                              .type = OTRNG_POLICY_OPPORTUNISTIC};
   otrng_fixture->v34 = otrng_new(otrng_fixture->client, policyv34);
   otrng_fixture->v34->v3_conn =
       otrng_v3_conn_new(otrng_fixture->client, "they_are_alice");

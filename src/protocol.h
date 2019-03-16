@@ -64,8 +64,8 @@ typedef enum {
   (OTRNG_WHITESPACE_START_DAKE | OTRNG_SEND_WHITESPACE_TAG |                   \
    OTRNG_ERROR_START_DAKE)
 #define OTRNG_POLICY_ALWAYS                                                    \
-  (OTRNG_WHITESPACE_START_DAKE | OTRNG_REQUIRE_ENCRYPTION |                    \
-   OTRNG_ERROR_START_DAKE)
+  (OTRNG_REQUIRE_ENCRYPTION | OTRNG_ERROR_START_DAKE |                         \
+   OTRNG_IDENTITY_START_DAKE)
 
 typedef struct otrng_s {
   struct otrng_client_s *client;
