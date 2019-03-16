@@ -110,6 +110,9 @@ API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv);
 API char *otrng_client_query_message(const char *recipient, const char *msg,
                                      otrng_client_s *client);
 
+API char *otrng_client_whitespace_tag(const char *recipient, const char *msg,
+                                      otrng_client_s *client);
+
 API char *otrng_client_identity_message(const char *recipient,
                                         otrng_client_s *client);
 
