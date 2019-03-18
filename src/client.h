@@ -30,6 +30,7 @@
 
 #include "list.h"
 #include "otrng.h"
+#include "prekey_manager.h"
 #include "shared.h"
 #include "xyz_prekey_client.h"
 
@@ -93,6 +94,14 @@ typedef struct otrng_client_s {
   // than use v3 User State as a store for instance tags
 
   otrng_known_fingerprints_s *fingerprints;
+
+  /* Contains the prekey manager if prekey management has been enabled.
+     It is NOT safe to assume that this will be non-null - it is a
+     plugins/clients responsibility to ensure that the prekey management system
+     has been initialized before calling any functions that use this field.
+  */
+  // TODO: @prekey - this should be freed
+  /*@null@*/ otrng_prekey_manager_s *prekey_manager;
 } otrng_client_s;
 
 API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id);

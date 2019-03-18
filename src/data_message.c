@@ -252,7 +252,7 @@ INTERNAL otrng_bool otrng_valid_data_message(k_msg_mac mac_key,
 
   otrng_free(body);
 
-  if (otrl_mem_differ(mac_tag, data_msg->mac, DATA_MSG_MAC_BYTES) != 0) {
+  if (sodium_memcmp(mac_tag, data_msg->mac, DATA_MSG_MAC_BYTES) != 0) {
     otrng_secure_wipe(mac_tag, DATA_MSG_MAC_BYTES);
     return otrng_false;
   }

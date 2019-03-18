@@ -44,8 +44,13 @@ otrng_sources = ../alloc.c \
                     ../v3.c \
                     ../otrng.c \
                     ../padding.c \
+                    ../random.c \
                     ../xyz_prekey_client.c \
+                    ../prekey_client_dake.c \
+                    ../prekey_client_messages.c \
+                    ../prekey_client_shared.c \
                     ../prekey_fragment.c \
+                    ../prekey_manager.c \
                     ../prekey_message.c \
                     ../prekey_ensemble.c \
                     ../prekey_profile.c \
@@ -86,6 +91,7 @@ unit_sources = \
 			units/test_otrng.c \
 			units/test_persistence.c \
 			units/test_prekey_ensemble.c \
+			units/test_prekey_manager.c \
 			units/test_prekey_messages.c \
 			units/test_prekey_profile.c \
 			units/test_prekey_proofs.c \

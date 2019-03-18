@@ -39,6 +39,7 @@ void units_orchestration_add_tests(void);
 void units_otrng_add_tests(void);
 void units_persistence_add_tests(void);
 void units_prekey_ensemble_add_tests(void);
+void units_prekey_manager_add_tests(void);
 void units_prekey_messages_add_tests(void);
 void units_prekey_profile_add_tests(void);
 void units_prekey_proofs_add_tests(void);
@@ -67,6 +68,7 @@ void units_tlv_add_tests(void);
     units_otrng_add_tests();                                                   \
     units_persistence_add_tests();                                             \
     units_prekey_ensemble_add_tests();                                         \
+    units_prekey_manager_add_tests();                                          \
     units_prekey_messages_add_tests();                                         \
     units_prekey_profile_add_tests();                                          \
     units_prekey_proofs_add_tests();                                           \

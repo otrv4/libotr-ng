@@ -26,6 +26,7 @@
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
+#include <sodium.h>
 
 #define PREKEY_PROOF_LAMBDA 44 // 352 / 8
 
@@ -196,7 +197,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
 
   otrng_free(cbuf);
 
-  if (goldilocks_memeq(px->c, c2, PROOF_C_SIZE)) {
+  if (sodium_memcmp(px->c, c2, PROOF_C_SIZE) == 0) {
     return otrng_true;
   }
 
@@ -401,7 +402,7 @@ INTERNAL otrng_bool otrng_dh_proof_verify(dh_proof_s *px,
 
   otrng_free(cbuf);
 
-  if (goldilocks_memeq(px->c, c2, PROOF_C_SIZE)) {
+  if (sodium_memcmp(px->c, c2, PROOF_C_SIZE) == 0) {
     return otrng_true;
   }
 

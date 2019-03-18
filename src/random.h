@@ -37,9 +37,19 @@
 #include "shared.h"
 
 typedef void *(*random_generator)(size_t);
+typedef void (*random_bytes_generator)(void *, size_t);
+
+random_bytes_generator otrng_get_current_randomness(void);
+random_bytes_generator
+otrng_set_current_randomness(random_bytes_generator new_randomness);
 
 static inline void random_bytes(void *buffer, const size_t size) {
-  gcry_randomize(buffer, size, GCRY_STRONG_RANDOM);
+  random_bytes_generator global_randomness = otrng_get_current_randomness();
+  if (global_randomness == NULL) {
+    gcry_randomize(buffer, size, GCRY_STRONG_RANDOM);
+  } else {
+    global_randomness(buffer, size);
+  }
 }
 
 static inline void ed448_random_scalar(goldilocks_448_scalar_p priv) {

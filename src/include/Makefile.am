@@ -50,6 +50,7 @@ otrnginc_HEADERS = ../alloc.h \
 		   ../persistence.h \
                    ../xyz_prekey_client.h \
                    ../prekey_fragment.h \
+                   ../prekey_manager.h \
                    ../prekey_message.h \
                    ../prekey_ensemble.h \
                    ../prekey_profile.h \

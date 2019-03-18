@@ -1261,7 +1261,7 @@ tstatic otrng_bool verify_non_interactive_auth_message(
   otrng_free(t);
 
   /* here no warning should be passed */
-  if (0 != otrl_mem_differ(mac_tag, auth->auth_mac, DATA_MSG_MAC_BYTES)) {
+  if (sodium_memcmp(mac_tag, auth->auth_mac, DATA_MSG_MAC_BYTES) != 0) {
     otrng_secure_wipe(mac_tag, DATA_MSG_MAC_BYTES);
     return otrng_false;
   }

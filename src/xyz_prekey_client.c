@@ -395,7 +395,7 @@ API char *xyz_otrng_prekey_client_publish(xyz_otrng_prekey_client_s *client) {
   return start_dake_and_then_send(client, XYZ_OTRNG_PREKEY_PREKEY_PUBLICATION);
 }
 
-static otrng_result otrng_prekey_ensemble_query_retrieval_message_serialize(
+static otrng_result xyz_otrng_prekey_ensemble_query_retrieval_message_serialize(
     uint8_t **dst, size_t *len,
     const xyz_otrng_prekey_ensemble_query_retrieval_message_s *msg) {
   size_t w = 0;
@@ -423,7 +423,7 @@ static otrng_result otrng_prekey_ensemble_query_retrieval_message_serialize(
   return OTRNG_SUCCESS;
 }
 
-static void otrng_prekey_ensemble_query_retrieval_message_destroy(
+static void xyz_otrng_prekey_ensemble_query_retrieval_message_destroy(
     xyz_otrng_prekey_ensemble_query_retrieval_message_s *msg) {
   if (!msg) {
     return;
@@ -451,10 +451,10 @@ xyz_otrng_prekey_client_retrieve_prekeys(const char *identity,
   msg->versions = versions ? otrng_xstrdup(versions) : NULL;
   msg->instance_tag = client->instance_tag;
 
-  success = otrng_prekey_ensemble_query_retrieval_message_serialize(
+  success = xyz_otrng_prekey_ensemble_query_retrieval_message_serialize(
       &ser, &ser_len, msg);
 
-  otrng_prekey_ensemble_query_retrieval_message_destroy(msg);
+  xyz_otrng_prekey_ensemble_query_retrieval_message_destroy(msg);
 
   if (!success) {
     return NULL;
@@ -475,7 +475,7 @@ API void xyz_otrng_prekey_client_set_prekey_profile_publication(
   client->publication_policy->publish_prekey_profile = otrng_true;
 }
 
-static uint8_t *otrng_prekey_client_get_expected_composite_phi(
+static uint8_t *xyz_otrng_prekey_client_get_expected_composite_phi(
     size_t *len, const xyz_otrng_prekey_client_s *client) {
   uint8_t *dst = NULL;
   size_t size, w = 0;
@@ -515,9 +515,9 @@ static otrng_result kdf_init_with_usage(goldilocks_shake256_ctx_p hash,
   return OTRNG_SUCCESS;
 }
 
-static otrng_bool
-otrng_prekey_dake2_message_valid(const xyz_otrng_prekey_dake2_message_s *msg,
-                                 const xyz_otrng_prekey_client_s *client) {
+static otrng_bool xyz_otrng_prekey_dake2_message_valid(
+    const xyz_otrng_prekey_dake2_message_s *msg,
+    const xyz_otrng_prekey_client_s *client) {
   // The spec says:
   // "Ensure the identity element of the Prekey Server Composite Identity is
   // correct." We make this check implicitly by verifying the ring signature
@@ -528,7 +528,7 @@ otrng_prekey_dake2_message_valid(const xyz_otrng_prekey_dake2_message_s *msg,
   // action.
 
   size_t composite_phi_len = 0;
-  uint8_t *composite_phi = otrng_prekey_client_get_expected_composite_phi(
+  uint8_t *composite_phi = xyz_otrng_prekey_client_get_expected_composite_phi(
       &composite_phi_len, client);
   uint8_t *our_profile = NULL;
   size_t our_profile_len = 0;
@@ -1010,7 +1010,7 @@ tstatic void xyz_otrng_prekey_dake3_message_destroy(
 }
 
 static xyz_otrng_prekey_publication_message_s *
-otrng_prekey_publication_message_new() {
+xyz_otrng_prekey_publication_message_new() {
   xyz_otrng_prekey_publication_message_s *msg =
       malloc(sizeof(xyz_otrng_prekey_publication_message_s));
   if (!msg) {
@@ -1024,7 +1024,7 @@ otrng_prekey_publication_message_new() {
   return msg;
 }
 
-static void otrng_prekey_publication_message_destroy(
+static void xyz_otrng_prekey_publication_message_destroy(
     xyz_otrng_prekey_publication_message_s *msg) {
   int i;
 
@@ -1078,7 +1078,7 @@ tstatic char *xyz_send_dake3(const xyz_otrng_prekey_dake2_message_s *dake_2,
   xyz_otrng_prekey_dake3_message_init(&dake_3);
   dake_3.client_instance_tag = prekey_client->instance_tag;
 
-  composite_phi = otrng_prekey_client_get_expected_composite_phi(
+  composite_phi = xyz_otrng_prekey_client_get_expected_composite_phi(
       &composite_phi_len, prekey_client);
   if (!composite_phi) {
     otrng_secure_free(shared_secret);
@@ -1194,7 +1194,7 @@ tstatic char *xyz_send_dake3(const xyz_otrng_prekey_dake2_message_s *dake_2,
     }
   } else if (prekey_client->after_dake == XYZ_OTRNG_PREKEY_PREKEY_PUBLICATION) {
     xyz_otrng_prekey_publication_message_s *pub_msg =
-        otrng_prekey_publication_message_new();
+        xyz_otrng_prekey_publication_message_new();
     if (!build_prekey_publication_message_callback(pub_msg, client)) {
       otrng_secure_free(shared_secret);
       otrng_secure_free(ecdh_shared);
@@ -1211,7 +1211,7 @@ tstatic char *xyz_send_dake3(const xyz_otrng_prekey_dake2_message_s *dake_2,
 
     success = otrng_prekey_dake3_message_append_prekey_publication_message(
         pub_msg, &dake_3, prekey_client->mac_key, mac);
-    otrng_prekey_publication_message_destroy(pub_msg);
+    xyz_otrng_prekey_publication_message_destroy(pub_msg);
 
     if (!success) {
       otrng_secure_free(shared_secret);
@@ -1250,7 +1250,7 @@ static char *process_received_dake2(const xyz_otrng_prekey_dake2_message_s *msg,
     return NULL;
   }
 
-  if (!otrng_prekey_dake2_message_valid(msg, client->prekey_client)) {
+  if (!xyz_otrng_prekey_dake2_message_valid(msg, client->prekey_client)) {
     notify_error_callback(client, XYZ_OTRNG_PREKEY_CLIENT_INVALID_DAKE2);
     return NULL;
   }
@@ -1303,7 +1303,7 @@ static char *receive_dake2(const uint8_t *decoded, size_t decoded_len,
   return ret;
 }
 
-static otrng_bool otrng_prekey_storage_status_message_valid(
+static otrng_bool xyz_otrng_prekey_storage_status_message_valid(
     const xyz_otrng_prekey_storage_status_message_s *msg,
     const uint8_t mac_key[MAC_KEY_BYTES]) {
 
@@ -1349,7 +1349,7 @@ static otrng_bool otrng_prekey_storage_status_message_valid(
 
   otrng_free(buf);
 
-  if (otrl_mem_differ(mac_tag, msg->mac, HASH_BYTES) != 0) {
+  if (sodium_memcmp(mac_tag, msg->mac, HASH_BYTES) != 0) {
     otrng_secure_wipe(mac_tag, HASH_BYTES);
     return otrng_false;
   }
@@ -1364,7 +1364,7 @@ static char *process_received_storage_status(
     return NULL;
   }
 
-  if (!otrng_prekey_storage_status_message_valid(
+  if (!xyz_otrng_prekey_storage_status_message_valid(
           msg, client->prekey_client->mac_key)) {
     notify_error_callback(client,
                           XYZ_OTRNG_PREKEY_CLIENT_INVALID_STORAGE_STATUS);
@@ -1458,6 +1458,7 @@ static char *receive_success(const uint8_t *decoded, size_t decoded_len,
   size_t read = 0;
   uint8_t mac_tag[HASH_BYTES];
   uint8_t usage_success_MAC = 0x0C;
+
   goldilocks_shake256_ctx_p hash;
 
   memset(mac_tag, 0, HASH_BYTES);
@@ -1495,7 +1496,7 @@ static char *receive_success(const uint8_t *decoded, size_t decoded_len,
   hash_final(hash, mac_tag, HASH_BYTES);
   hash_destroy(hash);
 
-  if (otrl_mem_differ(mac_tag, decoded + 7, HASH_BYTES) != 0) {
+  if (sodium_memcmp(mac_tag, decoded + 7, HASH_BYTES) != 0) {
     notify_error_callback(client, XYZ_OTRNG_PREKEY_CLIENT_INVALID_SUCCESS);
   } else {
     success_received_callback(client);
@@ -1549,7 +1550,7 @@ static char *receive_failure(const uint8_t *decoded, size_t decoded_len,
   hash_final(hash, mac_tag, HASH_BYTES);
   hash_destroy(hash);
 
-  if (otrl_mem_differ(mac_tag, decoded + 7, HASH_BYTES) != 0) {
+  if (sodium_memcmp(mac_tag, decoded + 7, HASH_BYTES) != 0) {
     notify_error_callback(client, XYZ_OTRNG_PREKEY_CLIENT_INVALID_SUCCESS);
   } else {
     failure_received_callback(client);

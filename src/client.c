@@ -130,6 +130,8 @@ API void otrng_client_free(otrng_client_s *client) {
   otrng_free((char *)client->client_id.account);
   otrng_free((char *)client->client_id.protocol);
 
+  otrng_prekey_manager_free(client->prekey_manager);
+
   otrng_free(client);
 }
 

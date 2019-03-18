@@ -228,6 +228,8 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
   }
 
   /* Write the number of fields at the beginning */
+  /* TODO: this can't actually fail - so we should stop returning otrng_result
+   * from this function */
   if (otrng_serialize_uint32(dst, num_fields) == 0) {
     return OTRNG_ERROR;
   }
@@ -562,11 +564,12 @@ client_profile_verify_signature(const otrng_client_profile_s *client_profile) {
   return valid;
 }
 
-INTERNAL otrng_client_profile_s *otrng_client_profile_build(
+INTERNAL otrng_client_profile_s *
+otrng_client_profile_build_with_custom_expiration(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
-    const otrng_public_key forging_key, uint64_t expiration_time) {
+    const otrng_public_key forging_key, time_t expiration_time) {
+
   otrng_client_profile_s *client_profile;
-  time_t expires;
   if (!otrng_instance_tag_valid(instance_tag) || !versions || !keypair) {
     return NULL;
   }
@@ -577,8 +580,7 @@ INTERNAL otrng_client_profile_s *otrng_client_profile_build(
   }
 
   client_profile->sender_instance_tag = instance_tag;
-  expires = time(NULL);
-  client_profile->expires = expires + expiration_time;
+  client_profile->expires = expiration_time;
 
   otrng_ec_point_copy(client_profile->forging_pub_key, forging_key);
 
@@ -588,6 +590,14 @@ INTERNAL otrng_client_profile_s *otrng_client_profile_build(
   }
 
   return client_profile;
+}
+
+INTERNAL otrng_client_profile_s *otrng_client_profile_build(
+    uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
+    const otrng_public_key forging_key, uint64_t expiration_time) {
+  return otrng_client_profile_build_with_custom_expiration(
+      instance_tag, versions, keypair, forging_key,
+      time(NULL) + expiration_time);
 }
 
 static otrng_bool client_profile_expired(time_t expires) {
