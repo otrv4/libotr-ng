@@ -44,7 +44,7 @@ libotr_ng_la_SOURCES = alloc.c \
 		     v3.c \
 		     otrng.c \
 		     padding.c \
-		     prekey_client.c \
+		     xyz_prekey_client.c \
 		     prekey_fragment.c \
 		     prekey_message.c \
 		     prekey_ensemble.c \

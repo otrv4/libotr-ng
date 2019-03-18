@@ -20,7 +20,7 @@
 
 #include <assert.h>
 
-#include "prekey_client.h"
+#include "xyz_prekey_client.h"
 
 #include "alloc.h"
 #include "base64.h"

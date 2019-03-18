@@ -29,8 +29,8 @@
  * as outlined in messaging.h
  */
 
-#ifndef OTRNG_PREKEY_CLIENT_H
-#define OTRNG_PREKEY_CLIENT_H
+#ifndef OTRNG_XYZ_PREKEY_CLIENT_H
+#define OTRNG_XYZ_PREKEY_CLIENT_H
 
 #include "constants.h"
 #include "list.h"

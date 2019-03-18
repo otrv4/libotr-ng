@@ -30,7 +30,7 @@
 
 #include "list.h"
 #include "otrng.h"
-#include "prekey_client.h"
+#include "xyz_prekey_client.h"
 #include "shared.h"
 
 // TODO: @client REMOVE
