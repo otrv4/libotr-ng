@@ -30,8 +30,8 @@
 
 #include "list.h"
 #include "otrng.h"
-#include "xyz_prekey_client.h"
 #include "shared.h"
+#include "xyz_prekey_client.h"
 
 // TODO: @client REMOVE
 typedef struct otrng_conversation_s {

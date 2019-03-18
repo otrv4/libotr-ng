@@ -66,7 +66,8 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
       otrng_client_get_max_published_prekey_msg(alice),
       otrng_client_get_minimum_stored_prekey_msg(alice));
 
-  alice->prekey_client->after_dake = XYZ_OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST;
+  alice->prekey_client->after_dake =
+      XYZ_OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   random_bytes(sym, ED448_PRIVATE_BYTES);
@@ -156,8 +157,8 @@ static void test_receive_prekey_server_messages(void) {
       642);
 
   char *to_send = NULL;
-  otrng_assert_is_success(
-      xyz_otrng_prekey_client_receive(&to_send, "prekey@localhost", dake_2, alice));
+  otrng_assert_is_success(xyz_otrng_prekey_client_receive(
+      &to_send, "prekey@localhost", dake_2, alice));
 
   otrng_assert(!to_send); /* wrong instance tag */
 

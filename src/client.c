@@ -632,14 +632,14 @@ otrng_client_get_prekey_client(const char *server_identity,
 
   // TODO: this should be a hashmap, since it its one client PER server
   client->prekey_client = xyz_otrng_prekey_client_new();
-  xyz_otrng_prekey_client_init(client->prekey_client, server_identity,
-                           client->client_id.account,
-                           otrng_client_get_instance_tag(client),
-                           otrng_client_get_keypair_v4(client),
-                           otrng_client_get_client_profile(client),
-                           otrng_client_get_prekey_profile(client),
-                           otrng_client_get_max_published_prekey_msg(client),
-                           otrng_client_get_minimum_stored_prekey_msg(client));
+  xyz_otrng_prekey_client_init(
+      client->prekey_client, server_identity, client->client_id.account,
+      otrng_client_get_instance_tag(client),
+      otrng_client_get_keypair_v4(client),
+      otrng_client_get_client_profile(client),
+      otrng_client_get_prekey_profile(client),
+      otrng_client_get_max_published_prekey_msg(client),
+      otrng_client_get_minimum_stored_prekey_msg(client));
 
   client->prekey_client->callbacks =
       otrng_xmalloc_z(sizeof(xyz_otrng_prekey_client_callbacks_s));

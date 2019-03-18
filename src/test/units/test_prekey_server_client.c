@@ -463,8 +463,9 @@ static void test_prekey_ensemble_retrieval_message_deserialize(void) {
       0x78, 0xab, 0x2f, 0x39, 0xcd, 0x83, 0x82, 0x1b, 0xf7, 0x78, 0x92, 0x80};
 
   xyz_otrng_prekey_ensemble_retrieval_message_s message[1];
-  otrng_assert_is_success(xyz_otrng_prekey_ensemble_retrieval_message_deserialize(
-      message, ser, sizeof(ser)));
+  otrng_assert_is_success(
+      xyz_otrng_prekey_ensemble_retrieval_message_deserialize(message, ser,
+                                                              sizeof(ser)));
 
   g_assert_cmpint(message->num_ensembles, ==, 2);
   otrng_assert(message->ensembles[0]);

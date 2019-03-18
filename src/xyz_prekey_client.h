@@ -180,27 +180,29 @@ typedef struct {
   xyz_otrng_prekey_client_callbacks_s *callbacks;
 } xyz_otrng_prekey_client_s;
 
-API void xyz_otrng_prekey_client_init(xyz_otrng_prekey_client_s *prekey_client,
-                                  const char *server, const char *our_identity,
-                                  uint32_t instance_tag,
-                                  const otrng_keypair_s *keypair,
-                                  const otrng_client_profile_s *client_profile,
-                                  const otrng_prekey_profile_s *prekey_profile,
-                                  unsigned int max_published_prekey_message,
-                                  unsigned int minimum_stored_prekey_message);
+API void
+xyz_otrng_prekey_client_init(xyz_otrng_prekey_client_s *prekey_client,
+                             const char *server, const char *our_identity,
+                             uint32_t instance_tag,
+                             const otrng_keypair_s *keypair,
+                             const otrng_client_profile_s *client_profile,
+                             const otrng_prekey_profile_s *prekey_profile,
+                             unsigned int max_published_prekey_message,
+                             unsigned int minimum_stored_prekey_message);
 
 API xyz_otrng_prekey_client_s *xyz_otrng_prekey_client_new(void);
 
 API void xyz_otrng_prekey_client_free(xyz_otrng_prekey_client_s *client);
 
-API char *
-xyz_otrng_prekey_client_request_storage_information(xyz_otrng_prekey_client_s *client);
+API char *xyz_otrng_prekey_client_request_storage_information(
+    xyz_otrng_prekey_client_s *client);
 
 API char *xyz_otrng_prekey_client_publish(xyz_otrng_prekey_client_s *client);
 
-API otrng_bool xyz_otrng_prekey_client_receive(char **to_send, const char *server,
-                                           const char *msg,
-                                           struct otrng_client_s *client);
+API otrng_bool xyz_otrng_prekey_client_receive(char **to_send,
+                                               const char *server,
+                                               const char *msg,
+                                               struct otrng_client_s *client);
 
 API void xyz_otrng_prekey_client_set_prekey_profile_publication(
     xyz_otrng_prekey_client_s *client);
@@ -214,9 +216,10 @@ xyz_otrng_prekey_dake2_message_s *xyz_otrng_prekey_dake2_message_new(void);
 INTERNAL
 xyz_otrng_prekey_dake3_message_s *xyz_otrng_prekey_dake3_message_new(void);
 
-API char *xyz_otrng_prekey_client_retrieve_prekeys(const char *identity,
-                                               const char *versions,
-                                               xyz_otrng_prekey_client_s *client);
+API char *
+xyz_otrng_prekey_client_retrieve_prekeys(const char *identity,
+                                         const char *versions,
+                                         xyz_otrng_prekey_client_s *client);
 
 INTERNAL otrng_result xyz_otrng_prekey_success_message_deserialize(
     xyz_otrng_prekey_success_message_s *dst, const uint8_t *source,
@@ -228,15 +231,17 @@ API void xyz_otrng_prekey_client_add_prekey_messages_for_publication(
 #ifdef XYZ_OTRNG_PREKEY_CLIENT_PRIVATE
 
 tstatic char *xyz_send_dake3(const xyz_otrng_prekey_dake2_message_s *dake_2,
-                         struct otrng_client_s *client);
+                             struct otrng_client_s *client);
 
 tstatic otrng_result xyz_otrng_prekey_dake1_message_serialize(
-    uint8_t **ser, size_t *ser_len, const xyz_otrng_prekey_dake1_message_s *msg);
+    uint8_t **ser, size_t *ser_len,
+    const xyz_otrng_prekey_dake1_message_s *msg);
 
 tstatic void
 xyz_otrng_prekey_dake1_message_destroy(xyz_otrng_prekey_dake1_message_s *msg);
 
-tstatic void xyz_otrng_prekey_dake2_message_init(xyz_otrng_prekey_dake2_message_s *msg);
+tstatic void
+xyz_otrng_prekey_dake2_message_init(xyz_otrng_prekey_dake2_message_s *msg);
 
 tstatic otrng_result xyz_otrng_prekey_dake2_message_deserialize(
     xyz_otrng_prekey_dake2_message_s *dst, const uint8_t *ser, size_t ser_len);
@@ -249,9 +254,11 @@ xyz_otrng_prekey_dake3_message_append_storage_information_request(
     xyz_otrng_prekey_dake3_message_s *msg, uint8_t mac_key[MAC_KEY_BYTES]);
 
 tstatic otrng_result xyz_otrng_prekey_dake3_message_serialize(
-    uint8_t **ser, size_t *ser_len, const xyz_otrng_prekey_dake3_message_s *msg);
+    uint8_t **ser, size_t *ser_len,
+    const xyz_otrng_prekey_dake3_message_s *msg);
 
-tstatic void xyz_otrng_prekey_dake3_message_init(xyz_otrng_prekey_dake3_message_s *msg);
+tstatic void
+xyz_otrng_prekey_dake3_message_init(xyz_otrng_prekey_dake3_message_s *msg);
 
 tstatic void
 xyz_otrng_prekey_dake3_message_destroy(xyz_otrng_prekey_dake3_message_s *msg);
