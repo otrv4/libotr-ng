@@ -33,8 +33,8 @@ static void test_send_dake_1_message(void) {
   set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = otrng_prekey_client_new();
-  otrng_prekey_client_init(
+  alice->prekey_client = xyz_otrng_prekey_client_new();
+  xyz_otrng_prekey_client_init(
       alice->prekey_client, "prekey@localhost", "alice@localhost",
       otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
       otrng_client_get_client_profile(alice),
@@ -43,7 +43,7 @@ static void test_send_dake_1_message(void) {
       otrng_client_get_minimum_stored_prekey_msg(alice));
 
   char *dake_1 = NULL;
-  dake_1 = otrng_prekey_client_publish(alice->prekey_client);
+  dake_1 = xyz_otrng_prekey_client_publish(alice->prekey_client);
 
   otrng_assert(dake_1);
   otrng_free(dake_1);
@@ -57,8 +57,8 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = otrng_prekey_client_new();
-  otrng_prekey_client_init(
+  alice->prekey_client = xyz_otrng_prekey_client_new();
+  xyz_otrng_prekey_client_init(
       alice->prekey_client, "prekey@localhost", "alice@localhost",
       otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
       otrng_client_get_client_profile(alice),
@@ -66,15 +66,15 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
       otrng_client_get_max_published_prekey_msg(alice),
       otrng_client_get_minimum_stored_prekey_msg(alice));
 
-  alice->prekey_client->after_dake = OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST;
+  alice->prekey_client->after_dake = XYZ_OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST;
 
   uint8_t sym[ED448_PRIVATE_BYTES] = {0};
   random_bytes(sym, ED448_PRIVATE_BYTES);
   otrng_assert_is_success(
       otrng_ecdh_keypair_generate(alice->prekey_client->ephemeral_ecdh, sym));
 
-  otrng_prekey_dake2_message_s message;
-  otrng_prekey_dake2_message_init(&message);
+  xyz_otrng_prekey_dake2_message_s message;
+  xyz_otrng_prekey_dake2_message_init(&message);
 
   size_t read = 0;
   uint8_t ser_server_public_key[ED448_PUBKEY_BYTES] = {
@@ -114,7 +114,7 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   memcpy(message.composite_identity, composite_identity,
          message.composite_identity_len);
 
-  char *dake_3 = send_dake3(&message, alice);
+  char *dake_3 = xyz_send_dake3(&message, alice);
 
   otrng_assert(dake_3);
   otrng_assert(alice->prekey_client->after_dake == 0);
@@ -122,7 +122,7 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   otrng_free(dake_3);
 
   otrng_global_state_free(alice->global_state);
-  otrng_prekey_dake2_message_destroy(&message);
+  xyz_otrng_prekey_dake2_message_destroy(&message);
 }
 
 static void test_receive_prekey_server_messages(void) {
@@ -131,8 +131,8 @@ static void test_receive_prekey_server_messages(void) {
   set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = otrng_prekey_client_new();
-  otrng_prekey_client_init(
+  alice->prekey_client = xyz_otrng_prekey_client_new();
+  xyz_otrng_prekey_client_init(
       alice->prekey_client, "prekey@localhost", "alice@localhost",
       otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
       otrng_client_get_client_profile(alice),
@@ -157,7 +157,7 @@ static void test_receive_prekey_server_messages(void) {
 
   char *to_send = NULL;
   otrng_assert_is_success(
-      otrng_prekey_client_receive(&to_send, "prekey@localhost", dake_2, alice));
+      xyz_otrng_prekey_client_receive(&to_send, "prekey@localhost", dake_2, alice));
 
   otrng_assert(!to_send); /* wrong instance tag */
 
@@ -169,7 +169,7 @@ static void test_receive_prekey_server_messages(void) {
                      "pUD6qTyooaIh2Mqg6PXojQOmWKnj3LqBM=.",
                      98);
 
-  otrng_assert_is_success(otrng_prekey_client_receive(
+  otrng_assert_is_success(xyz_otrng_prekey_client_receive(
       &to_send, "prekey@localhost", success, alice));
 
   otrng_assert(!to_send); /* wrong instance tag */
@@ -186,7 +186,7 @@ static void notify_error_cb(struct otrng_client_s *client, int error,
   (void)client;
 }
 
-otrng_prekey_client_callbacks_s prekey_client_cb = {
+xyz_otrng_prekey_client_callbacks_s prekey_client_cb = {
     .ctx = NULL,
     .notify_error = notify_error_cb,
     .storage_status_received = NULL,
@@ -204,8 +204,8 @@ static void test_receive_prekey_ensemble_retrieval_message(void) {
   set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = otrng_prekey_client_new();
-  otrng_prekey_client_init(
+  alice->prekey_client = xyz_otrng_prekey_client_new();
+  xyz_otrng_prekey_client_init(
       alice->prekey_client, "prekey@localhost", "alice@localhost",
       otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
       otrng_client_get_client_profile(alice),
@@ -214,9 +214,9 @@ static void test_receive_prekey_ensemble_retrieval_message(void) {
       otrng_client_get_minimum_stored_prekey_msg(alice));
 
   alice->prekey_client->callbacks =
-      otrng_xmalloc_z(sizeof(otrng_prekey_client_callbacks_s));
+      otrng_xmalloc_z(sizeof(xyz_otrng_prekey_client_callbacks_s));
   memcpy(alice->prekey_client->callbacks, &prekey_client_cb,
-         sizeof(otrng_prekey_client_callbacks_s));
+         sizeof(xyz_otrng_prekey_client_callbacks_s));
 
   char *retrieval_message = otrng_xstrndup(
       "AAQTbQJzmAEAAAAFAAHboU/xAAIAEEGKF1z/jL6X/zFAzb73dt6mHIF/"
@@ -245,7 +245,7 @@ static void test_receive_prekey_ensemble_retrieval_message(void) {
       1222);
 
   char *to_send = NULL;
-  otrng_assert_is_success(otrng_prekey_client_receive(
+  otrng_assert_is_success(xyz_otrng_prekey_client_receive(
       &to_send, "prekey@localhost", retrieval_message, alice));
 
   otrng_assert(!to_send); /* wrong instance tag */

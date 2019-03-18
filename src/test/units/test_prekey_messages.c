@@ -39,11 +39,11 @@ static void test_deserialize_prekey_success_message(void) {
   decoded = otrng_xmalloc_z(((len - 1 + 3) / 4) * 3);
   decoded_len = otrl_base64_decode(decoded, prekey_success_message, len - 1);
 
-  otrng_assert(decoded_len == OTRNG_PREKEY_SUCCESS_MSG_LEN);
+  otrng_assert(decoded_len == XYZ_OTRNG_PREKEY_SUCCESS_MSG_LEN);
 
-  otrng_prekey_success_message_s dst;
+  xyz_otrng_prekey_success_message_s dst;
   otrng_assert_is_success(
-      otrng_prekey_success_message_deserialize(&dst, decoded, decoded_len));
+      xyz_otrng_prekey_success_message_deserialize(&dst, decoded, decoded_len));
 
   uint8_t expected_success_mac[HASH_BYTES] = {
       0x53, 0x2e, 0x8d, 0xb8, 0x16, 0x0c, 0xfd, 0x41, 0x8c, 0xf6, 0x5b,

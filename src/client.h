@@ -53,7 +53,7 @@ typedef struct otrng_client_id_s {
 typedef struct otrng_client_s {
   list_element_s *conversations;
 
-  otrng_prekey_client_s *prekey_client;
+  xyz_otrng_prekey_client_s *prekey_client;
 
   otrng_client_id_s client_id;
 
@@ -171,9 +171,9 @@ INTERNAL otrng_result otrng_client_expire_fragments(otrng_client_s *client);
 API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint fp,
                                                   const otrng_client_s *client);
 
-API otrng_prekey_client_s *
+API xyz_otrng_prekey_client_s *
 otrng_client_get_prekey_client(const char *server_identity,
-                               otrng_prekey_client_callbacks_s *callbacks,
+                               xyz_otrng_prekey_client_callbacks_s *callbacks,
                                otrng_client_s *client);
 
 INTERNAL void otrng_client_store_my_prekey_message(prekey_message_s *msg,

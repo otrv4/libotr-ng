@@ -123,7 +123,7 @@ API void otrng_client_free(otrng_client_s *client) {
   otrng_prekey_profile_free(client->prekey_profile);
   otrng_prekey_profile_free(client->exp_prekey_profile);
   otrng_list_free(client->conversations, conversation_free);
-  otrng_prekey_client_free(client->prekey_client);
+  xyz_otrng_prekey_client_free(client->prekey_client);
   if (client->fingerprints) {
     otrng_known_fingerprints_free(client->fingerprints);
   }
@@ -622,17 +622,17 @@ otrng_client_get_client_profile_exp_time(otrng_client_s *client) {
   return client->client_profile_exp_time;
 }
 
-API otrng_prekey_client_s *
+API xyz_otrng_prekey_client_s *
 otrng_client_get_prekey_client(const char *server_identity,
-                               otrng_prekey_client_callbacks_s *callbacks,
+                               xyz_otrng_prekey_client_callbacks_s *callbacks,
                                otrng_client_s *client) {
   if (client->prekey_client) {
     return client->prekey_client;
   }
 
   // TODO: this should be a hashmap, since it its one client PER server
-  client->prekey_client = otrng_prekey_client_new();
-  otrng_prekey_client_init(client->prekey_client, server_identity,
+  client->prekey_client = xyz_otrng_prekey_client_new();
+  xyz_otrng_prekey_client_init(client->prekey_client, server_identity,
                            client->client_id.account,
                            otrng_client_get_instance_tag(client),
                            otrng_client_get_keypair_v4(client),
@@ -642,9 +642,9 @@ otrng_client_get_prekey_client(const char *server_identity,
                            otrng_client_get_minimum_stored_prekey_msg(client));
 
   client->prekey_client->callbacks =
-      otrng_xmalloc_z(sizeof(otrng_prekey_client_callbacks_s));
+      otrng_xmalloc_z(sizeof(xyz_otrng_prekey_client_callbacks_s));
   memcpy(client->prekey_client->callbacks, callbacks,
-         sizeof(otrng_prekey_client_callbacks_s));
+         sizeof(xyz_otrng_prekey_client_callbacks_s));
 
   return client->prekey_client;
 }
