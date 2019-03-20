@@ -77,11 +77,11 @@ static void test_client_api() {
   set_up_client(charlie, 3);
 
   char *query_message_to_bob =
-      otrng_client_query_message(BOB_ACCOUNT, "Hi bob", alice);
+      otrng_client_init_message(BOB_ACCOUNT, "Hi bob", alice);
   otrng_assert(query_message_to_bob);
 
   char *query_message_to_charlie =
-      otrng_client_query_message(CHARLIE_ACCOUNT, "Hi charlie", alice);
+      otrng_client_init_message(CHARLIE_ACCOUNT, "Hi charlie", alice);
   otrng_assert(query_message_to_charlie);
 
   otrng_bool ignore = otrng_false;
@@ -230,8 +230,7 @@ static void test_conversation_with_multiple_locations() {
   set_up_client(bob, 2);
 
   // Alice sends a query message
-  char *query_message =
-      otrng_client_query_message(BOB_ACCOUNT, "Hi bob", alice);
+  char *query_message = otrng_client_init_message(BOB_ACCOUNT, "Hi bob", alice);
 
   otrng_bool ignore = otrng_false;
   char *from_alice_to_bob = NULL, *from_bob = NULL, *to_display = NULL;
@@ -322,7 +321,7 @@ static void test_initiate_with_identity_msg() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_client_s *bob = otrng_client_new(BOB_IDENTITY);
 
-  set_up_client(alice, 1);
+  set_up_client_different_policy(alice, 1);
   set_up_client(bob, 2);
 
   char *identity_message_to_bob =
@@ -411,7 +410,7 @@ static void test_valid_identity_message_in_waiting_auth_i() {
   set_up_client(bob, 2);
 
   char *query_message_to_bob =
-      otrng_client_query_message(BOB_ACCOUNT, "Hi bob", alice);
+      otrng_client_init_message(BOB_ACCOUNT, "Hi bob", alice);
 
   otrng_bool ignore = otrng_false;
   char *from_alice_to_bob = NULL, *to_display = NULL, *bobs_id = NULL,
@@ -561,7 +560,7 @@ static void test_invalid_auth_r_message_in_not_waiting_auth_r() {
 
   // Alice sends a query message to Bob
   char *query_message_to_bob =
-      otrng_client_query_message(BOB_ACCOUNT, "Hi bob", alice);
+      otrng_client_init_message(BOB_ACCOUNT, "Hi bob", alice);
 
   otrng_bool ignore = otrng_false;
   char *to_display = NULL, *bobs_id = NULL, *alices_auth_r = NULL,
@@ -679,11 +678,11 @@ static void test_valid_identity_message_in_waiting_auth_r() {
 
   // Alice sends a query message to Bob
   char *query_message_to_bob =
-      otrng_client_query_message(BOB_ACCOUNT, "Hi alice", alice);
+      otrng_client_init_message(BOB_ACCOUNT, "Hi alice", alice);
 
   // Bob sends a query message to Alice
   char *query_message_to_alice =
-      otrng_client_query_message(ALICE_ACCOUNT, "Hi bob", bob);
+      otrng_client_init_message(ALICE_ACCOUNT, "Hi bob", bob);
 
   otrng_bool ignore = otrng_false;
   char *to_display = NULL, *alices_id = NULL, *bobs_id = NULL,
@@ -878,7 +877,7 @@ static void test_invalid_auth_i_message_in_not_waiting_auth_i() {
 
   // Alice sends a query message to Bob
   char *query_message_to_bob =
-      otrng_client_query_message(BOB_ACCOUNT, "Hi bob", alice);
+      otrng_client_init_message(BOB_ACCOUNT, "Hi bob", alice);
 
   otrng_bool ignore = otrng_false;
   char *to_display = NULL, *bobs_id = NULL, *alices_auth_r = NULL,
@@ -1058,7 +1057,7 @@ static void test_client_sends_fragmented_message(void) {
   set_up_client(bob, 2);
 
   char *query_message_to_bob =
-      otrng_client_query_message(BOB_ACCOUNT, "Hi bob", alice);
+      otrng_client_init_message(BOB_ACCOUNT, "Hi bob", alice);
   otrng_assert(query_message_to_bob);
 
   char *from_alice_to_bob = NULL, *from_bob = NULL, *to_display = NULL;

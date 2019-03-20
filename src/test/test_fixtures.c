@@ -69,6 +69,25 @@ void set_up_client(otrng_client_s *client, int byte) {
   client->should_heartbeat = test_should_not_heartbeat;
 }
 
+void set_up_client_different_policy(otrng_client_s *client, int byte) {
+  client->global_state =
+      otrng_global_state_new(test_callbacks_policy, otrng_false);
+  client->global_state->clients =
+      otrng_list_add(client, client->global_state->clients);
+
+  uint8_t long_term_priv[ED448_PRIVATE_BYTES] = {byte + 0xA};
+  uint8_t forging_sym[ED448_PRIVATE_BYTES] = {byte + 0xD};
+
+  otrng_client_add_private_key_v4(client, long_term_priv);
+  otrng_public_key *forging_key = create_forging_key_from(forging_sym);
+  otrng_client_add_forging_key(client, *forging_key);
+  otrng_free(forging_key);
+  otrng_client_add_instance_tag(client, 0x100 + byte);
+
+  client->client_profile = otrng_client_build_default_client_profile(client);
+  client->should_heartbeat = test_should_not_heartbeat;
+}
+
 otrng_s *set_up(struct otrng_client_s *client, int byte) {
   set_up_client(client, byte);
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
@@ -229,7 +248,14 @@ void store_prekey_messages_cb_empty(otrng_client_s *client) { (void)client; }
 static otrng_policy_s define_policy_cb(struct otrng_client_s *client) {
   (void)client;
   otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
-                           .type = OTRNG_POLICY_OPPORTUNISTIC};
+                           .type = OTRNG_POLICY_NORMAL};
+  return policy;
+}
+
+static otrng_policy_s define_test_policy_cb(struct otrng_client_s *client) {
+  (void)client;
+  otrng_policy_s policy = {.allows = OTRNG_ALLOW_V34,
+                           .type = OTRNG_POLICY_ALWAYS};
   return policy;
 }
 
@@ -266,6 +292,29 @@ otrng_client_callbacks_s test_callbacks[1] = {{
     .load_prekey_profile = &load_prekey_profile_cb_empty,
     .store_prekey_messages = &store_prekey_messages_cb_empty,
     .define_policy = &define_policy_cb,
+    .store_fingerprints_v4 = &store_fingerprints_v4_cb_empty,
+    .load_fingerprints_v4 = &load_fingerprints_v4_cb_empty,
+    .store_fingerprints_v3 = &store_fingerprints_v3_cb_empty,
+    .load_fingerprints_v3 = &load_fingerprints_v3_cb_empty,
+}};
+
+otrng_client_callbacks_s test_callbacks_policy[1] = {{
+    .create_instag = &create_instag_cb_empty,
+    .create_privkey_v3 = &create_privkey_v3_cb_empty,
+    .create_privkey_v4 = &create_privkey_v4_cb_empty,
+    .create_forging_key = &create_forging_key_cb_empty,
+    .create_client_profile = &create_client_profile_cb,
+    .store_expired_client_profile = &write_expired_client_profile_cb_empty,
+    .load_expired_client_profile = &load_expired_client_profile_cb_empty,
+    .store_expired_prekey_profile = &write_expired_prekey_profile_cb_empty,
+    .create_prekey_profile = &create_prekey_profile_cb,
+    .display_error_message = &display_error_message_cb,
+    .get_shared_session_state = &get_shared_session_state_cb,
+    .load_privkey_v4 = &load_privkey_v4_cb_empty,
+    .load_client_profile = &load_client_profile_cb_empty,
+    .load_prekey_profile = &load_prekey_profile_cb_empty,
+    .store_prekey_messages = &store_prekey_messages_cb_empty,
+    .define_policy = &define_test_policy_cb,
     .store_fingerprints_v4 = &store_fingerprints_v4_cb_empty,
     .load_fingerprints_v4 = &load_fingerprints_v4_cb_empty,
     .store_fingerprints_v3 = &store_fingerprints_v3_cb_empty,

@@ -62,6 +62,8 @@ get_account_and_protocol_cb_empty(char **account, char **protocol,
 
 void set_up_client(otrng_client_s *client, int byte);
 
+void set_up_client_different_policy(otrng_client_s *client, int byte);
+
 otrng_s *set_up(struct otrng_client_s *client, int byte);
 
 otrng_client_id_s create_client_id(const char *protocol, const char *account);
@@ -129,5 +131,7 @@ void dake_fixture_teardown(dake_fixture_s *f, gconstpointer user_data);
 void do_dake_fixture(otrng_s *alice, otrng_s *bob);
 
 extern otrng_client_callbacks_s test_callbacks[];
+
+extern otrng_client_callbacks_s test_callbacks_policy[];
 
 #endif // __TEST_FIXTURES_H__
