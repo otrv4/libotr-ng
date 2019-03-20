@@ -47,6 +47,27 @@
    fun:g_random_int
 }
 {
+   g_random_init_calloc_leak
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:g_random_int
+   fun:g_test_init
+   fun:main
+}
+{
+   g_test_run_leak
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:test_run_seed
+   fun:g_test_run_suite_internal
+   ...
+   fun:g_test_run
+   fun:main
+}
+{
    g_test_init_leak_reachable
    Memcheck:Leak
    fun:malloc
