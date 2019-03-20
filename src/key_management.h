@@ -259,7 +259,8 @@ INTERNAL otrng_result otrng_key_manager_calculate_auth_mac(
  * @param [sections]       The data message sections to mac.
  */
 INTERNAL otrng_result otrng_key_manager_calculate_authenticator(
-    uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections);
+    uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections,
+    size_t sections_len);
 
 /**
  * @brief Generate the Mixed Shared Secret.

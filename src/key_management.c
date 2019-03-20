@@ -321,7 +321,8 @@ INTERNAL otrng_result otrng_key_manager_calculate_auth_mac(
 }
 
 INTERNAL otrng_result otrng_key_manager_calculate_authenticator(
-    uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections) {
+    uint8_t *authenticator, const uint8_t *mac_key, const uint8_t *sections,
+    size_t sections_len) {
 
   uint8_t usage_authenticator = 0x1A;
 
@@ -335,7 +336,7 @@ INTERNAL otrng_result otrng_key_manager_calculate_authenticator(
     return OTRNG_ERROR;
   }
 
-  if (hash_update(hd, sections, HASH_BYTES) == GOLDILOCKS_FAILURE) {
+  if (hash_update(hd, sections, sections_len) == GOLDILOCKS_FAILURE) {
     hash_destroy(hd);
     return OTRNG_ERROR;
   }
