@@ -57,7 +57,6 @@
 }
 {
    g_test_run_leak
-   <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:calloc
    ...
