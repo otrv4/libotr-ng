@@ -20,15 +20,13 @@
 
 #define OTRNG_SMP_PROTOCOL_PRIVATE
 
-#include <sodium.h>
-
+#include "smp_protocol.h"
 #include "auth.h"
 #include "constants.h"
 #include "deserialize.h"
 #include "random.h"
 #include "serialize.h"
 #include "shake.h"
-#include "smp_protocol.h"
 #include "tlv.h"
 
 #include "debug.h"

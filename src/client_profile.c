@@ -25,8 +25,6 @@
 #include <string.h>
 #include <time.h>
 
-#include <sodium.h>
-
 #define OTRNG_DESERIALIZE_PRIVATE
 
 #include "alloc.h"

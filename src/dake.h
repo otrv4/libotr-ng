@@ -21,8 +21,6 @@
 #ifndef OTRNG_DAKE_H
 #define OTRNG_DAKE_H
 
-#include <sodium.h>
-
 #include "auth.h"
 #include "client_profile.h"
 #include "constants.h"

@@ -19,7 +19,6 @@
  */
 
 #include <assert.h>
-#include <sodium.h>
 #include <string.h>
 #include <time.h>
 
