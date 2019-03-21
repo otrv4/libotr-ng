@@ -750,27 +750,31 @@ INTERNAL otrng_result build_interactive_rsign_tag(
 
   size_t written = 0;
   otrng_result result = OTRNG_ERROR;
+  uint8_t usage_auth_r = 0x05;
+  uint8_t usage_auth_i = 0x08;
   uint8_t *buffer = otrng_xmalloc_z(1 + MAX_T_LENGTH);
 
   assert(auth_tag_type == 'i' || auth_tag_type == 'r');
   if (auth_tag_type == 'r') {
-    /* t = 0x0 || KDF_1(0x05 || Bobs_Client_Profile, 64) || KDF_1(0x06 ||
-     * Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x07 || phi, 64)
+    /* t = 0x0 || KDF_1(usageAuthRBobClientProfile || Bobs_Client_Profile, 64)
+     * || KDF_1(usageAuthRAliceClientProfile || Alices_Client_Profile, 64) || Y
+     * || X || B || A || KDF_1(usageAuthRPhi || phi, 64)
      */
     *buffer = 0x0;
     result = build_rsign_tag(
-        buffer + 1, MAX_T_LENGTH, &written, 0x05, initiator->client_profile,
-        responder->client_profile, &initiator->ecdh, &responder->ecdh,
-        initiator->dh, responder->dh, NULL, 0, phi, phi_len);
+        buffer + 1, MAX_T_LENGTH, &written, usage_auth_r,
+        initiator->client_profile, responder->client_profile, &initiator->ecdh,
+        &responder->ecdh, initiator->dh, responder->dh, NULL, 0, phi, phi_len);
   } else if (auth_tag_type == 'i') {
-    /* t = 0x1 || KDF_1(0x08 || Bobs_Client_Profile, 64) || KDF_1(0x09 ||
-     * Alices_Client_Profile, 64) || Y || X || B || A || KDF_1(0x0A || phi, 64)
+    /* t = 0x1 || KDF_1(usageAuthIBobClientProfile || Bobs_Client_Profile, 64)
+     * || KDF_1(usageAuthIAliceClientProfile || Alices_Client_Profile, 64) || Y
+     * || X || B || A || KDF_1(usageAuthIPhi || phi, 64)
      */
     *buffer = 0x01;
     result = build_rsign_tag(
-        buffer + 1, MAX_T_LENGTH, &written, 0x08, initiator->client_profile,
-        responder->client_profile, &initiator->ecdh, &responder->ecdh,
-        initiator->dh, responder->dh, NULL, 0, phi, phi_len);
+        buffer + 1, MAX_T_LENGTH, &written, usage_auth_i,
+        initiator->client_profile, responder->client_profile, &initiator->ecdh,
+        &responder->ecdh, initiator->dh, responder->dh, NULL, 0, phi, phi_len);
   }
 
   if (result == OTRNG_ERROR) {
@@ -792,7 +796,7 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
                                 const otrng_dake_participant_data_s *responder,
                                 const otrng_shared_prekey_pub r_shared_prekey,
                                 const uint8_t *phi, size_t phi_len) {
-  uint8_t first_usage = 0x0D;
+  uint8_t first_non_int_auth_usage = 0x0E;
   uint8_t ser_r_shared_prekey[ED448_SHARED_PREKEY_BYTES];
   otrng_result result;
 
@@ -803,11 +807,11 @@ build_non_interactive_rsign_tag(uint8_t **msg, size_t *msg_len,
     return OTRNG_ERROR;
   }
 
-  result = build_rsign_tag(*msg, MAX_T_LENGTH, msg_len, first_usage,
-                           initiator->client_profile, responder->client_profile,
-                           &initiator->ecdh, &responder->ecdh, initiator->dh,
-                           responder->dh, ser_r_shared_prekey,
-                           ED448_SHARED_PREKEY_BYTES, phi, phi_len);
+  result = build_rsign_tag(
+      *msg, MAX_T_LENGTH, msg_len, first_non_int_auth_usage,
+      initiator->client_profile, responder->client_profile, &initiator->ecdh,
+      &responder->ecdh, initiator->dh, responder->dh, ser_r_shared_prekey,
+      ED448_SHARED_PREKEY_BYTES, phi, phi_len);
 
   // TODO: This is probably not necessary, since the shared prekey is a public
   // value
@@ -850,8 +854,8 @@ INTERNAL otrng_result otrng_dake_non_interactive_auth_message_authenticator(
     uint8_t dst[HASH_BYTES], const dake_non_interactive_auth_message_s *auth,
     const uint8_t *t, size_t t_len, uint8_t tmp_key[HASH_BYTES]) {
 
-  /* auth_mac_k = KDF_1(0x0C || tmp_k, 64) */
-  uint8_t usage_auth_mac_key = 0x0C;
+  /* auth_mac_k = KDF_1(usageAuthMACKey || tmp_k, 64) */
+  uint8_t usage_auth_mac_key = 0x0D;
   uint8_t *auth_mac_k = otrng_secure_alloc(HASH_BYTES);
 
   (void)auth;

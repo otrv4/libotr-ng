@@ -260,7 +260,7 @@ INTERNAL otrng_result otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
                                                           k_brace brace_key,
                                                           k_ecdh tmp_ecdh_k1,
                                                           k_ecdh tmp_ecdh_k2) {
-  uint8_t usage_tmp_key = 0x0B;
+  uint8_t usage_tmp_key = 0x0C;
   goldilocks_shake256_ctx_p hd;
 
   if (!hash_init_with_usage(hd, usage_tmp_key)) {
@@ -296,7 +296,7 @@ INTERNAL otrng_result otrng_key_manager_calculate_tmp_key(uint8_t *tmp_key,
 INTERNAL otrng_result otrng_key_manager_calculate_auth_mac(
     uint8_t *auth_mac, const uint8_t *auth_mac_key, const uint8_t *t,
     size_t t_len) {
-  uint8_t usage_auth_mac = 0x10;
+  uint8_t usage_auth_mac = 0x11;
 
   goldilocks_shake256_ctx_p hd;
 
@@ -351,7 +351,7 @@ INTERNAL otrng_result otrng_key_manager_calculate_authenticator(
 tstatic otrng_result generate_first_ephemeral_keys(key_manager_s *manager,
                                                    const char participant) {
   uint8_t *random_buffer = otrng_secure_alloc(ED448_PRIVATE_BYTES);
-  uint8_t usage_ECDH_first_ephemeral = 0x11;
+  uint8_t usage_ECDH_first_ephemeral = 0x12;
 
   assert(participant == 'u' || participant == 't');
 
@@ -603,6 +603,8 @@ tstatic otrng_result calculate_ssid(key_manager_s *manager) {
 
 INTERNAL otrng_result otrng_key_manager_ratcheting_init(
     key_manager_s *manager, const char participant) {
+  uint8_t usage_first_root_key = 0x0B;
+
   if (!generate_first_ephemeral_keys(manager, participant)) {
     return OTRNG_ERROR;
   }
@@ -612,7 +614,12 @@ INTERNAL otrng_result otrng_key_manager_ratcheting_init(
   manager->k = 0;
   manager->pn = 0;
 
-  memcpy(manager->current->root_key, manager->shared_secret, ROOT_KEY_BYTES);
+  if (!shake_256_kdf1(manager->current->root_key, ROOT_KEY_BYTES,
+                      usage_first_root_key, manager->shared_secret,
+                      SHARED_SECRET_BYTES)) {
+    return OTRNG_ERROR;
+  }
+
   otrng_secure_wipe(manager->shared_secret, SHARED_SECRET_BYTES);
 
   return OTRNG_SUCCESS;
@@ -718,8 +725,8 @@ tstatic otrng_result key_manager_derive_ratchet_keys(
      64)
      @secret should be deleted when the new root key is derived
   */
-  uint8_t usage_root_key = 0x13;
-  uint8_t usage_chain_key = 0x14;
+  uint8_t usage_root_key = 0x14;
+  uint8_t usage_chain_key = 0x15;
 
   goldilocks_shake256_ctx_p hd;
 
@@ -824,10 +831,10 @@ tstatic otrng_result key_manager_derive_ratchet_keys(
   return OTRNG_SUCCESS;
 }
 
-static uint8_t usage_next_chain_key = 0x15;
-static uint8_t usage_message_key = 0x16;
-static uint8_t usage_mac_key = 0x17;
-static uint8_t usage_extra_symm_key = 0x18;
+static uint8_t usage_next_chain_key = 0x16;
+static uint8_t usage_message_key = 0x17;
+static uint8_t usage_mac_key = 0x18;
+static uint8_t usage_extra_symm_key = 0x19;
 
 static otrng_result
 derive_next_chain_key(key_manager_s *manager,

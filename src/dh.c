@@ -193,7 +193,7 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
     const char participant) {
   gcry_mpi_t privkey = NULL;
   uint8_t *random_buffer = otrng_secure_alloc(DH_KEY_SIZE);
-  uint8_t usage_DH_first_ephemeral = 0x12;
+  uint8_t usage_DH_first_ephemeral = 0x13;
   gcry_error_t err;
 
   if (!shake_256_kdf1(random_buffer, DH_KEY_SIZE, usage_DH_first_ephemeral,
