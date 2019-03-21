@@ -908,7 +908,7 @@ tstatic otrng_result calculate_extra_key(
   }
 
   /* extra_symm_key = KDF_1(usage_extra_symm_key || 0xFF || chain_key_s[i-1][j],
-   * 32) */
+   * 64) */
   assert(action == 's' || action == 'r');
   if (action == 's') {
     if (hash_update(hd, manager->current->chain_s, CHAIN_KEY_BYTES) ==
