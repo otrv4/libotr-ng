@@ -867,7 +867,7 @@ static otrng_result derive_encryption_and_mac_keys(
   assert(action == 's' || action == 'r');
 
   /* MKenc, MKmac = derive_enc_mac_keys(chain_key_s[i-1][j])
-     MKenc = KDF_1(usage_message_key || chain_key, 32)
+     MKenc = KDF_1(usage_message_key || chain_key, 64)
      MKmac = KDF_1(usage_mac_key || MKenc, 64)
   */
   if (action == 's') {

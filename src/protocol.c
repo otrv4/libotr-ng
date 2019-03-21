@@ -119,13 +119,18 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
                                           const uint8_t *msg, size_t msg_len,
                                           const k_msg_enc enc_key) {
   uint8_t *c = NULL;
+  uint8_t actual_enc_key[ENC_ACTUAL_KEY_BYTES];
   int err;
 
   random_bytes(data_msg->nonce, DATA_MSG_NONCE_BYTES);
 
   c = otrng_xmalloc_z(msg_len);
 
-  err = crypto_stream_xor(c, msg, msg_len, data_msg->nonce, enc_key);
+  memcpy(actual_enc_key, enc_key, ENC_ACTUAL_KEY_BYTES);
+
+  err = crypto_stream_xor(c, msg, msg_len, data_msg->nonce, actual_enc_key);
+  otrng_secure_wipe(actual_enc_key, ENC_ACTUAL_KEY_BYTES);
+
   if (err) {
     otrng_free(c);
     return OTRNG_ERROR;

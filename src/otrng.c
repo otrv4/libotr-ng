@@ -1797,6 +1797,7 @@ tstatic otrng_result decrypt_data_message(otrng_response_s *response,
                                           const data_message_s *msg) {
   string_p *dst = &response->to_display;
   uint8_t *plain;
+  uint8_t actual_enc_key[ENC_ACTUAL_KEY_BYTES];
   int err;
 
 #ifdef DEBUG
@@ -1811,8 +1812,10 @@ tstatic otrng_result decrypt_data_message(otrng_response_s *response,
   // TODO: @initialization What if message->enc_msg_len == 0?
   plain = otrng_secure_alloc(msg->enc_msg_len);
 
+  memcpy(actual_enc_key, enc_key, ENC_ACTUAL_KEY_BYTES);
   err = crypto_stream_xor(plain, msg->enc_msg, msg->enc_msg_len, msg->nonce,
-                          enc_key);
+                          actual_enc_key);
+  otrng_secure_wipe(actual_enc_key, ENC_ACTUAL_KEY_BYTES);
 
   if (err) {
     otrng_secure_free(plain);
