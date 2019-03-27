@@ -20,6 +20,8 @@
 
 #include <assert.h>
 
+#include <sodium.h>
+
 #include "alloc.h"
 #include "deserialize.h"
 #include "prekey_client_messages.h"
