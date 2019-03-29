@@ -59,7 +59,7 @@ typedef struct {
   /*@notnull@*/ char *domain;
 
   /*@notnull@*/ char *identity;
-  /*@notnull@*/ otrng_public_key pub;
+  otrng_fingerprint fpr;
 } otrng_prekey_server_s;
 
 typedef otrng_result (*otrng_prekey_next_message)(
@@ -272,6 +272,21 @@ API otrng_bool otrng_prekey_has_server_identity_for(
     /*@notnull@*/ const char *domain);
 
 /**
+ * @brief Will return the otrng_prekey_server_s if we already know what server
+ *identity to use for this the specified domain.
+ *
+ * Note that this function assumes a prekey manager exists already.
+ *
+ * @param [client] the non-NULL OTR client
+ * @param [domain] the non-NULL domain to look for a server identity for
+ *
+ * @return the otrng_prekey_server_s if we have a server identity, or NULL
+ **/
+API /*@null@*/ otrng_prekey_server_s otrng_prekey_get_server_identity_for(
+    /*@notnull@*/ const struct otrng_client_s *client,
+    /*@notnull@*/ const char *domain);
+
+/**
  * @brief Will add the provided information as the canonical identity and public
  *    key for the domain in question.
  *
@@ -284,13 +299,13 @@ API otrng_bool otrng_prekey_has_server_identity_for(
  *    for. The string is NOT taken ownership of.
  * @param [identity] the non-NULL identity for this server The string is NOT
  *    taken ownership of.
- * @param [pub] the non-NULL public key
+ * @param [fpr] the non-NULL fingerprint of the server
  **/
 API void otrng_prekey_provide_server_identity_for(
     /*@notnull@*/ struct otrng_client_s *client,
     /*@notnull@*/ const char *domain,
     /*@notnull@*/ const char *identity,
-    /*@notnull@*/ otrng_public_key pub);
+    /*@notnull@*/ const otrng_fingerprint fpr);
 
 /**
  * @brief Called from the plugin to specify that a publication message has been

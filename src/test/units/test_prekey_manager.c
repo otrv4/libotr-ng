@@ -40,10 +40,9 @@ test_prekey_manager__otrng_prekey_request_storage_information(void) {
   char *output = NULL;
   otrng_client_id_s client_id;
   otrng_client_s *client;
-  uint8_t sym1[ED448_PRIVATE_BYTES] = {1};
   uint8_t sym2[ED448_PRIVATE_BYTES] = {2};
   uint8_t sym3[ED448_PRIVATE_BYTES] = {3};
-  ecdh_keypair_s server_key;
+  uint8_t fpr[OTRNG_FPRINT_HUMAN_LEN] = {1, 2, 3, 4};
   otrng_keypair_s *long_term_key, *forging_key;
   otrng_result ret;
 
@@ -70,9 +69,8 @@ test_prekey_manager__otrng_prekey_request_storage_information(void) {
   client->forging_key = &forging_key->pub;
 
   otrng_prekey_ensure_manager(client, "sita@otr.im");
-  otrng_ecdh_keypair_generate(&server_key, sym1);
   otrng_prekey_provide_server_identity_for(
-      client, "otr.im", "testBLABLBALA_NOT CORRECT AT ALL", server_key.pub);
+      client, "otr.im", "testBLABLBALA_NOT CORRECT AT ALL", fpr);
 
   client->prekey_manager->callbacks->domain_for_account =
       fixed_domain_for_account;

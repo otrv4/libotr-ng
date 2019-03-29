@@ -363,7 +363,7 @@ API void otrng_prekey_provide_server_identity_for(
     /*@notnull@*/ otrng_client_s *client,
     /*@notnull@*/ const char *domain,
     /*@notnull@*/ const char *identity,
-    /*@notnull@*/ otrng_public_key pub) {
+    /*@notnull@*/ const otrng_fingerprint fpr) {
   otrng_prekey_server_s *server =
       otrng_xmalloc_z(sizeof(otrng_prekey_server_s));
 
@@ -371,7 +371,7 @@ API void otrng_prekey_provide_server_identity_for(
 
   server->domain = otrng_xstrdup(domain);
   server->identity = otrng_xstrdup(identity);
-  otrng_ec_point_copy(server->pub, pub);
+  memcpy(server->fpr, fpr, FPRINT_LEN_BYTES);
 
   client->prekey_manager->server_identities =
       otrng_list_add(server, client->prekey_manager->server_identities);
@@ -703,10 +703,10 @@ static char *process_received_storage_status(
     return NULL;
   }
 
-  if (msg->stored_prekeys < client->prekey_client->publication_policy
+  if (msg->stored_prekeys < client->prekey_manager->publication_policy
                                 ->minimum_stored_prekey_message) {
     client->prekey_msgs_num_to_publish =
-        client->prekey_client->publication_policy
+        client->prekey_manager->publication_policy
             ->max_published_prekey_message -
         msg->stored_prekeys;
     client->prekey_manager->callbacks->low_prekey_messages_in_storage(
@@ -753,7 +753,7 @@ static char *receive_no_prekey_in_storage(otrng_client_s *client,
     return NULL;
   }
 
-  if (instance_tag != client->prekey_client->instance_tag) {
+  if (instance_tag != otrng_client_get_instance_tag(client)) {
     return NULL;
   }
 
