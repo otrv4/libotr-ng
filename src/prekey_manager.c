@@ -993,6 +993,16 @@ API otrng_bool otrng_prekey_has_server_identity_for(
   return otrng_true;
 }
 
+API /*@null@*/ otrng_prekey_server_s *otrng_prekey_get_server_identity_for(
+    /*@notnull@*/ const struct otrng_client_s *client,
+    /*@notnull@*/ const char *domain) {
+  assert(client);
+  assert(domain);
+  assert(client->prekey_manager);
+
+  return get_prekey_server_for(client->prekey_manager, domain);
+}
+
 static void serialize_cp_and_pp(otrng_prekey_publication_message_s *pub_msg,
                                 uint8_t **cp_ser, size_t *cp_len,
                                 uint8_t **pp_ser, size_t *pp_len) {

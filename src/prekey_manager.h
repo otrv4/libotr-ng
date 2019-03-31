@@ -282,7 +282,7 @@ API otrng_bool otrng_prekey_has_server_identity_for(
  *
  * @return the otrng_prekey_server_s if we have a server identity, or NULL
  **/
-API /*@null@*/ otrng_prekey_server_s otrng_prekey_get_server_identity_for(
+API /*@null@*/ otrng_prekey_server_s *otrng_prekey_get_server_identity_for(
     /*@notnull@*/ const struct otrng_client_s *client,
     /*@notnull@*/ const char *domain);
 
