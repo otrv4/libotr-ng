@@ -266,7 +266,7 @@ otrng_prekey_dake3_message_serialize(uint8_t **ser, size_t *ser_len,
   w += otrng_serialize_ring_sig(ret + w, msg->sigma);
   w += otrng_serialize_data(ret + w, msg->msg, msg->msg_len);
 
-  assert(w == ret_len);
+  assert(w <= ret_len);
 
   *ser = ret;
   if (ser_len) {

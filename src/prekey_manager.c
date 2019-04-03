@@ -178,13 +178,20 @@ create_dake1(/*@notnull@*/ otrng_client_s *client,
   return OTRNG_SUCCESS;
 }
 
+static void clean_ephemeral_ecdh(otrng_prekey_request_s *request) {
+  if (request->ephemeral_ecdh != NULL) {
+    otrng_ecdh_keypair_destroy(request->ephemeral_ecdh);
+    otrng_secure_free(request->ephemeral_ecdh);
+    request->ephemeral_ecdh = NULL;
+  }
+}
+
 static void prekey_request_free(/*@notnull@*/ otrng_prekey_request_s *request) {
   if (!request) {
     return;
   }
 
-  otrng_ecdh_keypair_destroy(request->ephemeral_ecdh);
-  otrng_secure_free(request->ephemeral_ecdh);
+  clean_ephemeral_ecdh(request);
   otrng_free(request);
 }
 
@@ -484,12 +491,6 @@ static otrng_bool validate_dake2(otrng_client_s *client,
   return ret;
 }
 
-static void clean_ephemeral_ecdh(otrng_prekey_request_s *request) {
-  otrng_ecdh_keypair_destroy(request->ephemeral_ecdh);
-  otrng_secure_free(request->ephemeral_ecdh);
-  request->ephemeral_ecdh = NULL;
-}
-
 static otrng_result create_mac_keys(otrng_prekey_request_s *request,
                                     const otrng_prekey_dake2_message_s *msg) {
   uint8_t *ecdh_shared = NULL, *shared_secret = NULL;
@@ -606,6 +607,13 @@ static char *process_received_dake2(otrng_client_s *client,
   }
 
   return send_dake3(client, request, msg);
+}
+
+static void clean_request_for_account(otrng_client_s *client) {
+  if (client->prekey_manager->request_for_account != NULL) {
+    prekey_request_free(client->prekey_manager->request_for_account);
+    client->prekey_manager->request_for_account = NULL;
+  }
 }
 
 static char *receive_dake2(otrng_client_s *client,
@@ -847,6 +855,7 @@ static char *receive_decoded_message(otrng_client_s *client,
                                      /*@notnull@*/ const char *from) {
   uint8_t msg_type = 0;
   otrng_prekey_request_s *request = NULL;
+  char *res;
 
   if (!otrng_prekey_parse_header(&msg_type, decoded, decoded_len, NULL)) {
     notify_error(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG, NULL);
@@ -861,25 +870,35 @@ static char *receive_decoded_message(otrng_client_s *client,
       notify_error(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG, NULL);
       return NULL;
     }
-    return receive_dake2(client, request, decoded, decoded_len);
+    res = receive_dake2(client, request, decoded, decoded_len);
+    if (res == NULL) {
+      clean_request_for_account(client);
+    }
+    return res;
   case OTRNG_PREKEY_SUCCESS_MSG:
     if (!request) {
       notify_error(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG, NULL);
       return NULL;
     }
-    return receive_success(client, request, decoded, decoded_len);
+    res = receive_success(client, request, decoded, decoded_len);
+    clean_request_for_account(client);
+    return res;
   case OTRNG_PREKEY_FAILURE_MSG:
     if (!request) {
       notify_error(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG, NULL);
       return NULL;
     }
-    return receive_failure(client, request, decoded, decoded_len);
+    res = receive_failure(client, request, decoded, decoded_len);
+    clean_request_for_account(client);
+    return res;
   case OTRNG_PREKEY_STORAGE_STATUS_MSG:
     if (!request) {
       notify_error(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG, NULL);
       return NULL;
     }
-    return receive_storage_status(client, request, decoded, decoded_len);
+    res = receive_storage_status(client, request, decoded, decoded_len);
+    clean_request_for_account(client);
+    return res;
   case OTRNG_PREKEY_NO_PREKEY_IN_STORAGE_MSG:
     return receive_no_prekey_in_storage(client, decoded, decoded_len);
   case OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG:
