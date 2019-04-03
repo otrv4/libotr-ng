@@ -163,6 +163,11 @@ typedef struct {
    * otherwise it will be NULL */
   /*@null@*/ otrng_prekey_request_s *request_for_account;
 
+  /* If request_for_account is not NULL, this contains the time when it was
+   * set - this allows us to clean it, if it hasn't been removed for a while
+   */
+  time_t request_for_account_at;
+
   /*@null@*/ list_element_s *pending_fragments;
 
   /*@notnull@*/ otrng_prekey_publication_policy_s *publication_policy;
@@ -327,6 +332,13 @@ API void otrng_prekey_set_prekey_profile_publication(
 
 INTERNAL void
 otrng_prekey_manager_free(/*@null@*/ otrng_prekey_manager_s *manager);
+
+/**
+ * @brief Should be called regularly to see that the request_for_account
+ *    request hasn't expired.
+ **/
+INTERNAL void
+otrng_prekey_check_account_request(/*@notnull@*/ struct otrng_client_s *client);
 
 #ifdef OTRNG_PREKEY_MANAGER_PRIVATE
 

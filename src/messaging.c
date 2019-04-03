@@ -32,6 +32,7 @@
 #include "debug.h"
 #include "messaging.h"
 #include "persistence.h"
+#include "prekey_manager.h"
 
 API otrng_global_state_s *
 otrng_global_state_new(const otrng_client_callbacks_s *cb, otrng_bool die) {
@@ -623,6 +624,7 @@ tstatic void poll_for_client(list_element_s *node, void *context) {
   (void)context;
   otrng_client_expire_sessions(client);
   (void)otrng_client_expire_fragments(client);
+  otrng_prekey_check_account_request(client);
 }
 
 API void otrng_poll(otrng_global_state_s *gs) {

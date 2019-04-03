@@ -240,6 +240,11 @@ serialize_dake1(/*@notnull@*/ otrng_prekey_dake1_message_s *dake1) {
   return result;
 }
 
+/*
+   TODO: if a request gets lost, manager->request_for_account will never be
+   reset We should probably do a bit of cleanup on it now and again
+*/
+
 static otrng_result prekey_manager_register_account_request(
     /*@notnull@*/ otrng_prekey_manager_s *manager,
     /*@notnull@*/ otrng_prekey_request_s *request) {
@@ -247,6 +252,7 @@ static otrng_result prekey_manager_register_account_request(
     return OTRNG_ERROR;
   }
 
+  manager->request_for_account_at = time(NULL);
   manager->request_for_account = request;
   return OTRNG_SUCCESS;
 }
@@ -609,10 +615,23 @@ static char *process_received_dake2(otrng_client_s *client,
   return send_dake3(client, request, msg);
 }
 
+#define ACCOUNT_REQUEST_EXPIRY 10 * 60 /* 10 minutes */
+
 static void clean_request_for_account(otrng_client_s *client) {
   if (client->prekey_manager->request_for_account != NULL) {
     prekey_request_free(client->prekey_manager->request_for_account);
     client->prekey_manager->request_for_account = NULL;
+    client->prekey_manager->request_for_account_at = 0;
+  }
+}
+
+void otrng_prekey_check_account_request(otrng_client_s *client) {
+  if (client->prekey_manager->request_for_account != NULL) {
+    if (difftime(client->prekey_manager->request_for_account_at +
+                     ACCOUNT_REQUEST_EXPIRY,
+                 time(NULL)) <= 0) {
+      clean_request_for_account(client);
+    }
   }
 }
 
