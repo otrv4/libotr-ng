@@ -628,7 +628,8 @@ static char *process_received_dake2(otrng_client_s *client,
 #define ACCOUNT_REQUEST_EXPIRY 10 * 60 /* 10 minutes */
 
 static void clean_request_for_account(otrng_client_s *client) {
-  if (client->prekey_manager->request_for_account != NULL) {
+  if (client->prekey_manager != NULL &&
+      client->prekey_manager->request_for_account != NULL) {
     prekey_request_free(client->prekey_manager->request_for_account);
     client->prekey_manager->request_for_account = NULL;
     client->prekey_manager->request_for_account_at = 0;
@@ -636,7 +637,8 @@ static void clean_request_for_account(otrng_client_s *client) {
 }
 
 void otrng_prekey_check_account_request(otrng_client_s *client) {
-  if (client->prekey_manager->request_for_account != NULL) {
+  if (client->prekey_manager != NULL &&
+      client->prekey_manager->request_for_account != NULL) {
     if (difftime(client->prekey_manager->request_for_account_at +
                      ACCOUNT_REQUEST_EXPIRY,
                  time(NULL)) <= 0) {
