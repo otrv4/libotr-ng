@@ -14,10 +14,9 @@ LIBGOLDILOCKS_DIR=.deps/libgoldilocks
 
 echo `which clang`
 
-- $CC --version
-- which $CC
+echo `which $CC`
 
-- export CC=`which $CC`
+export CC=`which $CC`
 
 if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
     if [[ -f $GPG_ERROR_DIR/src/.libs/libgpg-error.so ]]; then
