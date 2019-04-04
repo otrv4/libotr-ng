@@ -236,6 +236,7 @@ INTERNAL otrng_result otrng_prekey_ensemble_retrieval_message_deserialize(
   w += read;
   dst->identity = otrng_xmalloc_z((tmp_read + 1) * sizeof(uint8_t));
   memcpy(dst->identity, tmp_buf, tmp_read);
+  otrng_free(tmp_buf);
 
   if (!otrng_deserialize_uint8(&l, ser + w, ser_len - w, &read)) {
     return OTRNG_ERROR;
