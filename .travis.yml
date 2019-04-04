@@ -106,6 +106,10 @@ notifications:
       - "%{repository_slug}(%{author}): %{message} %{build_url}"
 
 before_install:
+- $CC --version
+- which $CC
+
+- export CC=`which $CC`
 
 # Update the repo
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew update; fi
