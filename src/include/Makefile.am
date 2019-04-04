@@ -47,8 +47,7 @@ otrnginc_HEADERS = ../alloc.h \
                    ../mpi.h \
                    ../otrng.h \
                    ../padding.h \
-		   ../persistence.h \
-                   ../xyz_prekey_client.h \
+                   ../persistence.h \
                    ../prekey_client_dake.h \
                    ../prekey_client_messages.h \
                    ../prekey_fragment.h \

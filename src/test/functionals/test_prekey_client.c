@@ -27,23 +27,29 @@
 #include "deserialize.h"
 #include "random.h"
 
+static const char *domain_for_account_cb_fixed(otrng_client_s *client,
+                                               void *ctx) {
+  (void)client;
+  (void)ctx;
+  return "jabber.localhost";
+}
+
 static void test_send_dake_1_message(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
+  otrng_fingerprint fpr = {1};
 
   set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = xyz_otrng_prekey_client_new();
-  xyz_otrng_prekey_client_init(
-      alice->prekey_client, "prekey@localhost", "alice@localhost",
-      otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
-      otrng_client_get_client_profile(alice),
-      otrng_client_get_prekey_profile(alice),
-      otrng_client_get_max_published_prekey_msg(alice),
-      otrng_client_get_minimum_stored_prekey_msg(alice));
+  otrng_prekey_ensure_manager(alice, "alice@localhost");
+  alice->prekey_manager->callbacks->domain_for_account =
+      domain_for_account_cb_fixed;
+
+  otrng_prekey_provide_server_identity_for(alice, "jabber.localhost",
+                                           "prekey@localhost", fpr);
 
   char *dake_1 = NULL;
-  dake_1 = xyz_otrng_prekey_client_publish(alice->prekey_client);
+  otrng_assert_is_success(otrng_prekey_publish(&dake_1, alice, NULL));
 
   otrng_assert(dake_1);
   otrng_free(dake_1);
@@ -53,29 +59,31 @@ static void test_send_dake_1_message(void) {
 
 static void test_send_dake_3_message_with_storage_info_request(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
+  otrng_fingerprint fpr = {1};
+  uint8_t sym[ED448_PRIVATE_BYTES] = {0};
+
+  random_bytes(sym, ED448_PRIVATE_BYTES);
 
   set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = xyz_otrng_prekey_client_new();
-  xyz_otrng_prekey_client_init(
-      alice->prekey_client, "prekey@localhost", "alice@localhost",
-      otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
-      otrng_client_get_client_profile(alice),
-      otrng_client_get_prekey_profile(alice),
-      otrng_client_get_max_published_prekey_msg(alice),
-      otrng_client_get_minimum_stored_prekey_msg(alice));
+  otrng_prekey_ensure_manager(alice, "alice@localhost");
+  alice->prekey_manager->callbacks->domain_for_account =
+      domain_for_account_cb_fixed;
 
-  alice->prekey_client->after_dake =
-      XYZ_OTRNG_PREKEY_STORAGE_INFORMATION_REQUEST;
+  otrng_prekey_provide_server_identity_for(alice, "jabber.localhost",
+                                           "prekey@localhost", fpr);
 
-  uint8_t sym[ED448_PRIVATE_BYTES] = {0};
-  random_bytes(sym, ED448_PRIVATE_BYTES);
-  otrng_assert_is_success(
-      otrng_ecdh_keypair_generate(alice->prekey_client->ephemeral_ecdh, sym));
+  alice->prekey_manager->request_for_account = create_prekey_request(
+      otrng_prekey_get_server_identity_for(alice, "jabber.localhost"), NULL);
+  alice->prekey_manager->request_for_account->after_dake =
+      storage_request_after_dake;
 
-  xyz_otrng_prekey_dake2_message_s message;
-  xyz_otrng_prekey_dake2_message_init(&message);
+  otrng_assert_is_success(otrng_ecdh_keypair_generate(
+      alice->prekey_manager->request_for_account->ephemeral_ecdh, sym));
+
+  otrng_prekey_dake2_message_s message;
+  otrng_prekey_dake2_message_init(&message);
 
   size_t read = 0;
   uint8_t ser_server_public_key[ED448_PUBKEY_BYTES] = {
@@ -115,31 +123,38 @@ static void test_send_dake_3_message_with_storage_info_request(void) {
   memcpy(message.composite_identity, composite_identity,
          message.composite_identity_len);
 
-  char *dake_3 = xyz_send_dake3(&message, alice);
+  char *dake_3 =
+      send_dake3(alice, alice->prekey_manager->request_for_account, &message);
 
   otrng_assert(dake_3);
-  otrng_assert(alice->prekey_client->after_dake == 0);
 
   otrng_free(dake_3);
 
   otrng_global_state_free(alice->global_state);
-  xyz_otrng_prekey_dake2_message_destroy(&message);
+  otrng_prekey_dake2_message_destroy(&message);
+}
+
+static void notify_error_cb(struct otrng_client_s *client, int error,
+                            void *ctx) {
+  (void)ctx;
+  (void)error;
+  (void)client;
 }
 
 static void test_receive_prekey_server_messages(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
+  otrng_fingerprint fpr = {1};
 
   set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = xyz_otrng_prekey_client_new();
-  xyz_otrng_prekey_client_init(
-      alice->prekey_client, "prekey@localhost", "alice@localhost",
-      otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
-      otrng_client_get_client_profile(alice),
-      otrng_client_get_prekey_profile(alice),
-      otrng_client_get_max_published_prekey_msg(alice),
-      otrng_client_get_minimum_stored_prekey_msg(alice));
+  otrng_prekey_ensure_manager(alice, "alice@localhost");
+  alice->prekey_manager->callbacks->domain_for_account =
+      domain_for_account_cb_fixed;
+  alice->prekey_manager->callbacks->notify_error = notify_error_cb;
+
+  otrng_prekey_provide_server_identity_for(alice, "jabber.localhost",
+                                           "prekey@localhost", fpr);
 
   char *dake_2 = otrng_xstrndup(
       "AAQ2bQJzmAAAABFwcmVrZXlzLmxvY2FsaG9zdAAQrC8mmPzxUoSAeFBbBBeR40JJ+"
@@ -157,8 +172,8 @@ static void test_receive_prekey_server_messages(void) {
       642);
 
   char *to_send = NULL;
-  otrng_assert_is_success(xyz_otrng_prekey_client_receive(
-      &to_send, "prekey@localhost", dake_2, alice));
+  otrng_assert_is_success(
+      otrng_prekey_receive(&to_send, alice, "prekey@localhost", dake_2));
 
   otrng_assert(!to_send); /* wrong instance tag */
 
@@ -170,8 +185,8 @@ static void test_receive_prekey_server_messages(void) {
                      "pUD6qTyooaIh2Mqg6PXojQOmWKnj3LqBM=.",
                      98);
 
-  otrng_assert_is_success(xyz_otrng_prekey_client_receive(
-      &to_send, "prekey@localhost", success, alice));
+  otrng_assert_is_success(
+      otrng_prekey_receive(&to_send, alice, "prekey@localhost", success));
 
   otrng_assert(!to_send); /* wrong instance tag */
 
@@ -180,80 +195,57 @@ static void test_receive_prekey_server_messages(void) {
   otrng_global_state_free(alice->global_state);
 }
 
-static void notify_error_cb(struct otrng_client_s *client, int error,
-                            void *ctx) {
-  (void)ctx;
-  (void)error;
-  (void)client;
-}
-
-xyz_otrng_prekey_client_callbacks_s prekey_client_cb = {
-    .ctx = NULL,
-    .notify_error = notify_error_cb,
-    .storage_status_received = NULL,
-    .success_received = NULL,
-    .failure_received = NULL,
-    .no_prekey_in_storage_received = NULL,
-    .low_prekey_messages_in_storage = NULL,
-    .prekey_ensembles_received = NULL,
-    .build_prekey_publication_message = NULL,
-};
-
 static void test_receive_prekey_ensemble_retrieval_message(void) {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
+  otrng_fingerprint fpr = {1};
 
   set_up_client(alice, 1);
   otrng_assert(!alice->conversations);
 
-  alice->prekey_client = xyz_otrng_prekey_client_new();
-  xyz_otrng_prekey_client_init(
-      alice->prekey_client, "prekey@localhost", "alice@localhost",
-      otrng_client_get_instance_tag(alice), otrng_client_get_keypair_v4(alice),
-      otrng_client_get_client_profile(alice),
-      otrng_client_get_prekey_profile(alice),
-      otrng_client_get_max_published_prekey_msg(alice),
-      otrng_client_get_minimum_stored_prekey_msg(alice));
+  otrng_prekey_ensure_manager(alice, "alice@localhost");
+  alice->prekey_manager->callbacks->domain_for_account =
+      domain_for_account_cb_fixed;
+  alice->prekey_manager->callbacks->notify_error = notify_error_cb;
 
-  alice->prekey_client->callbacks =
-      otrng_xmalloc_z(sizeof(xyz_otrng_prekey_client_callbacks_s));
-  memcpy(alice->prekey_client->callbacks, &prekey_client_cb,
-         sizeof(xyz_otrng_prekey_client_callbacks_s));
+  otrng_prekey_provide_server_identity_for(alice, "jabber.localhost",
+                                           "prekey@localhost", fpr);
 
-  char *retrieval_message = otrng_xstrndup(
-      "AAQTbQJzmAEAAAAFAAHboU/xAAIAEEGKF1z/jL6X/zFAzb73dt6mHIF/"
-      "IAR4tXk9Upesq3MB9r3rASDzBEMsDRjuTPvjI5HcN3jzkT3FAAADABIHmyTIgVHn/"
-      "SaLZRjfANgoU5v3kXJELvsWRTyyl+VTJwO75DqFIql1M+Hq/"
-      "2T9XPVomMXieN0ZeIAABAAAAAIzNAAFAAAAAFv15zjb8LHKy9PYyWDkNT5j6+tt+"
-      "LqGPbfqm81jNNaXoJTENphli8DHo8XJixaRZFdvGXF8CZ1wmrVYKAAkbmmlIGmiXw6K61M/"
-      "jX/Rn4lwFBboSA7NjBBIKMafaAlj8zHifazFFTERCpdJMwnx2n+WviI6HADboU/"
-      "xAAAAAFwMWQgAEUAQYz6Yxrwp53esxzANqF1FNOJjOJXRmf+TfY+"
-      "fT1Wq358JKGkl6ZMsFLsFEZNNIKbpw0iwb4v/AOZrhdwGv2/"
-      "AnvFmPMYyJ4beE7wGRXYgehwD4pfcLofqn4J6V0x/"
-      "b47SlVoIAe5u9nVNTpWTEIvVgDZpLsdE2f8ssBhN+"
-      "ghFYvB72wbC3exBKkKW5cDYP5jg0277NO2K1Xm/"
-      "0fekPCkDmoK9LEaKiw8sAAAEDwP4h8rboU/"
-      "xPs56PUu8oX4MIY9cI3zj3DMGOnsYO8qJT4n0inL3OykFjw3kqYc0nB0R/"
-      "VdL05tkqBYjJyGjLeIAAAABgHtnxUacg6mmxcmdyr5BjpIfyuOcHD2Km+"
-      "Wstk6CBLjg0Mg1vhTGQiA4AQaOZZ1CXO1yu6W4+"
-      "u8Z3YHVnEAQDeIx2oVHZu9pvi7yauAXja3irXbkzQQDQq8ohWrjvY+JR/"
-      "Fjlf3cToCdbEpl0PRc5AyKlkmnLXODYWLE0jlgVxpYBAXecYg4Y9nkErOqk3raxgy0QrJ0/"
-      "drPk3IZEy5pRoC72uVMM55GtE3ylxfjK+EkkEFk9R/v8bns4Eh4tX6dEceRD+hVSShK1agm/"
-      "GeqKQFFtJcd7styByn2qIITB2wLrRMPZJiYTjWzHy8WBsikR5mCyVn3X4GHzDFxTUlpkYy6j"
-      "2INC+O5dngk9lYlBIiAewPMM/yc0MWxU/SNijb7gbtpj+HAA1PYuso1k1K/"
-      "Gjq5fldLq76MkBHwVrmyO/"
-      "g8suP9o41HjUKq9NfwYoGfgfxUJWEmI+Ov0Gx3lVe4QtXzlmcWredoG/"
-      "QbOWGqKWc98VM88euF9yCkGebZoclaBQ==.",
-      1222);
+  char *retrieval_message = otrng_xstrdup(
+      "AAQTbQJzmAAAABNwcmVrZXkxLmV4YW1wbGUub3JnAQAAAAUAAduhT/EAAgAQQYoXXP+Mvpf/"
+      "MUDNvvd23qYcgX8gBHi1eT1Sl6yrcwH2vesBIPMEQywNGO5M++"
+      "Mjkdw3ePORPcUAAAMAEgebJMiBUef9JotlGN8A2ChTm/"
+      "eRckQu+xZFPLKX5VMnA7vkOoUiqXUz4er/ZP1c9WiYxeJ43Rl4gAAEAAAAAjM0AAUAAAAAW/"
+      "XnONvwscrL09jJYOQ1PmPr6234uoY9t+"
+      "qbzWM01peglMQ2mGWLwMejxcmLFpFkV28ZcXwJnXCatVgoACRuaaUgaaJfDorrUz+"
+      "Nf9GfiXAUFuhIDs2MEEgoxp9oCWPzMeJ9rMUVMREKl0kzCfHaf5a+IjocANuhT/"
+      "EAAAAAXAxZCAARQBBjPpjGvCnnd6zHMA2oXUU04mM4ldGZ/"
+      "5N9j59PVarfnwkoaSXpkywUuwURk00gpunDSLBvi/8A5muF3Aa/"
+      "b8Ce8WY8xjInht4TvAZFdiB6HAPil9wuh+"
+      "qfgnpXTH9vjtKVWggB7m72dU1OlZMQi9WANmkux0TZ/"
+      "yywGE36CEVi8HvbBsLd7EEqQpblwNg/mODTbvs07YrVeb/"
+      "R96Q8KQOagr0sRoqLDywAAAQPA/iHytuhT/"
+      "E+"
+      "zno9S7yhfgwhj1wjfOPcMwY6exg7yolPifSKcvc7KQWPDeSphzScHRH9V0vTm2SoFiMnIaMt"
+      "4gAAAAGAe2fFRpyDqabFyZ3KvkGOkh/"
+      "K45wcPYqb5ay2ToIEuODQyDW+"
+      "FMZCIDgBBo5lnUJc7XK7pbj67xndgdWcQBAN4jHahUdm72m+"
+      "LvJq4BeNreKtduTNBANCryiFauO9j4lH8WOV/"
+      "dxOgJ1sSmXQ9FzkDIqWSactc4NhYsTSOWBXGlgEBd5xiDhj2eQSs6qTetrGDLRCsnT92s+"
+      "TchkTLmlGgLva5Uwznka0TfKXF+Mr4SSQQWT1H+/"
+      "xuezgSHi1fp0Rx5EP6FVJKErVqCb8Z6opAUW0lx3uy3IHKfaoghMHbAutEw9kmJhONbMfLxY"
+      "GyKRHmYLJWfdfgYfMMXFNSWmRjLqPYg0L47l2eCT2ViUEiIB7A8wz/"
+      "JzQxbFT9I2KNvuBu2mP4cADU9i6yjWTUr8aOrl+V0urvoyQEfBWubI7+Dyy4/"
+      "2jjUeNQqr01/BigZ+B/FQlYSYj46/"
+      "QbHeVV7hC1fOWZxat52gb9Bs5YaopZz3xUzzx64X3IKQZ5tmhyVoF.");
 
   char *to_send = NULL;
-  otrng_assert_is_success(xyz_otrng_prekey_client_receive(
-      &to_send, "prekey@localhost", retrieval_message, alice));
+  otrng_assert_is_success(otrng_prekey_receive(
+      &to_send, alice, "prekey@localhost", retrieval_message));
 
   otrng_assert(!to_send); /* wrong instance tag */
 
   otrng_free(retrieval_message);
 
-  otrng_free(alice->prekey_client->callbacks);
   otrng_global_state_free(alice->global_state);
 }
 

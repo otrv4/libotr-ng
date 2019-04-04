@@ -30,15 +30,11 @@
 #include "alloc.h"
 #include "error.h"
 #include "shared.h"
-#include "xyz_prekey_client.h"
 
 INTERNAL otrng_result otrng_prekey_parse_header(uint8_t *msg_type,
                                                 const uint8_t *buf,
                                                 size_t buflen,
                                                 /*@null@*/ size_t *read);
-
-INTERNAL uint8_t *otrng_prekey_client_get_expected_composite_phi(
-    size_t *len, const xyz_otrng_prekey_client_s *client);
 
 #ifdef OTRNG_PREKEY_CLIENT_SHARED_PRIVATE
 

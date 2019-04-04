@@ -32,7 +32,6 @@
 #include "otrng.h"
 #include "prekey_manager.h"
 #include "shared.h"
-#include "xyz_prekey_client.h"
 
 // TODO: @client REMOVE
 typedef struct otrng_conversation_s {
@@ -53,8 +52,6 @@ typedef struct otrng_client_id_s {
 /* A client handle messages from/to a sender to/from multiple recipients. */
 typedef struct otrng_client_s {
   list_element_s *conversations;
-
-  xyz_otrng_prekey_client_s *prekey_client;
 
   otrng_client_id_s client_id;
 
@@ -180,11 +177,6 @@ INTERNAL otrng_result otrng_client_expire_fragments(otrng_client_s *client);
 API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint fp,
                                                   const otrng_client_s *client);
 
-API xyz_otrng_prekey_client_s *
-otrng_client_get_prekey_client(const char *server_identity,
-                               xyz_otrng_prekey_client_callbacks_s *callbacks,
-                               otrng_client_s *client);
-
 INTERNAL void otrng_client_store_my_prekey_message(prekey_message_s *msg,
                                                    otrng_client_s *client);
 
@@ -294,12 +286,6 @@ API void otrng_conversation_debug_print(FILE *, int, otrng_conversation_s *);
 #endif
 
 #ifdef OTRNG_CLIENT_PRIVATE
-
-tstatic otrng_result
-otrng_client_get_max_published_prekey_msg(otrng_client_s *client);
-
-tstatic otrng_result
-otrng_client_get_minimum_stored_prekey_msg(otrng_client_s *client);
 
 tstatic uint64_t
 otrng_client_get_client_profile_exp_time(otrng_client_s *client);

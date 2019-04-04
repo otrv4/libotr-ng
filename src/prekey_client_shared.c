@@ -55,30 +55,3 @@ INTERNAL otrng_result otrng_prekey_parse_header(uint8_t *msg_type,
 
   return OTRNG_SUCCESS;
 }
-
-INTERNAL uint8_t *otrng_prekey_client_get_expected_composite_phi(
-    size_t *len, const xyz_otrng_prekey_client_s *client) {
-  uint8_t *dst = NULL;
-  size_t size, w = 0;
-
-  if (!client->server_identity || !client->our_identity) {
-    return NULL;
-  }
-
-  size = 4 + strlen(client->server_identity) + 4 + strlen(client->our_identity);
-  dst = otrng_xmalloc(size);
-
-  w += otrng_serialize_data(dst + w, (const uint8_t *)client->our_identity,
-                            strlen(client->our_identity));
-  if (otrng_serialize_data(dst + w, (const uint8_t *)client->server_identity,
-                           strlen(client->server_identity)) == 0) {
-    otrng_free(dst);
-    return NULL;
-  }
-
-  if (len) {
-    *len = size;
-  }
-
-  return dst;
-}

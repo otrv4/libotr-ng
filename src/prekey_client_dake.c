@@ -25,7 +25,6 @@
 #include "prekey_client_shared.h"
 #include "serialize.h"
 #include "shake.h"
-#include "xyz_prekey_client.h"
 
 INTERNAL void
 otrng_prekey_dake1_message_destroy(otrng_prekey_dake1_message_s *msg) {
@@ -162,94 +161,6 @@ INTERNAL otrng_result otrng_prekey_dake2_message_deserialize(
   }
 
   return OTRNG_SUCCESS;
-}
-
-static uint8_t usage_auth = 0x11;
-static const char *prekey_hash_domain = "OTR-Prekey-Server";
-
-INTERNAL otrng_bool
-otrng_prekey_dake2_message_valid(const otrng_prekey_dake2_message_s *msg,
-                                 const xyz_otrng_prekey_client_s *client) {
-  // The spec says:
-  // "Ensure the identity element of the Prekey Server Composite Identity is
-  // correct." We make this check implicitly by verifying the ring signature
-  // (which contains this value as part of its "composite identity".
-
-  // TODO: Check if the fingerprint from the key received in this message is
-  // what we expect. Through a callback maybe, since the user may need to take
-  // action.
-
-  size_t composite_phi_len = 0;
-  uint8_t *composite_phi = otrng_prekey_client_get_expected_composite_phi(
-      &composite_phi_len, client);
-  uint8_t *our_profile = NULL;
-  size_t our_profile_len = 0;
-  size_t tlen, w;
-  uint8_t *t;
-  uint8_t usage_initator_client_profile = 0x02;
-  uint8_t usage_initiator_prekey_composite_identity = 0x03;
-  uint8_t usage_initiator_prekey_composite_phi = 0x04;
-  otrng_bool ret;
-
-  if (!composite_phi) {
-    return otrng_false;
-  }
-
-  if (!otrng_client_profile_serialize(&our_profile, &our_profile_len,
-                                      client->client_profile)) {
-    otrng_free(composite_phi);
-    return otrng_false;
-  }
-
-  tlen = 1 + 3 * HASH_BYTES + 2 * ED448_POINT_BYTES;
-  t = otrng_xmalloc_z(tlen);
-
-  *t = 0x0;
-  w = 1;
-
-  if (!shake_256_prekey_server_kdf(t + w, HASH_BYTES,
-                                   usage_initator_client_profile, our_profile,
-                                   our_profile_len)) {
-    otrng_free(composite_phi);
-    otrng_free(t);
-    otrng_free(our_profile);
-    return otrng_false;
-  }
-
-  otrng_free(our_profile);
-
-  w += HASH_BYTES;
-
-  /* Both composite identity AND composite phi have the server's bare JID */
-  if (!shake_256_prekey_server_kdf(
-          t + w, HASH_BYTES, usage_initiator_prekey_composite_identity,
-          msg->composite_identity, msg->composite_identity_len)) {
-    otrng_free(composite_phi);
-    otrng_free(t);
-    return otrng_false;
-  }
-
-  w += HASH_BYTES;
-
-  w += otrng_serialize_ec_point(t + w, client->ephemeral_ecdh->pub);
-  w += otrng_serialize_ec_point(t + w, msg->S);
-
-  if (!shake_256_prekey_server_kdf(t + w, HASH_BYTES,
-                                   usage_initiator_prekey_composite_phi,
-                                   composite_phi, composite_phi_len)) {
-    otrng_free(composite_phi);
-    otrng_free(t);
-    return otrng_false;
-  }
-
-  otrng_free(composite_phi);
-
-  ret = otrng_rsig_verify_with_usage_and_domain(
-      usage_auth, prekey_hash_domain, msg->sigma, client->keypair->pub,
-      msg->server_pub_key, client->ephemeral_ecdh->pub, t, tlen);
-  otrng_free(t);
-
-  return ret;
 }
 
 INTERNAL void

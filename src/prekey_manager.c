@@ -55,6 +55,9 @@
 #define USAGE_RECEIVER_PREKEY_COMPOSITE_PHI 0x07
 #define USAGE_PREMAC_KEY 0x08
 #define USAGE_PRE_MAC 0x09
+#define USAGE_STORAGE_INFO_MAC 0x0A
+/*This is not used in this file, but is provided here for completeness */
+#define USAGE_STATUS_MAC 0x0B
 #define USAGE_SUCCESS_MAC 0x0C
 #define USAGE_FAILURE_MAC 0x0D
 #define USAGE_PREKEY_MESSAGE 0x0E
@@ -140,7 +143,7 @@ get_prekey_server_for(/*@notnull@*/ otrng_prekey_manager_s *manager,
   return NULL;
 }
 
-static /*@null@*/ otrng_prekey_request_s *
+tstatic /*@null@*/ otrng_prekey_request_s *
 create_prekey_request(otrng_prekey_server_s *server, void *ctx) {
   uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
   otrng_prekey_request_s *result =
@@ -310,7 +313,7 @@ static otrng_result start_dake1(
 
 #define OTRNG_DAKE3_MSG_LEN 67
 
-static void dake3_message_append_storage_information_request(
+tstatic void dake3_message_append_storage_information_request(
     otrng_prekey_dake3_message_s *dake_3, uint8_t mac_key[MAC_KEY_BYTES]) {
   uint8_t msg_type = OTRNG_PREKEY_STORAGE_INFO_REQ_MSG;
   size_t w = 0;
@@ -323,14 +326,14 @@ static void dake3_message_append_storage_information_request(
   w += otrng_serialize_uint8(dake_3->msg + w, msg_type);
 
   /* MAC: KDF(usage_storage_info_MAC, prekey_mac_k || msg type, 64) */
-  kdf_init_with_usage_x(hd, USAGE_RECEIVER_CLIENT_PROFILE);
+  kdf_init_with_usage_x(hd, USAGE_STORAGE_INFO_MAC);
   hash_update_x(hd, mac_key, MAC_KEY_BYTES);
   hash_update_x(hd, &msg_type, 1);
   hash_final(hd, dake_3->msg + w, HASH_BYTES);
   hash_destroy(hd);
 }
 
-static otrng_result storage_request_after_dake(
+tstatic otrng_result storage_request_after_dake(
     /*@notnull@*/ otrng_client_s *client,
     /*@notnull@*/ otrng_prekey_request_s *request,
     /*@notnull@*/ otrng_prekey_dake3_message_s *dake_3) {
@@ -361,6 +364,12 @@ otrng_prekey_ensure_manager(/*@notnull@*/ struct otrng_client_s *client,
   client->prekey_manager->client = client;
   client->prekey_manager->publication_policy =
       otrng_xmalloc_z(sizeof(otrng_prekey_publication_policy_s));
+
+  client->prekey_manager->publication_policy->max_published_prekey_message =
+      client->max_published_prekey_msg;
+  client->prekey_manager->publication_policy->minimum_stored_prekey_message =
+      client->minimum_stored_prekey_msg;
+
   client->prekey_manager->callbacks =
       otrng_xmalloc_z(sizeof(otrng_prekey_callbacks_s));
 
@@ -562,8 +571,9 @@ create_rsig_auth_for_dake3(otrng_client_s *client,
   return ret;
 }
 
-static char *send_dake3(otrng_client_s *client, otrng_prekey_request_s *request,
-                        const otrng_prekey_dake2_message_s *msg) {
+tstatic char *send_dake3(otrng_client_s *client,
+                         otrng_prekey_request_s *request,
+                         const otrng_prekey_dake2_message_s *msg) {
   /*
     t = 0x01 || KDF(usage_receiver_client_profile, Alices_Client_Profile, 64) ||
         KDF(usage_receiver_prekey_composite_identity,
@@ -889,6 +899,7 @@ static char *receive_decoded_message(otrng_client_s *client,
       notify_error(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG, NULL);
       return NULL;
     }
+
     res = receive_dake2(client, request, decoded, decoded_len);
     if (res == NULL) {
       clean_request_for_account(client);

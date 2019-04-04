@@ -342,6 +342,20 @@ otrng_prekey_check_account_request(/*@notnull@*/ struct otrng_client_s *client);
 
 #ifdef OTRNG_PREKEY_MANAGER_PRIVATE
 
+tstatic void dake3_message_append_storage_information_request(
+    otrng_prekey_dake3_message_s *dake_3, uint8_t mac_key[MAC_KEY_BYTES]);
+tstatic otrng_result
+storage_request_after_dake(/*@notnull@*/ struct otrng_client_s *client,
+                           /*@notnull@*/ otrng_prekey_request_s *request,
+                           /*@notnull@*/ otrng_prekey_dake3_message_s *dake_3);
+
+tstatic /*@null@*/ otrng_prekey_request_s *
+create_prekey_request(otrng_prekey_server_s *server, void *ctx);
+
+tstatic char *send_dake3(struct otrng_client_s *client,
+                         otrng_prekey_request_s *request,
+                         const otrng_prekey_dake2_message_s *msg);
+
 #endif
 
 #endif

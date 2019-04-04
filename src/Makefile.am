@@ -45,7 +45,6 @@ libotr_ng_la_SOURCES = alloc.c \
 		     otrng.c \
 		     padding.c \
 		     random.c \
-		     xyz_prekey_client.c \
 		     prekey_client_dake.c \
 		     prekey_client_messages.c \
 		     prekey_client_shared.c \
