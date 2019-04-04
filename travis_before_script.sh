@@ -14,6 +14,11 @@ LIBGOLDILOCKS_DIR=.deps/libgoldilocks
 
 echo `which clang`
 
+- $CC --version
+- which $CC
+
+- export CC=`which $CC`
+
 if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
     if [[ -f $GPG_ERROR_DIR/src/.libs/libgpg-error.so ]]; then
         (cd $GPG_ERROR_DIR && sudo make install)
