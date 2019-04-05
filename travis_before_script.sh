@@ -16,10 +16,10 @@ echo `which clang`
 
 if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
     if [[ -f $GPG_ERROR_DIR/src/.libs/libgpg-error.so ]]; then
-        (cd $GPG_ERROR_DIR && sudo -E -i '(cd $GPG_ERROR_DIR && make install)')
+        (cd $GPG_ERROR_DIR && sudo -E -i (cd $GPG_ERROR_DIR && make install))
     else
         curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
-        (cd $GPG_ERROR_DIR && ./configure && make -j && sudo -E -i '(cd $GPG_ERROR_DIR && make install)')
+        (cd $GPG_ERROR_DIR && ./configure && make -j && sudo -E -i (cd $GPG_ERROR_DIR && make install))
     fi
 
     # if [[ -f $LIBGCRYPT_DIR/src/.libs/libgcrypt.so ]]; then
