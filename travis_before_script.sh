@@ -12,7 +12,7 @@ VALGRIND_DIR=.deps/valgrind-3.13.0
 LIBOTR_DIR=.deps/libotr
 LIBGOLDILOCKS_DIR=.deps/libgoldilocks
 SOURCE_DIR=`pwd`
-MAKE_INSTALL=sudo -E -i $SOURCE_DIR/run_make_install.sh
+MAKE_INSTALL="sudo -E -i $SOURCE_DIR/run_make_install.sh"
 
 echo `which clang`
 
