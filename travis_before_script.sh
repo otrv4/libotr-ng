@@ -11,15 +11,16 @@ CTGRIND_DIR=.deps/ctgrind
 VALGRIND_DIR=.deps/valgrind-3.13.0
 LIBOTR_DIR=.deps/libotr
 LIBGOLDILOCKS_DIR=.deps/libgoldilocks
+SOURCE_DIR=`pwd`
 
 echo `which clang`
 
 if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
     if [[ -f $GPG_ERROR_DIR/src/.libs/libgpg-error.so ]]; then
-        (cd $GPG_ERROR_DIR && sudo -E -i cd $GPG_ERROR_DIR && make install)
+        sudo -E -i $SOURCE_DIR/run_make_install.sh $GPG_ERROR_DIR
     else
         curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
-        (cd $GPG_ERROR_DIR && ./configure && make -j && sudo -E -i cd $GPG_ERROR_DIR && make install)
+        (cd $GPG_ERROR_DIR && ./configure && make -j && sudo -E -i $SOURCE_DIR/run_make_install.sh $GPG_ERROR_DIR)
     fi
 
     # if [[ -f $LIBGCRYPT_DIR/src/.libs/libgcrypt.so ]]; then
