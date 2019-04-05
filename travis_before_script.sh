@@ -12,38 +12,39 @@ VALGRIND_DIR=.deps/valgrind-3.13.0
 LIBOTR_DIR=.deps/libotr
 LIBGOLDILOCKS_DIR=.deps/libgoldilocks
 SOURCE_DIR=`pwd`
+MAKE_INSTALL=sudo -E -i $SOURCE_DIR/run_make_install.sh
 
 echo `which clang`
 
 if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
     if [[ -f $GPG_ERROR_DIR/src/.libs/libgpg-error.so ]]; then
-        sudo -E -i $SOURCE_DIR/run_make_install.sh $SOURCE_DIR/$GPG_ERROR_DIR
+        $MAKE_INSTALL $SOURCE_DIR/$GPG_ERROR_DIR
     else
         curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
-        (cd $GPG_ERROR_DIR && ./configure && make -j && sudo -E -i $SOURCE_DIR/run_make_install.sh $SOURCE_DIR/$GPG_ERROR_DIR)
+        (cd $GPG_ERROR_DIR && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$GPG_ERROR_DIR $SOURCE_DIR/$GPG_ERROR_DIR)
     fi
 
     # if [[ -f $LIBGCRYPT_DIR/src/.libs/libgcrypt.so ]]; then
     #     (cd $LIBGCRYPT_DIR && sudo make install)
     # else
     curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps
-    (cd $LIBGCRYPT_DIR && ./configure && make -j && sudo -i make install)
+    (cd $LIBGCRYPT_DIR && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$LIBGCRYPT_DIR)
     # fi
 
     if [[ -f $LIBSODIUM_DIR/src/libsodium/.libs/libsodium.so ]]; then
-        (cd $LIBSODIUM_DIR && sudo -i make install)
+        $MAKE_INSTALL $SOURCE_DIR/$LIBSODIUM_DIR
     else
         curl https://download.libsodium.org/libsodium/releases/LATEST.tar.gz | tar xzf - -C .deps
-        (cd $LIBSODIUM_DIR && ./autogen.sh && ./configure && make -j && sudo -i make install)
+        (cd $LIBSODIUM_DIR && ./autogen.sh && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$LIBSODIUM_DIR)
     fi
 fi
 if [[ "$T" = "ctgrind" ]]; then
     if [[ -f $CTGRIND_DIR/memcheck/vgpreload_memcheck-amd64-linux.so ]]; then
-        (cd $CTGRIND_DIR && sudo -i make install)
+        $MAKE_INSTALL $SOURCE_DIR/$CTGRIND_DIR
     else
         rm -rf $CTGRIND_DIR
         git clone --depth=1 https://github.com/claucece/ctgrind $CTGRIND_DIR
-        (cd $CTGRIND_DIR && ./autogen.sh && ./configure && make -j && sudo -i make install)
+        (cd $CTGRIND_DIR && ./autogen.sh && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$CTGRIND_DIR)
     fi
 fi
 
@@ -58,13 +59,13 @@ fi
 if [[ ! -e $LIBOTR_DIR ]]; then
     git clone --depth=1 https://bugs.otr.im/lib/libotr.git $LIBOTR_DIR
 fi
-(cd $LIBOTR_DIR && ./bootstrap && ./configure && make -j && sudo -i make install)
+(cd $LIBOTR_DIR && ./bootstrap && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$LIBOTR_DIR)
 # fi
 
 if [[ -f $LIBGOLDILOCKS_DIR/src/.libs/libgoldilocks.so ]]; then
-    (cd $LIBGOLDILOCKS_DIR && sudo -i make install)
+    $MAKE_INSTALL $SOURCE_DIR/$LIBGOLDILOCKS_DIR
 else
     rm -rf $LIBGOLDILOCKS_DIR
     git clone --depth=1 https://github.com/otrv4/libgoldilocks $LIBGOLDILOCKS_DIR
-    (cd $LIBGOLDILOCKS_DIR && ./autogen.sh && ./configure && make -j && sudo -i make install)
+    (cd $LIBGOLDILOCKS_DIR && ./autogen.sh && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$LIBGOLDILOCKS_DIR)
 fi
