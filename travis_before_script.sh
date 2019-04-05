@@ -4,6 +4,18 @@ set -xe
 
 mkdir -p .deps
 
+# OK, so there's some weirdness in this file. Basically, this weirdness is for a few reasons:
+# - we want to use the cache of Travis if possible. If things are cached we don't want to recompile.
+# - sudo make install can sometimes fail due to travis not making clang available to sudo
+#   - so, we use -E and -i. However, -i moves to root homedirectory, so we need to switch back
+#   - but doing that on one command line with sudo in bash is not fantastic. easier to have a
+#     separate helper script so that we can do this. however, since the helper script is in the
+#     source distribution we also need to keep track of the current directory, and use absolute
+#     paths for those things
+# - all of this horribleness would probably be easier solved by rejigging everything to install
+#   in a local lib/include directory, but that caused conflicts with system installed things
+#   sometimes, so it would need more investigation and work to make it functional.
+
 GPG_ERROR_DIR=.deps/libgpg-error-1.26
 LIBGCRYPT_DIR=.deps/libgcrypt-1.8.1
 LIBSODIUM_DIR=.deps/libsodium-stable
