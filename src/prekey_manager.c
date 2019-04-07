@@ -417,7 +417,7 @@ get_expected_composite_phi(const otrng_prekey_manager_s *manager,
 
   w += otrng_serialize_data(dst + w, (const uint8_t *)manager->our_identity,
                             strlen(manager->our_identity));
-  w += otrng_serialize_data(dst + w, (const uint8_t *)request->server->identity,
+  (void) otrng_serialize_data(dst + w, (const uint8_t *)request->server->identity,
                             strlen(request->server->identity));
 
   if (len) {
@@ -495,7 +495,7 @@ static otrng_bool validate_dake2(otrng_client_s *client,
                                    USAGE_INITIATOR_PREKEY_COMPOSITE_IDENTITY);
   w += otrng_serialize_ec_point(t + w, request->ephemeral_ecdh->pub);
   w += otrng_serialize_ec_point(t + w, msg->S);
-  w += kdf_composite_phi_into(t + w, client->prekey_manager, request,
+  (void) kdf_composite_phi_into(t + w, client->prekey_manager, request,
                               USAGE_INITIATOR_PREKEY_COMPOSITE_PHI);
 
   ret = otrng_rsig_verify_with_usage_and_domain(
