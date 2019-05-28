@@ -45,6 +45,12 @@ $ make test
 
 ## Configure library with other options
 
+To configure the project with OTRNG debug output:
+
+```
+./configure CFLAGS="-ggdb3 -O0 -D DEBUG_API=yes"
+```
+
 To configure the project with debug option using `gdb`:
 ```
 $ ./configure CFLAGS="-g -ggdb3 -O0" CXXFLAGS="-g -ggdb3 -O0" LDFLAGS="-g -ggdb3" --disable-shared

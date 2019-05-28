@@ -34,6 +34,7 @@
 #include <stdio.h>
 
 #include "alloc.h"
+#include "error.h"
 #include "shared.h"
 #include "str.h"
 
@@ -51,8 +52,10 @@ API void otrng_debug_fprintf(FILE *f, const char *fmt, ...);
 struct otrng_client_id_s;
 API void otrng_client_id_debug_print(FILE *, const struct otrng_client_id_s);
 API void otrng_add_debug_print_ignore(const char *);
-API void otrng_clear_debug_print_ignores();
+API void otrng_clear_debug_print_ignores(void);
 API otrng_bool otrng_debug_print_should_ignore(const char *);
+
+static void otrng_print_indent(FILE *f, int indent) __attribute__((unused));
 
 static void otrng_print_indent(FILE *f, int indent) {
   int i;

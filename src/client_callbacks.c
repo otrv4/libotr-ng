@@ -174,24 +174,13 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   otrng_debug_print_pointer(f, c);
   debug_api_print(f, ") {\n");
 
-  if (otrng_debug_print_should_ignore(
-          "client_callbacks->get_account_and_protocol")) {
-    otrng_print_indent(f, indent + 2);
-    debug_api_print(f, "get_account_and_protocol = IGNORED\n");
-  } else {
-    otrng_print_indent(f, indent + 2);
-    debug_api_print(f, "get_account_and_protocol = ");
-    otrng_debug_print_pointer(f, c->get_account_and_protocol);
-    debug_api_print(f, "\n");
-  }
-
   if (otrng_debug_print_should_ignore("client_callbacks->create_instag")) {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "create_instag = IGNORED\n");
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "create_instag = ");
-    otrng_debug_print_pointer(f, c->create_instag);
+    otrng_debug_print_pointer(f, (const void *)c->create_instag);
     debug_api_print(f, "\n");
   }
 
@@ -201,7 +190,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "create_privkey_v3 = ");
-    otrng_debug_print_pointer(f, c->create_privkey_v3);
+    otrng_debug_print_pointer(f, (const void *)c->create_privkey_v3);
     debug_api_print(f, "\n");
   }
 
@@ -211,7 +200,17 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "create_privkey_v4 = ");
-    otrng_debug_print_pointer(f, c->create_privkey_v4);
+    otrng_debug_print_pointer(f, (const void *)c->create_privkey_v4);
+    debug_api_print(f, "\n");
+  }
+
+  if (otrng_debug_print_should_ignore("client_callbacks->create_forging_key")) {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "create_forging_key = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "create_forging_key = ");
+    otrng_debug_print_pointer(f, (const void *)c->create_forging_key);
     debug_api_print(f, "\n");
   }
 
@@ -222,7 +221,29 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "create_client_profile = ");
-    otrng_debug_print_pointer(f, c->create_client_profile);
+    otrng_debug_print_pointer(f, (const void *)c->create_client_profile);
+    debug_api_print(f, "\n");
+  }
+
+  if (otrng_debug_print_should_ignore(
+          "client_callbacks->store_expired_client_profile")) {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "store_expired_client_profile = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "store_expired_client_profile = ");
+    otrng_debug_print_pointer(f, (const void *)c->store_expired_client_profile);
+    debug_api_print(f, "\n");
+  }
+
+  if (otrng_debug_print_should_ignore(
+          "client_callbacks->load_expired_prekey_profile")) {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "load_expired_prekey_profile = IGNORED\n");
+  } else {
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "load_expired_prekey_profile = ");
+    otrng_debug_print_pointer(f, (const void *)c->load_expired_prekey_profile);
     debug_api_print(f, "\n");
   }
 
@@ -233,18 +254,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "create_prekey_profile = ");
-    otrng_debug_print_pointer(f, c->create_prekey_profile);
-    debug_api_print(f, "\n");
-  }
-
-  if (otrng_debug_print_should_ignore(
-          "client_callbacks->create_shared_prekey")) {
-    otrng_print_indent(f, indent + 2);
-    debug_api_print(f, "create_shared_prekey = IGNORED\n");
-  } else {
-    otrng_print_indent(f, indent + 2);
-    debug_api_print(f, "create_shared_prekey = ");
-    otrng_debug_print_pointer(f, c->create_shared_prekey);
+    otrng_debug_print_pointer(f, (const void *)c->create_prekey_profile);
     debug_api_print(f, "\n");
   }
 
@@ -254,7 +264,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "gone_secure = ");
-    otrng_debug_print_pointer(f, c->gone_secure);
+    otrng_debug_print_pointer(f, (const void *)c->gone_secure);
     debug_api_print(f, "\n");
   }
 
@@ -264,7 +274,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "gone_insecure = ");
-    otrng_debug_print_pointer(f, c->gone_insecure);
+    otrng_debug_print_pointer(f, (const void *)c->gone_insecure);
     debug_api_print(f, "\n");
   }
 
@@ -274,7 +284,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "fingerprint_seen = ");
-    otrng_debug_print_pointer(f, c->fingerprint_seen);
+    otrng_debug_print_pointer(f, (const void *)c->fingerprint_seen);
     debug_api_print(f, "\n");
   }
 
@@ -285,7 +295,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "fingerprint_seen_v3 = ");
-    otrng_debug_print_pointer(f, c->fingerprint_seen_v3);
+    otrng_debug_print_pointer(f, (const void *)c->fingerprint_seen_v3);
     debug_api_print(f, "\n");
   }
 
@@ -295,7 +305,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "smp_ask_for_secret = ");
-    otrng_debug_print_pointer(f, c->smp_ask_for_secret);
+    otrng_debug_print_pointer(f, (const void *)c->smp_ask_for_secret);
     debug_api_print(f, "\n");
   }
 
@@ -305,7 +315,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "smp_ask_for_answer = ");
-    otrng_debug_print_pointer(f, c->smp_ask_for_answer);
+    otrng_debug_print_pointer(f, (const void *)c->smp_ask_for_answer);
     debug_api_print(f, "\n");
   }
 
@@ -315,7 +325,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "smp_update = ");
-    otrng_debug_print_pointer(f, c->smp_update);
+    otrng_debug_print_pointer(f, (const void *)c->smp_update);
     debug_api_print(f, "\n");
   }
 
@@ -326,7 +336,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "display_error_message = ");
-    otrng_debug_print_pointer(f, c->display_error_message);
+    otrng_debug_print_pointer(f, (const void *)c->display_error_message);
     debug_api_print(f, "\n");
   }
 
@@ -336,7 +346,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "handle_event = ");
-    otrng_debug_print_pointer(f, c->handle_event);
+    otrng_debug_print_pointer(f, (const void *)c->handle_event);
     debug_api_print(f, "\n");
   }
 
@@ -347,7 +357,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "received_extra_symm_key = ");
-    otrng_debug_print_pointer(f, c->received_extra_symm_key);
+    otrng_debug_print_pointer(f, (const void *)c->received_extra_symm_key);
     debug_api_print(f, "\n");
   }
 
@@ -358,7 +368,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "get_shared_session_state = ");
-    otrng_debug_print_pointer(f, c->get_shared_session_state);
+    otrng_debug_print_pointer(f, (const void *)c->get_shared_session_state);
     debug_api_print(f, "\n");
   }
 
@@ -368,7 +378,7 @@ API void otrng_client_callbacks_debug_print(FILE *f, int indent,
   } else {
     otrng_print_indent(f, indent + 2);
     debug_api_print(f, "define_policy = ");
-    otrng_debug_print_pointer(f, c->define_policy);
+    otrng_debug_print_pointer(f, (const void *)c->define_policy);
     debug_api_print(f, "\n");
   }
 

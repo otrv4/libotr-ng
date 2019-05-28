@@ -666,7 +666,7 @@ API void otrng_add_debug_print_ignore(const char *ign) {
 API void otrng_clear_debug_print_ignores() { debug_print_ignores_len = 0; }
 
 API otrng_bool otrng_debug_print_should_ignore(const char *ign) {
-  int ix;
+  size_t ix;
   for (ix = 0; ix < debug_print_ignores_len; ix++) {
     if (strcmp(ign, debug_print_ignores[ix]) == 0) {
       return otrng_true;
@@ -677,6 +677,8 @@ API otrng_bool otrng_debug_print_should_ignore(const char *ign) {
 
 API void otrng_client_id_debug_print(FILE *f,
                                      const otrng_client_id_s client_id) {
+  (void)f;
+  (void)client_id;
   /* if (client_id_debug_printer) { */
   /*   client_id_debug_printer(f, client_id); */
   /* } else { */
