@@ -50,8 +50,6 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-# libtoolize: 'AC_PROG_RANLIB' is rendered obsolete by 'LT_INIT'
-#AC_PROG_RANLIB
 
 dnl ISO Standard C (currently C99), with fall back to ANSI C89 (ISO C90)
 AC_PROG_CC_STDC

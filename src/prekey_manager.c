@@ -749,6 +749,7 @@ static char *process_received_storage_status(
         client->prekey_manager->publication_policy
             ->max_published_prekey_message -
         msg->stored_prekeys;
+    client->should_publish = otrng_true;
     client->prekey_manager->callbacks->low_prekey_messages_in_storage(
         client, request->ctx);
   }
