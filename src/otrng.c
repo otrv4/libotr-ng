@@ -479,6 +479,8 @@ tstatic otrng_result reply_with_identity_message(otrng_response_s *response,
 
   otrng_ec_point_copy(msg->Y, our_ecdh(otr));
   msg->B = otrng_dh_mpi_copy(our_dh(otr));
+  otrng_ec_point_copy(msg->our_ecdh_first, &otr->keys->our_ecdh_first->pub[0]);
+  msg->our_dh_first = otrng_dh_mpi_copy(otr->keys->our_dh_first->pub);
 
   result = serialize_and_encode_identity_message(&response->to_send, msg);
   otrng_dake_identity_message_free(msg);
@@ -488,6 +490,11 @@ tstatic otrng_result reply_with_identity_message(otrng_response_s *response,
 
 tstatic otrng_result start_dake(otrng_response_s *response, otrng_s *otr) {
   if (otrng_key_manager_generate_ephemeral_keys(otr->keys) == OTRNG_ERROR) {
+    return OTRNG_ERROR;
+  }
+
+  if (otrng_key_manager_generate_first_ephemeral_keys(otr->keys) ==
+      OTRNG_ERROR) {
     return OTRNG_ERROR;
   }
 
@@ -726,6 +733,8 @@ tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
 
   otrng_ec_point_copy(msg.X, our_ecdh(otr));
   msg.A = otrng_dh_mpi_copy(our_dh(otr));
+  otrng_ec_point_copy(msg.our_ecdh_first, &otr->keys->our_ecdh_first->pub[0]);
+  msg.our_dh_first = otrng_dh_mpi_copy(otr->keys->our_dh_first->pub);
 
   if (!generate_sending_rsig_tag(&t, &t_len, 'r', otr)) {
     otrng_dake_auth_r_destroy(&msg);
@@ -1084,8 +1093,8 @@ tstatic otrng_result prekey_message_received(const prekey_message_s *msg,
     return OTRNG_ERROR;
   }
 
-  if (!otrng_valid_received_values(msg->sender_instance_tag, msg->Y, msg->B,
-                                   otr->their_client_profile)) {
+  if (!otrng_dake_valid_received_values(msg->sender_instance_tag, msg->Y,
+                                        msg->B, otr->their_client_profile)) {
     return OTRNG_ERROR;
   }
 
@@ -1291,8 +1300,8 @@ tstatic otrng_result non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
-  if (!otrng_valid_received_values(auth->sender_instance_tag, auth->X, auth->A,
-                                   auth->profile)) {
+  if (!otrng_dake_valid_received_values(auth->sender_instance_tag, auth->X,
+                                        auth->A, auth->profile)) {
     return OTRNG_ERROR;
   }
 
@@ -1410,14 +1419,24 @@ tstatic otrng_result receive_identity_message_on_state_start(
   otrng_key_manager_set_their_ecdh(identity_msg->Y, otr->keys);
   otrng_key_manager_set_their_dh(identity_msg->B, otr->keys);
 
+  // TODO: refactor
+  otrng_key_manager_set_their_first_ecdh(identity_msg->our_ecdh_first,
+                                         otr->keys);
+  otrng_key_manager_set_their_first_dh(identity_msg->our_dh_first, otr->keys);
+
   if (!otrng_client_profile_copy(otr->their_client_profile,
                                  identity_msg->profile)) {
     return OTRNG_ERROR;
   }
 
+  // TODO: refactor
   /* @secret the priv parts will be deleted once the mixed shared secret is
    * derived */
   if (!otrng_key_manager_generate_ephemeral_keys(otr->keys)) {
+    return OTRNG_ERROR;
+  }
+
+  if (!otrng_key_manager_generate_first_ephemeral_keys(otr->keys)) {
     return OTRNG_ERROR;
   }
 
@@ -1489,8 +1508,19 @@ tstatic otrng_result receive_identity_message(string_p *dst,
     return result;
   }
 
-  if (!otrng_valid_received_values(msg.sender_instance_tag, msg.Y, msg.B,
-                                   msg.profile)) {
+  // TODO: refactor, include in the below validation
+  /* Verify that the point their_ecdh received is on curve 448. */
+  if (!otrng_ec_point_valid(msg.our_ecdh_first)) {
+    return otrng_false;
+  }
+
+  /* Verify that the DH public key their_dh is from the correct group. */
+  if (!otrng_dh_mpi_valid(msg.our_dh_first)) {
+    return otrng_false;
+  }
+
+  if (!otrng_dake_valid_received_values(msg.sender_instance_tag, msg.Y, msg.B,
+                                        msg.profile)) {
     otrng_dake_identity_message_destroy(&msg);
     return result;
   }
@@ -1537,7 +1567,7 @@ tstatic otrng_result serialize_and_encode_auth_i(string_p *dst,
 tstatic otrng_result reply_with_auth_i_message(
     string_p *dst, const otrng_client_profile_s *their_client_profile,
     otrng_s *otr) {
-  dake_auth_i_s msg;
+  dake_auth_i_s auth_i_msg;
 
   const otrng_dake_participant_data_s responder = {
       .client_profile = (otrng_client_profile_s *)their_client_profile,
@@ -1552,18 +1582,18 @@ tstatic otrng_result reply_with_auth_i_message(
   size_t t_len = 0;
   otrng_result result;
 
-  msg.sigma = NULL;
+  auth_i_msg.sigma = NULL;
 
-  otrng_dake_auth_i_init(&msg);
-  msg.sender_instance_tag = our_instance_tag(otr);
-  msg.receiver_instance_tag = otr->their_instance_tag;
+  otrng_dake_auth_i_init(&auth_i_msg);
+  auth_i_msg.sender_instance_tag = our_instance_tag(otr);
+  auth_i_msg.receiver_instance_tag = otr->their_instance_tag;
 
   if (!generate_receiving_rsig_tag(&t, &t_len, 'i', &responder, otr)) {
     return OTRNG_ERROR;
   }
 
   /* sigma = RSig(H_b, sk_hb, {H_b, F_a, X}, t) */
-  if (!otrng_rsig_authenticate(msg.sigma,
+  if (!otrng_rsig_authenticate(auth_i_msg.sigma,
                                otr->client->keypair->priv, /* sk_hb */
                                otr->client->keypair->pub,  /* H_b */
                                otr->client->keypair->pub,  /* H_b */
@@ -1576,8 +1606,8 @@ tstatic otrng_result reply_with_auth_i_message(
 
   otrng_free(t);
 
-  result = serialize_and_encode_auth_i(dst, &msg);
-  otrng_dake_auth_i_destroy(&msg);
+  result = serialize_and_encode_auth_i(dst, &auth_i_msg);
+  otrng_dake_auth_i_destroy(&auth_i_msg);
 
   return result;
 }
@@ -1597,8 +1627,8 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
       .dh = auth->A,
   };
 
-  if (!otrng_valid_received_values(auth->sender_instance_tag, auth->X, auth->A,
-                                   auth->profile)) {
+  if (!otrng_dake_valid_received_values(auth->sender_instance_tag, auth->X,
+                                        auth->A, auth->profile)) {
     return otrng_false;
   }
 
@@ -1618,67 +1648,83 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
 
 tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buffer,
                                     size_t buff_len, otrng_s *otr) {
-  dake_auth_r_s auth;
+  dake_auth_r_s auth_r_msg;
   otrng_fingerprint fp;
   otrng_result ret;
 
-  auth.receiver_instance_tag = 0;
-  auth.sender_instance_tag = 0;
-  auth.A = NULL;
-  auth.profile = NULL;
+  auth_r_msg.receiver_instance_tag = 0;
+  auth_r_msg.sender_instance_tag = 0;
+  auth_r_msg.A = NULL;
+  auth_r_msg.profile = NULL;
 
-  otrng_dake_auth_r_init(&auth);
+  otrng_dake_auth_r_init(&auth_r_msg);
 
   if (otr->state != OTRNG_STATE_WAITING_AUTH_R) {
-    otrng_dake_auth_r_destroy(&auth);
+    otrng_dake_auth_r_destroy(&auth_r_msg);
     return OTRNG_SUCCESS; /* ignore the message */
   }
 
-  if (!otrng_dake_auth_r_deserialize(&auth, buffer, buff_len)) {
+  if (!otrng_dake_auth_r_deserialize(&auth_r_msg, buffer, buff_len)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
-    otrng_dake_auth_r_destroy(&auth);
+    otrng_dake_auth_r_destroy(&auth_r_msg);
     return OTRNG_ERROR;
   }
 
-  if (auth.receiver_instance_tag != our_instance_tag(otr)) {
-    otrng_dake_auth_r_destroy(&auth);
+  if (auth_r_msg.receiver_instance_tag != our_instance_tag(otr)) {
+    otrng_dake_auth_r_destroy(&auth_r_msg);
     return OTRNG_SUCCESS;
   }
 
-  if (received_sender_instance_tag(auth.sender_instance_tag, otr) !=
+  if (received_sender_instance_tag(auth_r_msg.sender_instance_tag, otr) !=
       OTRNG_SUCCESS) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
-    otrng_dake_auth_r_destroy(&auth);
+    otrng_dake_auth_r_destroy(&auth_r_msg);
     return OTRNG_ERROR;
   }
 
-  if (!valid_receiver_instance_tag(auth.receiver_instance_tag)) {
+  if (!valid_receiver_instance_tag(auth_r_msg.receiver_instance_tag)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
-    otrng_dake_auth_r_destroy(&auth);
+    otrng_dake_auth_r_destroy(&auth_r_msg);
     return OTRNG_ERROR;
   }
 
-  if (!valid_auth_r_message(&auth, otr)) {
-    otrng_dake_auth_r_destroy(&auth);
+  // TODO: refactor
+  /* Verify that the point their_ecdh received is on curve 448. */
+  if (!otrng_ec_point_valid(auth_r_msg.our_ecdh_first)) {
+    return otrng_false;
+  }
+
+  /* Verify that the DH public key their_dh is from the correct group. */
+  if (!otrng_dh_mpi_valid(auth_r_msg.our_dh_first)) {
+    return otrng_false;
+  }
+
+  if (!valid_auth_r_message(&auth_r_msg, otr)) {
+    otrng_dake_auth_r_destroy(&auth_r_msg);
     return OTRNG_ERROR;
   }
 
   otr->their_client_profile = otrng_xmalloc_z(sizeof(otrng_client_profile_s));
 
-  otrng_key_manager_set_their_ecdh(auth.X, otr->keys);
-  otrng_key_manager_set_their_dh(auth.A, otr->keys);
+  otrng_key_manager_set_their_ecdh(auth_r_msg.X, otr->keys);
+  otrng_key_manager_set_their_dh(auth_r_msg.A, otr->keys);
 
-  if (!otrng_client_profile_copy(otr->their_client_profile, auth.profile)) {
-    otrng_dake_auth_r_destroy(&auth);
+  // TODO: refactor
+  otrng_key_manager_set_their_first_ecdh(auth_r_msg.our_ecdh_first, otr->keys);
+  otrng_key_manager_set_their_first_dh(auth_r_msg.our_dh_first, otr->keys);
+
+  if (!otrng_client_profile_copy(otr->their_client_profile,
+                                 auth_r_msg.profile)) {
+    otrng_dake_auth_r_destroy(&auth_r_msg);
     return OTRNG_ERROR;
   }
 
   if (!reply_with_auth_i_message(dst, otr->their_client_profile, otr)) {
-    otrng_dake_auth_r_destroy(&auth);
+    otrng_dake_auth_r_destroy(&auth_r_msg);
     return OTRNG_ERROR;
   }
 
-  otrng_dake_auth_r_destroy(&auth);
+  otrng_dake_auth_r_destroy(&auth_r_msg);
 
   if (otrng_serialize_fingerprint(fp,
                                   otr->their_client_profile->long_term_pub_key,
@@ -1723,47 +1769,47 @@ tstatic otrng_bool valid_auth_i_message(const dake_auth_i_s *auth,
 
 tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
                                     size_t buff_len, otrng_s *otr) {
-  dake_auth_i_s auth;
+  dake_auth_i_s auth_i_msg;
   otrng_fingerprint fp;
 
-  auth.receiver_instance_tag = 0;
-  auth.sender_instance_tag = 0;
+  auth_i_msg.receiver_instance_tag = 0;
+  auth_i_msg.sender_instance_tag = 0;
 
-  otrng_dake_auth_i_init(&auth);
+  otrng_dake_auth_i_init(&auth_i_msg);
   if (otr->state != OTRNG_STATE_WAITING_AUTH_I) {
-    otrng_dake_auth_i_destroy(&auth);
+    otrng_dake_auth_i_destroy(&auth_i_msg);
     return OTRNG_SUCCESS; /* Ignore the message */
   }
 
-  if (!otrng_dake_auth_i_deserialize(&auth, buffer, buff_len)) {
+  if (!otrng_dake_auth_i_deserialize(&auth_i_msg, buffer, buff_len)) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
-    otrng_dake_auth_i_destroy(&auth);
+    otrng_dake_auth_i_destroy(&auth_i_msg);
     return OTRNG_ERROR;
   }
 
-  if (auth.receiver_instance_tag != our_instance_tag(otr)) {
-    otrng_dake_auth_i_destroy(&auth);
+  if (auth_i_msg.receiver_instance_tag != our_instance_tag(otr)) {
+    otrng_dake_auth_i_destroy(&auth_i_msg);
     return OTRNG_SUCCESS;
   }
 
-  if (received_sender_instance_tag(auth.sender_instance_tag, otr) !=
+  if (received_sender_instance_tag(auth_i_msg.sender_instance_tag, otr) !=
       OTRNG_SUCCESS) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
-    otrng_dake_auth_i_destroy(&auth);
+    otrng_dake_auth_i_destroy(&auth_i_msg);
     return OTRNG_ERROR;
   }
 
-  if (!valid_receiver_instance_tag(auth.receiver_instance_tag)) {
-    otrng_dake_auth_i_destroy(&auth);
+  if (!valid_receiver_instance_tag(auth_i_msg.receiver_instance_tag)) {
+    otrng_dake_auth_i_destroy(&auth_i_msg);
     return OTRNG_ERROR;
   }
 
-  if (!valid_auth_i_message(&auth, otr)) {
-    otrng_dake_auth_i_destroy(&auth);
+  if (!valid_auth_i_message(&auth_i_msg, otr)) {
+    otrng_dake_auth_i_destroy(&auth_i_msg);
     return OTRNG_ERROR;
   }
 
-  otrng_dake_auth_i_destroy(&auth);
+  otrng_dake_auth_i_destroy(&auth_i_msg);
 
   if (otrng_serialize_fingerprint(fp,
                                   otr->their_client_profile->long_term_pub_key,

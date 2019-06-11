@@ -92,8 +92,14 @@ typedef struct key_manager_s {
   ecdh_keypair_s *our_ecdh;
   dh_keypair_s *our_dh;
 
+  ecdh_keypair_s *our_ecdh_first;
+  dh_keypair_s *our_dh_first;
+
   ec_point their_ecdh;
   dh_public_key their_dh;
+
+  ec_point their_ecdh_first;
+  dh_public_key their_dh_first;
 
   // TODO: @refactoring REMOVE THIS
   // or turn it into a pair and store both this and the long term keypair on
@@ -210,11 +216,32 @@ INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point their_ecdh,
 /**
  * @brief Securely replace their dh keys.
  *
- * @param [their_ecdh]  The new their_dh key.
+ * @param [their_dh]  The new their_dh key.
  * @param [manager]     The key manager.
  */
 INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key their_dh,
                                              key_manager_s *manager);
+
+/**
+ * @brief Securely replace their ecdh first keys.
+ *
+ * @param [their_ecdh_first]  The new their_ecdh_first key.
+
+ * @param [manager]     The key manager.
+ */
+INTERNAL void
+otrng_key_manager_set_their_first_ecdh(const ec_point their_ecdh_first,
+                                       key_manager_s *manager);
+
+/**
+ * @brief Securely replace their dh first keys.
+ *
+ * @param [their_dh_first]  The new their_dh key.
+ * @param [manager]     The key manager.
+ */
+INTERNAL void
+otrng_key_manager_set_their_first_dh(const dh_public_key their_dh_first,
+                                     key_manager_s *manager);
 
 /**
  * @brief Generate the ephemeral ecdh and dh keys.
@@ -222,8 +249,16 @@ INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key their_dh,
  * @param [manager]   The key manager.
  */
 INTERNAL otrng_result
-otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
+otrng_key_manager_generate_first_ephemeral_keys(key_manager_s *manager);
 
+/**
+ * @brief Generate the ephemeral ecdh and dh keys.
+ *
+ * @param [manager]   The key manager.
+ */
+
+INTERNAL otrng_result
+otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager);
 /**
  * @brief Generate the temporary key to be used by the non-interactive DAKE.
  *

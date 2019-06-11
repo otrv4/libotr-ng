@@ -36,6 +36,8 @@ typedef struct dake_identity_message_s {
   otrng_client_profile_s *profile;
   ec_point Y;
   dh_public_key B;
+  ec_point our_ecdh_first;
+  dh_public_key our_dh_first;
 } dake_identity_message_s;
 
 typedef struct dake_auth_r_s {
@@ -45,6 +47,8 @@ typedef struct dake_auth_r_s {
   ec_point X;
   dh_public_key A;
   ring_sig_s *sigma;
+  ec_point our_ecdh_first;
+  dh_public_key our_dh_first;
 } dake_auth_r_s;
 
 typedef struct dake_auth_i_s {
@@ -73,7 +77,7 @@ typedef struct {
   dh_mpi dh;
 } otrng_dake_participant_data_s;
 
-INTERNAL otrng_bool otrng_valid_received_values(
+INTERNAL otrng_bool otrng_dake_valid_received_values(
     const uint32_t sender_instance_tag, const ec_point their_ecdh,
     const dh_mpi their_dh, const otrng_client_profile_s *profile);
 

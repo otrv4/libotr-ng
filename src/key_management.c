@@ -55,10 +55,16 @@ INTERNAL void otrng_key_manager_init(key_manager_s *manager) {
   memset(manager, 0, sizeof(key_manager_s));
   manager->current = ratchet_new();
   manager->ssid_half_first = otrng_false;
+
   manager->our_ecdh = otrng_secure_alloc(sizeof(ecdh_keypair_s));
   manager->our_dh = otrng_secure_alloc(sizeof(dh_keypair_s));
   manager->our_dh->pub = NULL;
   manager->our_dh->priv = NULL;
+
+  manager->our_ecdh_first = otrng_secure_alloc(sizeof(ecdh_keypair_s));
+  manager->our_dh_first = otrng_secure_alloc(sizeof(dh_keypair_s));
+  manager->our_dh_first->pub = NULL;
+  manager->our_dh_first->priv = NULL;
 }
 
 INTERNAL key_manager_s *otrng_key_manager_new(void) {
@@ -74,10 +80,21 @@ INTERNAL void otrng_key_manager_destroy(key_manager_s *manager) {
   otrng_dh_keypair_destroy(manager->our_dh);
   otrng_secure_free(manager->our_dh);
 
+  otrng_ecdh_keypair_destroy(manager->our_ecdh_first);
+  otrng_secure_free(manager->our_ecdh_first);
+
+  otrng_dh_keypair_destroy(manager->our_dh_first);
+  otrng_secure_free(manager->our_dh_first);
+
   otrng_ec_point_destroy(manager->their_ecdh);
 
   gcry_mpi_release(manager->their_dh);
   manager->their_dh = NULL;
+
+  otrng_ec_point_destroy(manager->their_ecdh_first);
+
+  gcry_mpi_release(manager->their_dh_first);
+  manager->their_dh_first = NULL;
 
   manager->i = 0;
   manager->j = 0;
@@ -217,6 +234,19 @@ INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key their_dh,
   manager->their_dh = otrng_dh_mpi_copy(their_dh);
 }
 
+INTERNAL void
+otrng_key_manager_set_their_first_ecdh(const ec_point their_ecdh_first,
+                                       key_manager_s *manager) {
+  otrng_ec_point_copy(manager->their_ecdh_first, their_ecdh_first);
+}
+
+INTERNAL void
+otrng_key_manager_set_their_first_dh(const dh_public_key their_dh_first,
+                                     key_manager_s *manager) {
+  otrng_dh_mpi_release(manager->their_dh_first);
+  manager->their_dh = otrng_dh_mpi_copy(their_dh_first);
+}
+
 INTERNAL otrng_result
 otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
   time_t now;
@@ -239,7 +269,9 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
 
   manager->last_generated = now;
 
+    printf("\n AM I HERE 0 \n");
   if (manager->i % 3 == 0) {
+    printf("\n AM I HERE 1 \n");
     otrng_dh_keypair_destroy(manager->our_dh);
 
     /* @secret the dh keypair will last
@@ -249,6 +281,40 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
     if (!otrng_dh_keypair_generate(manager->our_dh)) {
       return OTRNG_ERROR;
     }
+  }
+
+  return OTRNG_SUCCESS;
+}
+
+INTERNAL otrng_result
+otrng_key_manager_generate_first_ephemeral_keys(key_manager_s *manager) {
+  time_t now;
+  uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
+
+  random_bytes(sym, ED448_PRIVATE_BYTES);
+
+  now = time(NULL);
+  otrng_ecdh_keypair_destroy(manager->our_ecdh_first);
+
+  /* @secret the ecdh keypair will last
+     1. for the first generation: until the ratchet is initialized
+     2. when receiving a new dh ratchet
+  */
+  if (!otrng_ecdh_keypair_generate(manager->our_ecdh_first, sym)) {
+    otrng_secure_free(sym);
+    return OTRNG_ERROR;
+  }
+
+  otrng_secure_free(sym);
+
+  otrng_dh_keypair_destroy(manager->our_dh_first);
+
+  /* @secret the dh keypair will last
+     1. for the first generation: until the ratchet is initialized
+     2. when receiving a new dh ratchet
+  */
+  if (!otrng_dh_keypair_generate(manager->our_dh_first)) {
+    return OTRNG_ERROR;
   }
 
   return OTRNG_SUCCESS;

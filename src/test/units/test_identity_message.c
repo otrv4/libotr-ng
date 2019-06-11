@@ -44,6 +44,8 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
   identity_msg->sender_instance_tag = 1;
   otrng_ec_point_copy(identity_msg->Y, ecdh.pub);
   identity_msg->B = otrng_dh_mpi_copy(dh.pub);
+  otrng_ec_point_copy(identity_msg->our_ecdh_first, ecdh.pub);
+  identity_msg->our_dh_first = otrng_dh_mpi_copy(dh.pub);
 
   uint8_t *ser = NULL;
   otrng_assert_is_success(
@@ -64,7 +66,7 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
   };
 
   uint8_t *cursor = ser;
-  otrng_assert_cmpmem(cursor, expected, 11); // sizeof(expected));
+  otrng_assert_cmpmem(cursor, expected, 11); // 11 is the sizeof(expected));
   cursor += 11;
 
   size_t client_profile_len = 0;
@@ -76,17 +78,35 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
   cursor += client_profile_len;
 
   uint8_t ser_y[PUB_KEY_SER_BYTES] = {0};
-  int ser_len = otrng_serialize_ec_point(ser_y, identity_msg->Y);
-  otrng_assert_cmpmem(cursor, ser_y, ser_len);
+  int ser_y_len = otrng_serialize_ec_point(ser_y, identity_msg->Y);
+  otrng_assert_cmpmem(cursor, ser_y, ser_y_len);
 
-  cursor += ser_len;
+  cursor += ser_y_len;
 
   uint8_t ser_b[DH3072_MOD_LEN_BYTES] = {0};
-  size_t mpi_len = 0;
-  otrng_assert(otrng_dh_mpi_serialize(ser_b, DH3072_MOD_LEN_BYTES, &mpi_len,
+  size_t ser_b_len = 0;
+  otrng_assert(otrng_dh_mpi_serialize(ser_b, DH3072_MOD_LEN_BYTES, &ser_b_len,
                                       identity_msg->B));
   // Skip first 4 because they are the size (mpi_len)
-  otrng_assert_cmpmem(cursor + 4, ser_b, mpi_len);
+  otrng_assert_cmpmem(cursor + 4, ser_b, ser_b_len);
+
+  // The size plus the 4 bytes of the size
+  cursor += ser_b_len + 4;
+
+  uint8_t ser_our_ecdh_first[PUB_KEY_SER_BYTES] = {0};
+  int ser_our_ecdh_first_len = otrng_serialize_ec_point(
+      ser_our_ecdh_first, identity_msg->our_ecdh_first);
+  otrng_assert_cmpmem(cursor, ser_our_ecdh_first, ser_our_ecdh_first_len);
+
+  cursor += ser_our_ecdh_first_len;
+
+  uint8_t ser_our_dh_first[DH3072_MOD_LEN_BYTES] = {0};
+  size_t ser_our_dh_first_len = 0;
+  otrng_assert(otrng_dh_mpi_serialize(ser_our_dh_first, DH3072_MOD_LEN_BYTES,
+                                      &ser_our_dh_first_len,
+                                      identity_msg->our_dh_first));
+  // Skip first 4 because they are the size (mpi_len)
+  otrng_assert_cmpmem(cursor + 4, ser_our_dh_first, ser_our_dh_first_len);
 
   otrng_dh_keypair_destroy(&dh);
   otrng_ecdh_keypair_destroy(&ecdh);
@@ -110,6 +130,9 @@ static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
   otrng_ec_point_copy(identity_msg->Y, ecdh.pub);
   identity_msg->B = otrng_dh_mpi_copy(dh.pub);
 
+  otrng_ec_point_copy(identity_msg->our_ecdh_first, ecdh.pub);
+  identity_msg->our_dh_first = otrng_dh_mpi_copy(dh.pub);
+
   size_t ser_len = 0;
   uint8_t *ser = NULL;
   otrng_assert_is_success(
@@ -131,6 +154,11 @@ static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
   otrng_assert_ec_public_key_eq(deser->Y, identity_msg->Y);
   otrng_assert_dh_public_key_eq(deser->B, identity_msg->B);
 
+  otrng_assert_ec_public_key_eq(deser->our_ecdh_first,
+                                identity_msg->our_ecdh_first);
+  otrng_assert_dh_public_key_eq(deser->our_dh_first,
+                                identity_msg->our_dh_first);
+
   otrng_dh_keypair_destroy(&dh);
   otrng_ecdh_keypair_destroy(&ecdh);
   otrng_dake_identity_message_free(identity_msg);
@@ -138,6 +166,7 @@ static void test_otrng_dake_identity_message_deserializes(dake_fixture_s *f,
   otrng_free(ser);
 }
 
+// TODO: this test does not make any sense
 static void test_dake_identity_message_valid(dake_fixture_s *f,
                                              gconstpointer data) {
   ecdh_keypair_s ecdh;
@@ -155,9 +184,12 @@ static void test_dake_identity_message_valid(dake_fixture_s *f,
   otrng_ec_point_copy(identity_msg->Y, ecdh.pub);
   identity_msg->B = otrng_dh_mpi_copy(dh.pub);
 
-  otrng_assert(otrng_valid_received_values(identity_msg->sender_instance_tag,
-                                           identity_msg->Y, identity_msg->B,
-                                           identity_msg->profile));
+  otrng_ec_point_copy(identity_msg->our_ecdh_first, ecdh.pub);
+  identity_msg->our_dh_first = otrng_dh_mpi_copy(dh.pub);
+
+  otrng_assert(otrng_dake_valid_received_values(
+      identity_msg->sender_instance_tag, identity_msg->Y, identity_msg->B,
+      identity_msg->profile));
 
   otrng_ecdh_keypair_destroy(&ecdh);
   otrng_dh_keypair_destroy(&dh);
@@ -188,7 +220,7 @@ static void test_dake_identity_message_valid(dake_fixture_s *f,
   otrng_ec_point_copy(invalid_identity_msg->Y, invalid_ecdh.pub);
   invalid_identity_msg->B = otrng_dh_mpi_copy(invalid_dh.pub);
 
-  otrng_assert(!otrng_valid_received_values(
+  otrng_assert(!otrng_dake_valid_received_values(
       invalid_identity_msg->sender_instance_tag, invalid_identity_msg->Y,
       invalid_identity_msg->B, invalid_identity_msg->profile));
 
