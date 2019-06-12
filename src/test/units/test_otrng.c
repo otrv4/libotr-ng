@@ -407,6 +407,7 @@ void test_start_with_whitespace_tag(void) {
   otrng_assert_ec_public_key_eq(alice->keys->their_ecdh,
                                 bob->keys->our_ecdh->pub);
   otrng_assert_dh_public_key_eq(alice->keys->their_dh, bob->keys->our_dh->pub);
+
   otrng_assert_not_zero(alice->keys->ssid, sizeof(alice->keys->ssid));
   otrng_assert_not_zero(alice->keys->shared_secret, sizeof(k_shared_secret));
 

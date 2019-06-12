@@ -215,7 +215,11 @@ INTERNAL otrng_result otrng_dake_identity_message_deserialize(
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  return otrng_deserialize_dh_mpi_otr(&dst->our_dh_first, cursor, len, &read);
+  if (!otrng_deserialize_dh_mpi_otr(&dst->our_dh_first, cursor, len, &read)) {
+    return OTRNG_ERROR;
+  }
+
+  return OTRNG_SUCCESS;
 }
 
 INTERNAL dake_auth_r_s *otrng_dake_auth_r_new() {

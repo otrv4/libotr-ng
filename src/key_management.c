@@ -244,7 +244,7 @@ INTERNAL void
 otrng_key_manager_set_their_first_dh(const dh_public_key their_dh_first,
                                      key_manager_s *manager) {
   otrng_dh_mpi_release(manager->their_dh_first);
-  manager->their_dh = otrng_dh_mpi_copy(their_dh_first);
+  manager->their_dh_first = otrng_dh_mpi_copy(their_dh_first);
 }
 
 INTERNAL otrng_result
@@ -269,9 +269,7 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
 
   manager->last_generated = now;
 
-    printf("\n AM I HERE 0 \n");
   if (manager->i % 3 == 0) {
-    printf("\n AM I HERE 1 \n");
     otrng_dh_keypair_destroy(manager->our_dh);
 
     /* @secret the dh keypair will last
