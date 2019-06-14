@@ -94,7 +94,7 @@ INTERNAL void otrng_tlv_list_free(tlv_list_s *tlvs);
  *    responsibility to free it after use.
  *    returns NULL if something goes wrong, or if [tlv] is NULL.
  **/
-INTERNAL tlv_list_s *otrng_tlv_list_one(tlv_s *tlv);
+/*@null@*/ INTERNAL tlv_list_s *otrng_tlv_list_one(tlv_s *tlv);
 
 /**
  * @brief Returns a newly created disconnected TLV
@@ -103,7 +103,7 @@ INTERNAL tlv_list_s *otrng_tlv_list_one(tlv_s *tlv);
  *    responsibility to free it after use.
  *    returns NULL if something goes wrong.
  **/
-INTERNAL tlv_s *otrng_tlv_disconnected_new(void);
+/*@null@*/ INTERNAL tlv_s *otrng_tlv_disconnected_new(void);
 
 /**
  * @brief Tries to extract as many TLVs as possible in the memory region from
@@ -116,7 +116,8 @@ INTERNAL tlv_s *otrng_tlv_disconnected_new(void);
  *    responsibility to free it after use.
  *    returns NULL if no TLVs can be found.
  **/
-INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len);
+/*@null@*/ INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src,
+                                                 size_t len);
 
 /**
  * @brief creates a new TLV from the given data.
@@ -132,8 +133,9 @@ INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len);
  *         returns NULL if something goes wrong, if [data] is NULL when [len]
            is > 0.
  **/
-INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
-                              /*@null@*/ const uint8_t *data);
+/*@null@*/ INTERNAL tlv_s *otrng_tlv_new(const uint16_t type,
+                                         const uint16_t len,
+                                         /*@null@*/ const uint8_t *data);
 
 /**
  * @brief appends the given TLV to the list of TLVs
@@ -146,9 +148,10 @@ INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
  *         It is the callers responsibility to free it after use.
  *         Returns NULL if something goes wrong, or if [tlv] is NULL
  **/
-INTERNAL tlv_list_s *otrng_append_tlv(/*@null@*/ tlv_list_s *tlvs, tlv_s *tlv);
+/*@null@*/ INTERNAL tlv_list_s *otrng_append_tlv(/*@null@*/ tlv_list_s *tlvs,
+                                                 tlv_s *tlv);
 
-INTERNAL tlv_s *otrng_tlv_padding_new(size_t len);
+/*@null@*/ INTERNAL tlv_s *otrng_tlv_padding_new(size_t len);
 
 INTERNAL void otrng_tlv_free(tlv_s *tlv);
 

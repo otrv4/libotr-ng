@@ -44,7 +44,8 @@ tstatic void set_tlv_type(tlv_s *tlv, uint16_t tlv_type) {
   }
 }
 
-tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *read) {
+/*@null@*/ tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len,
+                                    size_t *read) {
   tlv_s *tlv = otrng_tlv_new(OTRNG_TLV_NONE, 0, NULL);
   size_t w = 0;
   uint16_t tlv_type = -1;
@@ -89,7 +90,7 @@ tstatic tlv_s *parse_tlv(const uint8_t *src, size_t len, size_t *read) {
   return tlv;
 }
 
-INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *head, tlv_s *tlv) {
+/*@null@*/ INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *head, tlv_s *tlv) {
   tlv_list_s *current;
   tlv_list_s *n = otrng_tlv_list_one(tlv);
   if (!n) {
@@ -111,7 +112,8 @@ INTERNAL tlv_list_s *otrng_append_tlv(tlv_list_s *head, tlv_s *tlv) {
   return head;
 }
 
-INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src, size_t len) {
+/*@null@*/ INTERNAL tlv_list_s *otrng_parse_tlvs(const uint8_t *src,
+                                                 size_t len) {
   tlv_list_s *ret = NULL, *tmp = NULL;
   while (len > 0) {
     size_t read = 0;
@@ -152,8 +154,8 @@ INTERNAL void otrng_tlv_list_free(tlv_list_s *head) {
   }
 }
 
-INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
-                              const uint8_t *data) {
+/*@null@*/ INTERNAL tlv_s *
+otrng_tlv_new(const uint16_t type, const uint16_t len, const uint8_t *data) {
   tlv_s *tlv = otrng_xmalloc_z(sizeof(tlv_s));
 
   tlv->type = type;
@@ -172,11 +174,11 @@ INTERNAL tlv_s *otrng_tlv_new(const uint16_t type, const uint16_t len,
   return tlv;
 }
 
-INTERNAL tlv_s *otrng_tlv_disconnected_new(void) {
+/*@null@*/ INTERNAL tlv_s *otrng_tlv_disconnected_new(void) {
   return otrng_tlv_new(OTRNG_TLV_DISCONNECTED, 0, NULL);
 }
 
-INTERNAL tlv_s *otrng_tlv_padding_new(size_t len) {
+/*@null@*/ INTERNAL tlv_s *otrng_tlv_padding_new(size_t len) {
   uint8_t *data = otrng_xmalloc_z(len);
   tlv_s *tlv;
 
@@ -186,7 +188,7 @@ INTERNAL tlv_s *otrng_tlv_padding_new(size_t len) {
   return tlv;
 }
 
-INTERNAL tlv_list_s *otrng_tlv_list_one(tlv_s *tlv) {
+/*@null@*/ INTERNAL tlv_list_s *otrng_tlv_list_one(tlv_s *tlv) {
   tlv_list_s *tlvs;
   if (!tlv) {
     return NULL;
