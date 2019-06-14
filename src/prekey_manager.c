@@ -227,7 +227,7 @@ static otrng_result prekey_message_decode(const char *msg, uint8_t **buffer,
 /*
    The returned value will be owned by the caller
 */
-static char *
+/*@null@*/ static char *
 serialize_dake1(/*@notnull@*/ otrng_prekey_dake1_message_s *dake1) {
   uint8_t *ser = NULL;
   size_t ser_len = 0;
@@ -572,9 +572,9 @@ create_rsig_auth_for_dake3(otrng_client_s *client,
   return ret;
 }
 
-tstatic char *send_dake3(otrng_client_s *client,
-                         otrng_prekey_request_s *request,
-                         const otrng_prekey_dake2_message_s *msg) {
+/*@null@*/ tstatic char *send_dake3(otrng_client_s *client,
+                                    otrng_prekey_request_s *request,
+                                    const otrng_prekey_dake2_message_s *msg) {
   /*
     t = 0x01 || KDF(usage_receiver_client_profile, Alices_Client_Profile, 64) ||
         KDF(usage_receiver_prekey_composite_identity,
@@ -611,9 +611,9 @@ tstatic char *send_dake3(otrng_client_s *client,
   return ret;
 }
 
-static char *process_received_dake2(otrng_client_s *client,
-                                    otrng_prekey_request_s *request,
-                                    const otrng_prekey_dake2_message_s *msg) {
+/*@null@*/ static char *
+process_received_dake2(otrng_client_s *client, otrng_prekey_request_s *request,
+                       const otrng_prekey_dake2_message_s *msg) {
   if (msg->client_instance_tag != otrng_client_get_instance_tag(client)) {
     return NULL;
   }
@@ -648,9 +648,10 @@ void otrng_prekey_check_account_request(otrng_client_s *client) {
   }
 }
 
-static char *receive_dake2(otrng_client_s *client,
-                           otrng_prekey_request_s *request,
-                           const uint8_t *decoded, size_t decoded_len) {
+/*@null@*/ static char *receive_dake2(otrng_client_s *client,
+                                      otrng_prekey_request_s *request,
+                                      const uint8_t *decoded,
+                                      size_t decoded_len) {
   otrng_prekey_dake2_message_s msg;
   char *ret = NULL;
 
@@ -666,7 +667,7 @@ static char *receive_dake2(otrng_client_s *client,
   return ret;
 }
 
-static char *receive_success_or_failure(
+/*@null@*/ static char *receive_success_or_failure(
     otrng_client_s *client, otrng_prekey_request_s *request,
     const uint8_t *decoded, size_t decoded_len, const size_t len,
     const uint8_t usage, const uint8_t error_code,
@@ -708,9 +709,10 @@ static char *receive_success_or_failure(
   return NULL;
 }
 
-static char *receive_success(otrng_client_s *client,
-                             otrng_prekey_request_s *request,
-                             const uint8_t *decoded, size_t decoded_len) {
+/*@null@*/ static char *receive_success(otrng_client_s *client,
+                                        otrng_prekey_request_s *request,
+                                        const uint8_t *decoded,
+                                        size_t decoded_len) {
   assert(client->prekey_manager != NULL);
   return receive_success_or_failure(
       client, request, decoded, decoded_len, OTRNG_PREKEY_SUCCESS_MSG_LEN,
@@ -718,9 +720,10 @@ static char *receive_success(otrng_client_s *client,
       client->prekey_manager->callbacks->success_received);
 }
 
-static char *receive_failure(otrng_client_s *client,
-                             otrng_prekey_request_s *request,
-                             const uint8_t *decoded, size_t decoded_len) {
+/*@null@*/ static char *receive_failure(otrng_client_s *client,
+                                        otrng_prekey_request_s *request,
+                                        const uint8_t *decoded,
+                                        size_t decoded_len) {
   assert(client->prekey_manager != NULL);
   return receive_success_or_failure(
       client, request, decoded, decoded_len, OTRNG_PREKEY_FAILURE_MSG_LEN,
@@ -728,7 +731,7 @@ static char *receive_failure(otrng_client_s *client,
       client->prekey_manager->callbacks->failure_received);
 }
 
-static char *process_received_storage_status(
+/*@null@*/ static char *process_received_storage_status(
     otrng_client_s *client, const otrng_prekey_request_s *request,
     const otrng_prekey_storage_status_message_s *msg) {
   assert(client->prekey_manager != NULL);
@@ -759,10 +762,10 @@ static char *process_received_storage_status(
   return NULL;
 }
 
-static char *receive_storage_status(otrng_client_s *client,
-                                    otrng_prekey_request_s *request,
-                                    const uint8_t *decoded,
-                                    size_t decoded_len) {
+/*@null@*/ static char *receive_storage_status(otrng_client_s *client,
+                                               otrng_prekey_request_s *request,
+                                               const uint8_t *decoded,
+                                               size_t decoded_len) {
   otrng_prekey_storage_status_message_s msg;
   char *ret;
 
@@ -777,9 +780,9 @@ static char *receive_storage_status(otrng_client_s *client,
   return ret;
 }
 
-static char *receive_no_prekey_in_storage(otrng_client_s *client,
-                                          const uint8_t *decoded,
-                                          const size_t decoded_len) {
+/*@null@*/ static char *receive_no_prekey_in_storage(otrng_client_s *client,
+                                                     const uint8_t *decoded,
+                                                     const size_t decoded_len) {
   uint32_t instance_tag = 0;
   size_t read = 0;
   uint8_t *identity_ser = NULL;
@@ -841,9 +844,8 @@ static otrng_result process_received_prekey_ensemble_retrieval(
   return OTRNG_SUCCESS;
 }
 
-static char *receive_prekey_ensemble_retrieval(otrng_client_s *client,
-                                               const uint8_t *decoded,
-                                               const size_t decoded_len) {
+/*@null@*/ static char *receive_prekey_ensemble_retrieval(
+    otrng_client_s *client, const uint8_t *decoded, const size_t decoded_len) {
   otrng_prekey_ensemble_retrieval_message_s msg;
 
   if (!otrng_prekey_ensemble_retrieval_message_deserialize(&msg, decoded,
@@ -863,7 +865,7 @@ static char *receive_prekey_ensemble_retrieval(otrng_client_s *client,
   return NULL;
 }
 
-static otrng_prekey_request_s *
+/*@null@*/ static otrng_prekey_request_s *
 check_current_dake_request(const otrng_client_s *client, const char *from) {
   otrng_prekey_request_s *rfa;
 
@@ -882,10 +884,10 @@ check_current_dake_request(const otrng_client_s *client, const char *from) {
   return NULL;
 }
 
-static char *receive_decoded_message(otrng_client_s *client,
-                                     const uint8_t *decoded,
-                                     const size_t decoded_len,
-                                     /*@notnull@*/ const char *from) {
+/*@null@*/ static char *
+receive_decoded_message(otrng_client_s *client, const uint8_t *decoded,
+                        const size_t decoded_len,
+                        /*@notnull@*/ const char *from) {
   uint8_t msg_type = 0;
   otrng_prekey_request_s *request = NULL;
   char *res;
@@ -938,13 +940,14 @@ static char *receive_decoded_message(otrng_client_s *client,
   case OTRNG_PREKEY_ENSEMBLE_RETRIEVAL_MSG:
     return receive_prekey_ensemble_retrieval(client, decoded, decoded_len);
   default:
-    notify_error(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG, request->ctx);
+    notify_error(client, OTRNG_PREKEY_CLIENT_MALFORMED_MSG,
+                 request != NULL ? request->ctx : NULL);
   }
 
   return NULL;
 }
 
-tstatic otrng_prekey_server_s *
+/*@null@*/ tstatic otrng_prekey_server_s *
 find_server_for_identity(/*@notnull@*/ otrng_prekey_manager_s *manager,
                          const char *identity) {
   otrng_prekey_server_s *server = NULL;
