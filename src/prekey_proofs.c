@@ -204,7 +204,7 @@ INTERNAL otrng_bool otrng_ecdh_proof_verify(ecdh_proof_s *px,
   return otrng_false;
 }
 
-tstatic void *gen_random_data(size_t n, random_generator gen) {
+/*@null@*/ tstatic void *gen_random_data(size_t n, random_generator gen) {
   if (gen == NULL) {
     void *rhash, *rbuf;
     rbuf = gcry_random_bytes_secure(n, GCRY_STRONG_RANDOM);
