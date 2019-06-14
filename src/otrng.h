@@ -108,7 +108,8 @@ API otrng_result otrng_send_non_interactive_auth(
 
 API otrng_result otrng_init(otrng_bool die);
 
-INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr);
+INTERNAL /*@null@*/ prekey_ensemble_s *
+otrng_build_prekey_ensemble(otrng_s *otr);
 
 API int otrng_get_msg_type(const string_p msg);
 
@@ -121,7 +122,7 @@ tstatic otrng_shared_session_state_s
     tstatic
     otrng_get_shared_session_state(otrng_s *otr);
 
-tstatic char *
+tstatic /*@null@*/ char *
 otrng_generate_session_state_string(const otrng_shared_session_state_s *state);
 
 tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr);

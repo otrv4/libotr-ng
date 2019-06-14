@@ -556,7 +556,7 @@ tstatic otrng_result serialize_and_encode_auth_r(string_p *dst,
   return OTRNG_SUCCESS;
 }
 
-tstatic char *
+tstatic /*@null@*/ char *
 otrng_generate_session_state_string(const otrng_shared_session_state_s *state) {
   char *sss;
   size_t sss_len;
@@ -589,7 +589,7 @@ otrng_generate_session_state_string(const otrng_shared_session_state_s *state) {
   return sss;
 }
 
-static const char *get_shared_session_state(otrng_s *otr) {
+/*@null@*/ static const char *get_shared_session_state(otrng_s *otr) {
   otrng_shared_session_state_s state;
 
   if (otr->shared_session_state) {
@@ -978,7 +978,8 @@ tstatic otrng_result reply_with_non_interactive_auth_message(string_p *dst,
 }
 
 /* This is only used for tests */
-INTERNAL prekey_ensemble_s *otrng_build_prekey_ensemble(otrng_s *otr) {
+INTERNAL /*@null@*/ prekey_ensemble_s *
+otrng_build_prekey_ensemble(otrng_s *otr) {
   ecdh_keypair_s ecdh;
   dh_keypair_s dh;
   otrng_client_s *client;
@@ -1779,7 +1780,8 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
   return otrng_send_message(dst, "", NULL, MSG_FLAGS_IGNORE_UNREADABLE, otr);
 }
 
-tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *src, size_t len) {
+/*@null@*/ tstatic tlv_list_s *deserialize_received_tlvs(const uint8_t *src,
+                                                         size_t len) {
   uint8_t *tlvs_start = NULL;
   size_t tlvs_len;
 
@@ -1838,7 +1840,7 @@ tstatic unsigned int extract_word(const unsigned char *bufp) {
   return use;
 }
 
-tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
+/*@null@*/ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
   if (tlv->type == OTRNG_TLV_NONE || tlv->type == OTRNG_TLV_PADDING) {
     return NULL;
   }
@@ -1864,9 +1866,8 @@ tstatic tlv_s *process_tlv(const tlv_s *tlv, otrng_s *otr) {
   return otrng_process_smp_tlv(tlv, otr);
 }
 
-tstatic otrng_result process_received_tlvs(tlv_list_s **to_send,
-                                           otrng_response_s *response,
-                                           otrng_s *otr) {
+/*@null@*/ tstatic otrng_result process_received_tlvs(
+    tlv_list_s **to_send, otrng_response_s *response, otrng_s *otr) {
   const tlv_list_s *current = response->tlvs;
   while (current) {
     tlv_s *tlv = process_tlv(current->data, otr);
