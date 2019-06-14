@@ -304,7 +304,7 @@ tstatic otrng_result otrng_prekey_profile_sign(
   return OTRNG_SUCCESS;
 }
 
-INTERNAL otrng_prekey_profile_s *
+/*@null@*/ INTERNAL otrng_prekey_profile_s *
 otrng_prekey_profile_build(uint32_t instance_tag,
                            const otrng_keypair_s *longterm_pair) {
   otrng_prekey_profile_s *prekey_profile;
