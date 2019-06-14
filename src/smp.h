@@ -32,7 +32,8 @@
 #include "shared.h"
 #include "tlv.h"
 
-INTERNAL tlv_s *otrng_process_smp_tlv(const tlv_s *tlv, otrng_s *otr);
+/*@null@*/ INTERNAL tlv_s *otrng_process_smp_tlv(const tlv_s *tlv,
+                                                 otrng_s *otr);
 
 INTERNAL otrng_result otrng_smp_start(string_p *to_send,
                                       const uint8_t *question,
@@ -47,14 +48,14 @@ API otrng_result otrng_smp_abort(string_p *to_send, otrng_s *otr);
 
 #ifdef OTRNG_SMP_PRIVATE
 
-tstatic tlv_s *
+/*@null@*/ tstatic tlv_s *
 otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
                    const otrng_client_profile_s *responder_profile,
                    const uint8_t *question, const size_t q_len,
                    const uint8_t *secret, const size_t secretlen, uint8_t *ssid,
                    smp_protocol_s *smp, otrng_s *conversation);
 
-tstatic tlv_s *
+/*@null@*/ tstatic tlv_s *
 otrng_smp_provide_secret(otrng_smp_event *event, smp_protocol_s *smp,
                          const otrng_client_profile_s *our_profile,
                          const otrng_client_profile_s *their_profile,
