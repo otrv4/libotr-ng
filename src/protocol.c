@@ -152,8 +152,8 @@ tstatic otrng_result encrypt_data_message(data_message_s *data_msg,
   return OTRNG_SUCCESS;
 }
 
-tstatic data_message_s *generate_data_message(const otrng_s *otr,
-                                              const uint32_t ratchet_id) {
+/*@null@*/ tstatic data_message_s *
+generate_data_message(const otrng_s *otr, const uint32_t ratchet_id) {
   data_message_s *data_msg = otrng_data_message_new();
   if (!data_msg) {
     return NULL;
