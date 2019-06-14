@@ -822,7 +822,8 @@ INTERNAL otrng_result otrng_client_add_forging_key(
 
 API otrng_client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client) {
-  assert(client != NULL && client->client_profile != NULL);
+  assert(client != NULL);
+  assert(client->client_profile != NULL);
 
   return client->client_profile;
 }
