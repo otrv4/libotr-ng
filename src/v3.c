@@ -342,8 +342,8 @@ tstatic void op_otr_error_message_free(void *opdata, const char *err_msg) {
  * function is not provided by the application then the default prefix,
  * "[resent]", will be used.
  * */
-tstatic const char *op_resent_message_prefix(void *opdata,
-                                             ConnContext *context) {
+/*@null@*/ tstatic const char *op_resent_message_prefix(void *opdata,
+                                                        ConnContext *context) {
   (void)opdata;
   (void)context;
   return NULL;

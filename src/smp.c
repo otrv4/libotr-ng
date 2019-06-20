@@ -64,8 +64,8 @@ tstatic void handle_smp_event_cb_v4(const otrng_smp_event event,
   }
 }
 
-tstatic tlv_s *otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp,
-                                 const tlv_s *tlv) {
+/*@null@*/ tstatic tlv_s *
+otrng_process_smp(otrng_smp_event *ret, smp_protocol_s *smp, const tlv_s *tlv) {
   otrng_smp_event event = *ret;
   tlv_s *to_send = NULL;
 
@@ -164,7 +164,7 @@ INTERNAL tlv_s *otrng_process_smp_tlv(const tlv_s *tlv, otrng_s *otr) {
   return out;
 }
 
-tstatic tlv_s *
+/*@null@*/ tstatic tlv_s *
 otrng_smp_initiate(const otrng_client_profile_s *initiator_profile,
                    const otrng_client_profile_s *responder_profile,
                    const uint8_t *question, const size_t q_len,
@@ -279,7 +279,7 @@ INTERNAL otrng_result otrng_smp_start(string_p *to_send,
   return OTRNG_ERROR;
 }
 
-tstatic tlv_s *
+/*@null@*/ tstatic tlv_s *
 otrng_smp_provide_secret(otrng_smp_event *event, smp_protocol_s *smp,
                          const otrng_client_profile_s *our_profile,
                          const otrng_client_profile_s *their_client_profile,

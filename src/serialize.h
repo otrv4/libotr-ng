@@ -96,7 +96,8 @@ INTERNAL size_t otrng_serialize_shared_prekey(
  *
  * @param [old_mac_keys]   The list of old mac keys.
  */
-INTERNAL uint8_t *otrng_serialize_old_mac_keys(list_element_s *old_mac_keys);
+/*@null@*/ INTERNAL uint8_t *
+otrng_serialize_old_mac_keys(list_element_s *old_mac_keys);
 
 INTERNAL size_t otrng_serialize_phi(uint8_t *dst,
                                     const char *shared_session_state,
