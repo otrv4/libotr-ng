@@ -49,9 +49,9 @@ typedef struct prekey_message_s {
 INTERNAL /*@null@*/ prekey_message_s *
 otrng_prekey_message_create_copy(const prekey_message_s *src);
 
-INTERNAL /*@null@*/ prekey_message_s *otrng_prekey_message_build(uint32_t instance_tag,
-                                                      const ecdh_keypair_s *y,
-                                                      const dh_keypair_s *b);
+INTERNAL /*@null@*/ prekey_message_s *
+otrng_prekey_message_build(uint32_t instance_tag, const ecdh_keypair_s *y,
+                           const dh_keypair_s *b);
 
 INTERNAL void otrng_prekey_message_free(prekey_message_s *prekey_msg);
 

@@ -105,22 +105,24 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id);
 
 API void otrng_client_free(otrng_client_s *client);
 
-API /*@null@*/ otrng_conversation_s *otrng_client_get_conversation(int force_create,
-                                                        const char *recipient,
-                                                        otrng_client_s *client);
+API /*@null@*/ otrng_conversation_s *
+otrng_client_get_conversation(int force_create, const char *recipient,
+                              otrng_client_s *client);
 
 API otrng_bool otrng_conversation_is_encrypted(otrng_conversation_s *conv);
 
 API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv);
 
-API /*@null@*/ char *otrng_client_query_message(const char *recipient, const char *msg,
-                                     otrng_client_s *client);
+API /*@null@*/ char *otrng_client_query_message(const char *recipient,
+                                                const char *msg,
+                                                otrng_client_s *client);
 
 API /*@null@*/ char *otrng_client_identity_message(const char *recipient,
-                                        otrng_client_s *client);
+                                                   otrng_client_s *client);
 
-API /*@null@*/ char *otrng_client_init_message(const char *recipient, const char *msg,
-                                    otrng_client_s *client);
+API /*@null@*/ char *otrng_client_init_message(const char *recipient,
+                                               const char *msg,
+                                               otrng_client_s *client);
 
 API otrng_result otrng_client_send(char **new_msg, const char *msg,
                                    const char *recipient,
