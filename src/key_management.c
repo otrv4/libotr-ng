@@ -114,7 +114,7 @@ INTERNAL void otrng_key_manager_wipe_shared_prekeys(key_manager_s *manager) {
                     sizeof(otrng_shared_prekey_pub));
 }
 
-INTERNAL receiving_ratchet_s *
+INTERNAL /*@null@*/ receiving_ratchet_s *
 otrng_receiving_ratchet_new(key_manager_s *manager) {
   receiving_ratchet_s *ratchet =
       otrng_secure_alloc(sizeof(receiving_ratchet_s));
@@ -1161,7 +1161,8 @@ INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
   return OTRNG_SUCCESS;
 }
 
-INTERNAL uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
+INTERNAL /*@null@*/ uint8_t *
+otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
   size_t num_stored_keys = otrng_list_len(manager->skipped_keys);
   size_t serlen = num_stored_keys * MAC_KEY_BYTES;
   uint8_t *ser_mac_keys;
