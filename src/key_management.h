@@ -66,10 +66,10 @@ typedef struct skipped_keys_s {
 /* a temporary structure used to hold the values of the receiving ratchet */
 typedef struct receiving_ratchet_s {
   ec_scalar our_ecdh_priv;
-  dh_private_key our_dh_priv;
+  /*@null@*/ dh_private_key our_dh_priv;
 
   ec_point their_ecdh;
-  dh_public_key their_dh;
+  /*@null@*/ dh_public_key their_dh;
 
   k_brace brace_key;
   k_shared_secret shared_secret;
