@@ -52,17 +52,17 @@ INTERNAL void otrng_list_free_full(list_element_s *head);
 // Free list but does not free the nodes' data
 INTERNAL /*@null@*/ void otrng_list_free_nodes(list_element_s *head);
 
-INTERNAL list_element_s *otrng_list_copy(list_element_s *head);
+INTERNAL /*@null@*/ list_element_s *otrng_list_copy(list_element_s *head);
 
 INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head);
 
-INTERNAL list_element_s *otrng_list_get_last(list_element_s *head);
+INTERNAL /*@null@*/ list_element_s *otrng_list_get_last(list_element_s *head);
 
-INTERNAL list_element_s *
+INTERNAL /*@null@*/ list_element_s *
 otrng_list_get(const void *wanted, list_element_s *head,
                int (*fn)(const void *current, const void *wanted));
 
-INTERNAL list_element_s *otrng_list_get_by_value(const void *wanted,
+INTERNAL /*@null@*/ list_element_s *otrng_list_get_by_value(const void *wanted,
                                                  list_element_s *head);
 
 INTERNAL list_element_s *otrng_list_remove_element(const list_element_s *wanted,

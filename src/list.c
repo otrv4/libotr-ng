@@ -71,7 +71,7 @@ INTERNAL /*@null@*/ void otrng_list_free_nodes(list_element_s *head) {
   otrng_list_free(head, NULL);
 }
 
-INTERNAL list_element_s *otrng_list_copy(list_element_s *head) {
+INTERNAL /*@null@*/ list_element_s *otrng_list_copy(list_element_s *head) {
   list_element_s *cursor, *copy, *ret;
 
   if (otrng_list_len(head) == 0) {
@@ -114,7 +114,7 @@ INTERNAL list_element_s *otrng_list_add(void *data, list_element_s *head) {
   return head;
 }
 
-INTERNAL list_element_s *otrng_list_get_last(list_element_s *head) {
+INTERNAL /*@null@*/ list_element_s *otrng_list_get_last(list_element_s *head) {
   list_element_s *cursor;
 
   if (!head) {
@@ -129,7 +129,7 @@ INTERNAL list_element_s *otrng_list_get_last(list_element_s *head) {
   return cursor;
 }
 
-INTERNAL list_element_s *
+INTERNAL /*@null@*/ list_element_s *
 otrng_list_get(const void *wanted, list_element_s *head,
                int (*fn)(const void *current, const void *wanted)) {
   list_element_s *cursor = head;
@@ -149,8 +149,8 @@ tstatic int compare_data(const void *current, const void *wanted) {
   return current == wanted;
 }
 
-INTERNAL list_element_s *otrng_list_get_by_value(const void *wanted,
-                                                 list_element_s *head) {
+INTERNAL /*@null@*/ list_element_s *
+otrng_list_get_by_value(const void *wanted, list_element_s *head) {
   return otrng_list_get(wanted, head, compare_data);
 }
 
