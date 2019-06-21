@@ -92,7 +92,7 @@ INTERNAL void otrng_dake_non_interactive_auth_message_init(
 INTERNAL void otrng_dake_non_interactive_auth_message_destroy(
     dake_non_interactive_auth_message_s *non_interactive_auth);
 
-INTERNAL dake_identity_message_s *
+INTERNAL /*@null@*/ dake_identity_message_s *
 otrng_dake_identity_message_new(const otrng_client_profile_s *profile);
 
 INTERNAL void

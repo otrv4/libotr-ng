@@ -32,7 +32,7 @@
 #include "serialize.h"
 #include "shake.h"
 
-INTERNAL dake_identity_message_s *
+INTERNAL /*@null@*/ dake_identity_message_s *
 otrng_dake_identity_message_new(const otrng_client_profile_s *profile) {
   dake_identity_message_s *identity_msg;
 
