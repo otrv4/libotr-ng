@@ -46,10 +46,10 @@ typedef struct prekey_message_s {
   otrng_bool is_publishing;
 } prekey_message_s;
 
-INTERNAL prekey_message_s *
+INTERNAL /*@null@*/ prekey_message_s *
 otrng_prekey_message_create_copy(const prekey_message_s *src);
 
-INTERNAL prekey_message_s *otrng_prekey_message_build(uint32_t instance_tag,
+INTERNAL /*@null@*/ prekey_message_s *otrng_prekey_message_build(uint32_t instance_tag,
                                                       const ecdh_keypair_s *y,
                                                       const dh_keypair_s *b);
 
@@ -75,7 +75,7 @@ INTERNAL otrng_result otrng_prekey_message_serialize_with_metadata(
 
 #ifdef OTRNG_PREKEY_MESSAGE_PRIVATE
 
-tstatic prekey_message_s *otrng_prekey_message_new(void);
+tstatic /*@notnull@*/ prekey_message_s *otrng_prekey_message_new(void);
 
 #endif
 

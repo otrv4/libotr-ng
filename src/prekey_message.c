@@ -26,13 +26,13 @@
 #include "deserialize.h"
 #include "serialize.h"
 
-tstatic prekey_message_s *otrng_prekey_message_new(void) {
+tstatic /*@notnull@*/ prekey_message_s *otrng_prekey_message_new(void) {
   prekey_message_s *prekey_msg = otrng_xmalloc_z(sizeof(prekey_message_s));
 
   return prekey_msg;
 }
 
-INTERNAL prekey_message_s *
+INTERNAL /*@null@*/ prekey_message_s *
 otrng_prekey_message_create_copy(const prekey_message_s *src) {
   prekey_message_s *dst;
   if (!src) {
@@ -66,9 +66,9 @@ otrng_prekey_message_create_copy(const prekey_message_s *src) {
   return dst;
 }
 
-INTERNAL prekey_message_s *otrng_prekey_message_build(uint32_t instance_tag,
-                                                      const ecdh_keypair_s *y,
-                                                      const dh_keypair_s *b) {
+INTERNAL /*@null@*/ prekey_message_s *
+otrng_prekey_message_build(uint32_t instance_tag, const ecdh_keypair_s *y,
+                           const dh_keypair_s *b) {
   prekey_message_s *msg = otrng_prekey_message_new();
   uint32_t *identifier;
   if (!msg) {
