@@ -335,7 +335,8 @@ INTERNAL otrng_result otrng_key_manager_derive_dh_ratchet_keys(
 INTERNAL otrng_result otrng_store_old_mac_keys(key_manager_s *manager,
                                                k_msg_mac mac_key);
 
-INTERNAL /*@null@*/ uint8_t *otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
+INTERNAL /*@null@*/ uint8_t *
+otrng_reveal_mac_keys_on_tlv(key_manager_s *manager);
 
 #ifdef OTRNG_KEY_MANAGEMENT_PRIVATE
 

@@ -51,6 +51,7 @@
 -noeffect
 -nullpass
 -nullret
+-nullderef
 -nullstate
 -statictrans
 -temptrans

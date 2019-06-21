@@ -62,8 +62,8 @@ INTERNAL /*@null@*/ list_element_s *
 otrng_list_get(const void *wanted, list_element_s *head,
                int (*fn)(const void *current, const void *wanted));
 
-INTERNAL /*@null@*/ list_element_s *otrng_list_get_by_value(const void *wanted,
-                                                 list_element_s *head);
+INTERNAL /*@null@*/ list_element_s *
+otrng_list_get_by_value(const void *wanted, list_element_s *head);
 
 INTERNAL list_element_s *otrng_list_remove_element(const list_element_s *wanted,
                                                    list_element_s *head);
