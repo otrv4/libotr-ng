@@ -93,7 +93,7 @@ INTERNAL otrng_result otrng_generate_ephemeral_keys(ecdh_keypair_s *ecdh,
  * @param [use_data_len]   The length of the context.
  * @param [extra_symm_key] The extra symmetric key.
  */
-API uint8_t *otrng_derive_key_from_extra_symm_key(
+API /*@null@*/ uint8_t *otrng_derive_key_from_extra_symm_key(
     uint8_t usage, const unsigned char *use_data, size_t use_data_len,
     const unsigned char *extra_symm_key);
 

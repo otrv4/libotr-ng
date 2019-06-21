@@ -142,7 +142,7 @@ otrng_shared_prekey_pair_free(otrng_shared_prekey_pair_s *prekey_pair) {
 
 /* This returns a buffer in the secure memory area - it's important to free it
  * using otrng_secure_free */
-API uint8_t *otrng_derive_key_from_extra_symm_key(
+API /*@null@*/ uint8_t *otrng_derive_key_from_extra_symm_key(
     uint8_t usage, const unsigned char *use_data, size_t use_data_len,
     const unsigned char *extra_symm_key) {
   goldilocks_shake256_ctx_p hd;
