@@ -117,7 +117,7 @@ API void otrng_known_fingerprints_free(otrng_known_fingerprints_s *kf) {
   otrng_free(kf);
 }
 
-API otrng_known_fingerprint_s *
+API /*@null@*/ otrng_known_fingerprint_s *
 otrng_fingerprint_get_by_fp(const otrng_client_s *client,
                             const otrng_fingerprint fp) {
   list_element_s *c;
@@ -137,7 +137,7 @@ otrng_fingerprint_get_by_fp(const otrng_client_s *client,
   return NULL;
 }
 
-API otrng_known_fingerprint_s *
+API /*@null@*/ otrng_known_fingerprint_s *
 otrng_fingerprint_get_by_username(const otrng_client_s *client,
                                   const char *username) {
   list_element_s *c;
@@ -226,7 +226,7 @@ API void otrng_fingerprint_forget(const otrng_client_s *client,
 
 /* This returns the fingerprint of the peer, not the self.
  It only works properly if it's a v4 connection. */
-API otrng_known_fingerprint_s *
+API /*@null@*/ otrng_known_fingerprint_s *
 otrng_fingerprint_get_current(const otrng_s *conn) {
   otrng_fingerprint fp;
   assert(conn != NULL);
