@@ -34,7 +34,8 @@
 #include "serialize.h"
 #include "util.h"
 
-tstatic otrng_client_profile_s *client_profile_new(const char *versions) {
+tstatic /*@null@*/ otrng_client_profile_s *
+client_profile_new(const char *versions) {
   otrng_client_profile_s *client_profile;
   if (!versions) {
     return NULL;
@@ -564,7 +565,7 @@ client_profile_verify_signature(const otrng_client_profile_s *client_profile) {
   return valid;
 }
 
-INTERNAL otrng_client_profile_s *
+INTERNAL /*@null@*/ otrng_client_profile_s *
 otrng_client_profile_build_with_custom_expiration(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
     const otrng_public_key forging_key, time_t expiration_time) {
@@ -592,7 +593,7 @@ otrng_client_profile_build_with_custom_expiration(
   return client_profile;
 }
 
-INTERNAL otrng_client_profile_s *otrng_client_profile_build(
+INTERNAL /*@null@*/ otrng_client_profile_s *otrng_client_profile_build(
     uint32_t instance_tag, const char *versions, const otrng_keypair_s *keypair,
     const otrng_public_key forging_key, uint64_t expiration_time) {
   return otrng_client_profile_build_with_custom_expiration(
