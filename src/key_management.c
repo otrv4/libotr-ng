@@ -1178,7 +1178,6 @@ otrng_reveal_mac_keys_on_tlv(key_manager_s *manager) {
 
     for (i = 0; i < num_stored_keys; i++) {
       list_element_s *last = otrng_list_get_last(manager->skipped_keys);
-      assert(last != NULL);
       skipped_keys_s *skipped_keys = last->data;
       memcpy(enc_key, skipped_keys->enc_key, ENC_KEY_BYTES);
 
