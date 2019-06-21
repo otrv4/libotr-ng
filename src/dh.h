@@ -83,8 +83,8 @@ INTERNAL dh_mpi otrng_dh_mpi_copy(const dh_mpi src);
 
 INTERNAL void otrng_dh_mpi_release(dh_mpi mpi);
 
-INTERNAL dh_mpi otrng_dh_modulus_q(void);
-INTERNAL dh_mpi otrng_dh_modulus_p(void);
+INTERNAL /*@null@*/ dh_mpi otrng_dh_modulus_q(void);
+INTERNAL /*@null@*/ dh_mpi otrng_dh_modulus_p(void);
 
 #ifdef DEBUG_API
 API void otrng_dh_keypair_debug_print(FILE *, int, dh_keypair_s *);
@@ -94,7 +94,7 @@ API void otrng_dh_private_key_debug_print(FILE *, dh_private_key);
 
 #ifdef OTRNG_DH_PRIVATE
 
-INTERNAL dh_mpi otrng_dh_mpi_generator(void);
+INTERNAL /*@null@*/ dh_mpi otrng_dh_mpi_generator(void);
 
 #endif
 

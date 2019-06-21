@@ -152,7 +152,9 @@ INTERNAL void otrng_dh_free(void) {
   dh_initialized = 0;
 }
 
-INTERNAL dh_mpi otrng_dh_mpi_generator(void) { return DH3072_GENERATOR; }
+INTERNAL /*@null@*/ dh_mpi otrng_dh_mpi_generator(void) {
+  return DH3072_GENERATOR;
+}
 
 INTERNAL void otrng_dh_calculate_public_key(dh_public_key pub,
                                             const dh_private_key priv) {
@@ -330,9 +332,9 @@ INTERNAL dh_mpi otrng_dh_mpi_copy(const dh_mpi src) {
 
 INTERNAL void otrng_dh_mpi_release(dh_mpi mpi) { gcry_mpi_release(mpi); }
 
-INTERNAL dh_mpi otrng_dh_modulus_p() { return DH3072_MODULUS; }
+INTERNAL /*@null@*/ dh_mpi otrng_dh_modulus_p() { return DH3072_MODULUS; }
 
-INTERNAL dh_mpi otrng_dh_modulus_q() { return DH3072_MODULUS_Q; }
+INTERNAL /*@null@*/ dh_mpi otrng_dh_modulus_q() { return DH3072_MODULUS_Q; }
 
 #ifdef DEBUG_API
 
