@@ -105,7 +105,7 @@ API otrng_client_s *otrng_client_new(const otrng_client_id_s client_id);
 
 API void otrng_client_free(otrng_client_s *client);
 
-API otrng_conversation_s *otrng_client_get_conversation(int force_create,
+API /*@null@*/ otrng_conversation_s *otrng_client_get_conversation(int force_create,
                                                         const char *recipient,
                                                         otrng_client_s *client);
 
@@ -113,13 +113,13 @@ API otrng_bool otrng_conversation_is_encrypted(otrng_conversation_s *conv);
 
 API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv);
 
-API char *otrng_client_query_message(const char *recipient, const char *msg,
+API /*@null@*/ char *otrng_client_query_message(const char *recipient, const char *msg,
                                      otrng_client_s *client);
 
-API char *otrng_client_identity_message(const char *recipient,
+API /*@null@*/ char *otrng_client_identity_message(const char *recipient,
                                         otrng_client_s *client);
 
-API char *otrng_client_init_message(const char *recipient, const char *msg,
+API /*@null@*/ char *otrng_client_init_message(const char *recipient, const char *msg,
                                     otrng_client_s *client);
 
 API otrng_result otrng_client_send(char **new_msg, const char *msg,
@@ -180,7 +180,7 @@ API otrng_result otrng_client_get_our_fingerprint(otrng_fingerprint fp,
 INTERNAL void otrng_client_store_my_prekey_message(prekey_message_s *msg,
                                                    otrng_client_s *client);
 
-API prekey_message_s **
+API /*@null@*/ prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages,
                                    otrng_client_s *client);
 
@@ -202,7 +202,7 @@ INTERNAL otrng_result otrng_client_add_forging_key(
 API otrng_client_profile_s *
 otrng_client_get_client_profile(otrng_client_s *client);
 
-API otrng_client_profile_s *
+API /*@null@*/ otrng_client_profile_s *
 otrng_client_build_default_client_profile(otrng_client_s *client);
 
 API otrng_result otrng_client_add_client_profile(
@@ -217,13 +217,13 @@ API otrng_result otrng_client_add_exp_client_profile(
 API otrng_prekey_profile_s *
 otrng_client_get_prekey_profile(otrng_client_s *client);
 
-API otrng_prekey_profile_s *
+API /*@null@*/ otrng_prekey_profile_s *
 otrng_client_build_default_prekey_profile(otrng_client_s *client);
 
 API otrng_result otrng_client_add_prekey_profile(
     otrng_client_s *client, const otrng_prekey_profile_s *profile);
 
-API const otrng_prekey_profile_s *
+API /*@null@*/ const otrng_prekey_profile_s *
 otrng_client_get_exp_prekey_profile(otrng_client_s *client);
 
 API otrng_result otrng_client_add_exp_prekey_profile(
@@ -234,7 +234,7 @@ INTERNAL unsigned int otrng_client_get_instance_tag(otrng_client_s *client);
 INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
                                                     unsigned int instag);
 
-INTERNAL const prekey_message_s *
+INTERNAL /*@null@*/ const prekey_message_s *
 otrng_client_get_prekey_by_id(uint32_t id, const otrng_client_s *client);
 
 INTERNAL void

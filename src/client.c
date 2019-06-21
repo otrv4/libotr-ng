@@ -136,7 +136,7 @@ API void otrng_client_free(otrng_client_s *client) {
 
 // TODO: @instance_tag There may be multiple conversations with the same
 // recipient if they use multiple instance tags. We are not allowing this yet.
-tstatic otrng_conversation_s *
+tstatic /*@null@*/ otrng_conversation_s *
 get_conversation_with(const char *recipient, list_element_s *conversations) {
   const list_element_s *el = NULL;
   otrng_conversation_s *conv = NULL;
@@ -196,8 +196,8 @@ API otrng_bool otrng_conversation_is_finished(otrng_conversation_s *conv) {
   return otrng_false;
 }
 
-tstatic /*@temp@*/ otrng_s *create_connection_for(const char *recipient,
-                                                  otrng_client_s *client) {
+tstatic /*@temp@*/ /*@null@*/ otrng_s *
+create_connection_for(const char *recipient, otrng_client_s *client) {
   otrng_v3_conn_s *v3_conn = NULL;
   otrng_s *conn = NULL;
 
@@ -220,7 +220,7 @@ tstatic /*@temp@*/ otrng_s *create_connection_for(const char *recipient,
   return conn;
 }
 
-tstatic otrng_conversation_s *
+tstatic /*@null@*/ otrng_conversation_s *
 get_or_create_conversation_with(const char *recipient, otrng_client_s *client) {
   otrng_conversation_s *conv = NULL;
   otrng_s *conn = NULL;
@@ -246,7 +246,7 @@ get_or_create_conversation_with(const char *recipient, otrng_client_s *client) {
   return conv;
 }
 
-API otrng_conversation_s *
+API /*@null@*/ otrng_conversation_s *
 otrng_client_get_conversation(int force_create, const char *recipient,
                               otrng_client_s *client) {
   if (force_create) {
@@ -290,8 +290,9 @@ localize_error_message(struct otrng_client_s *client,
   }
 }
 
-API char *otrng_client_query_message(const char *recipient, const char *msg,
-                                     otrng_client_s *client) {
+API /*@null@*/ char *otrng_client_query_message(const char *recipient,
+                                                const char *msg,
+                                                otrng_client_s *client) {
   char *ret = NULL;
   otrng_conversation_s *conv = NULL;
   conv = get_or_create_conversation_with(recipient, client);
@@ -306,8 +307,8 @@ API char *otrng_client_query_message(const char *recipient, const char *msg,
   return ret;
 }
 
-API char *otrng_client_identity_message(const char *recipient,
-                                        otrng_client_s *client) {
+API /*@null@*/ char *otrng_client_identity_message(const char *recipient,
+                                                   otrng_client_s *client) {
   char *ret = NULL;
   otrng_conversation_s *conv = NULL;
   conv = get_or_create_conversation_with(recipient, client);
@@ -327,8 +328,9 @@ API char *otrng_client_identity_message(const char *recipient,
   return ret;
 }
 
-API char *otrng_client_init_message(const char *recipient, const char *msg,
-                                    otrng_client_s *client) {
+API /*@null@*/ char *otrng_client_init_message(const char *recipient,
+                                               const char *msg,
+                                               otrng_client_s *client) {
   char *ret = NULL;
   otrng_conversation_s *conv = NULL;
   conv = get_or_create_conversation_with(recipient, client);
@@ -628,7 +630,7 @@ INTERNAL void otrng_client_store_my_prekey_message(prekey_message_s *msg,
   client->our_prekeys = otrng_list_add(msg, client->our_prekeys);
 }
 
-API prekey_message_s **
+API /*@null@*/ prekey_message_s **
 otrng_client_build_prekey_messages(uint8_t num_messages,
                                    otrng_client_s *client) {
   uint32_t instance_tag;
@@ -828,7 +830,7 @@ otrng_client_get_client_profile(otrng_client_s *client) {
   return client->client_profile;
 }
 
-API otrng_client_profile_s *
+API /*@null@*/ otrng_client_profile_s *
 otrng_client_build_default_client_profile(otrng_client_s *client) {
   otrng_policy_s policy = get_policy_for(client);
   const char *allowed_versions = NULL;
@@ -903,7 +905,7 @@ otrng_client_get_prekey_profile(otrng_client_s *client) {
   return client->prekey_profile;
 }
 
-API otrng_prekey_profile_s *
+API /*@null@*/ otrng_prekey_profile_s *
 otrng_client_build_default_prekey_profile(otrng_client_s *client) {
   assert(client != NULL);
 
@@ -925,7 +927,7 @@ API otrng_result otrng_client_add_prekey_profile(
   return OTRNG_SUCCESS;
 }
 
-API const otrng_prekey_profile_s *
+API /*@null@*/ const otrng_prekey_profile_s *
 otrng_client_get_exp_prekey_profile(otrng_client_s *client) {
   assert(client != NULL);
 
@@ -951,9 +953,9 @@ API otrng_result otrng_client_add_exp_prekey_profile(
   return OTRNG_SUCCESS;
 }
 
-tstatic OtrlInsTag *otrng_instance_tag_new(const char *protocol,
-                                           const char *account,
-                                           unsigned int instag) {
+tstatic /*@null@*/ OtrlInsTag *otrng_instance_tag_new(const char *protocol,
+                                                      const char *account,
+                                                      unsigned int instag) {
   OtrlInsTag *p;
   if (instag < OTRNG_MIN_VALID_INSTAG) {
     return NULL;
@@ -1038,8 +1040,8 @@ INTERNAL otrng_result otrng_client_add_instance_tag(otrng_client_s *client,
   return OTRNG_SUCCESS;
 }
 
-tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
-                                                     list_element_s *l) {
+tstatic /*@null@*/ list_element_s *
+get_stored_prekey_node_by_id(uint32_t id, list_element_s *l) {
   while (l) {
     const prekey_message_s *s = l->data;
     if (!s) {
@@ -1056,7 +1058,7 @@ tstatic list_element_s *get_stored_prekey_node_by_id(uint32_t id,
   return NULL;
 }
 
-INTERNAL const prekey_message_s *
+INTERNAL /*@null@*/ const prekey_message_s *
 otrng_client_get_prekey_by_id(uint32_t id, const otrng_client_s *client) {
   list_element_s *node = get_stored_prekey_node_by_id(id, client->our_prekeys);
   if (!node) {
