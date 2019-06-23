@@ -203,11 +203,13 @@ static void test_otrng_client_profile_build() {
                                            NULL, NULL, expiration));
   otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG + 1, NULL,
                                            &keypair, keypair2.pub, expiration));
-  otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG, "3",
+  otrng_assert(!otrng_client_profile_build(OTRNG_MIN_VALID_INSTAG - 1, "3",
                                            &keypair, keypair2.pub, expiration));
 
   otrng_client_profile_s *profile = otrng_client_profile_build(
       OTRNG_MIN_VALID_INSTAG + 1, "3", &keypair, keypair2.pub, expiration);
+
+  otrng_assert(profile);
   g_assert_cmpstr(profile->versions, ==, "3");
 
   otrng_client_profile_free(profile);

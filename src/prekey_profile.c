@@ -310,7 +310,8 @@ otrng_prekey_profile_build(uint32_t instance_tag,
   otrng_prekey_profile_s *prekey_profile;
   time_t expires = time(NULL);
 
-  if (!longterm_pair || !otrng_instance_tag_valid(instance_tag)) {
+  if (!longterm_pair ||
+      (otrng_instance_tag_valid(instance_tag)) == otrng_false) {
     return NULL;
   }
 

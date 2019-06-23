@@ -571,7 +571,8 @@ otrng_client_profile_build_with_custom_expiration(
     const otrng_public_key forging_key, time_t expiration_time) {
 
   otrng_client_profile_s *client_profile;
-  if (!otrng_instance_tag_valid(instance_tag) || !versions || !keypair) {
+  if ((otrng_instance_tag_valid(instance_tag) == otrng_false) || !versions ||
+      !keypair) {
     return NULL;
   }
 

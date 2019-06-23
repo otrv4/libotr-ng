@@ -642,22 +642,24 @@ static void test_api_conversation_errors_2(void) {
   otrng_assert(bob->state == OTRNG_STATE_START);
 
   const char *malformed =
-      "?OTR:AAQ1AAAAAAAAAAAAAAEBAAABAgAQXaS4pTGfRolFC5WuliYvxJJcwqpOQeeO4/"
-      "1zoKokDoUE/"
-      "OnFdvBBv09zDtDvneIbzfs56QHpWGuAAAAAAzM0AAAAAABbSMuiJZfVAhREsc6c6WG7NSVNN"
-      "F58mInKArRia8avA5ZazE7HUNkZ8BWPsouNbLoTYTxViDtavlEpHfCAOqsXGRwAO0H/"
-      "kQNgRJr2ZWTF1AEs1BHP7r+tu/muOUx/7wqh/"
-      "itf9au4j3LO5b1AMCV5tIIpmQcAAAAAAIyDWg5gjDdOL+yYsZs1QdRaNWf6Bb+"
-      "t3R6XAd3kv+AFibvTomYi/OL8j3eM65prcjSOMIDJMbxigAAAAYAPNegWVf5E9/"
-      "rOgH48feVb3m3EP3L0Ln6lgNdcxATBI6AmqvJwYaTwrDGnhOggj6PUC/USidH/"
-      "pUQ2Ht7QnSVqFEgxCttt/"
-      "oRtcd7oiso9wYEgcMQrToZLF3URJEQUFC6TzyCkPPOcoSGCAkJvqpgwp6xCHza7qvFGvlsE4"
-      "RUNj5/09SU0GDIvZkROwmMa14OlHu0Zb84ttyicohcxGmOdTi/c4XPVu5NO2vc/j/"
-      "Px28qWCFy8ZdUdKN1QFhrtU/y2K0jcFsvifJmc1puBjoQvbg51s/"
-      "M9+LNDJhJUN4OUMybqTpnztt2+Jl8FFV+Wg8f6E52gM4rODoc4NWatDc+t9p+"
-      "SiqbSKueci04yIue+5N057t7TT0nh9WEZnom3gbwkmS6b4yz/"
-      "xSssNlgx1+Tnk3oXiJO+SO8znlZ6lkxmhZgrqG1u8abBO9YG6DC4gz9s3sBCJDA+"
-      "eF08cb9C7RwGpebYgJMNZ3PgwVy6s6H5yoD0c2PcqF50hspJu+2oA1A=.";
+      "?OTR:AAQ1AAAA/"
+      "wAAAAAAAAAFAAFtAnOYAAIAEOS3QJQ0qaOmuYPwC5ZNkVSCaKiBkWkLaYOttspqz9qIv28hj"
+      "TVP1ODnSCIyn+6aC1NmCgjxryJYgAADABJYWw6Kupk/tyU/"
+      "HM9qIxBAMKEBVzwgkeW5GrqL8dz6LB8rwObfGbsg1+"
+      "RDaAf7k3Q1KWDiW2I9oYAABAAAAAIzNAAFAAAAAF0hMCI8yzB0KnAbqRZRRdrVcih1KcuCR8"
+      "XYpGk/"
+      "TY1ZyqJW2hWTgognlOBGWZcbrA+"
+      "cfPFWmr1MvscnvQBr6gqCZ6j819wnmr7Uh0Zv1XycBebuC4+DtfFcqlE409pFpkz7teh5+"
+      "UxTQzwl5gopUJZguL5LNwAZeGQzgzmxyAtG/EuD0ij2bGb19UJ2hMc7k3/EY/"
+      "sDq4cYXqn51zj8n95Ek80mqIiXB2zUIIJCtYAAAAGAjmy/"
+      "MhzrgdZ7A1X2BRKn71Obo18OdwZIiiRzNLxIg4ublc8DHBaoDHRT4GsryuBGuJVLmofr1ISd"
+      "Fq5ZmuvBe7wIAaI1NhkBVihD6vqc0nrv8INXywF2NzRhjnq/WJkuhPEdXTpw0l/"
+      "Tw5H5aTDpE43NzRYweQAX9A9l9qbkBjCohLNUO8WApf1NoggXVXfxy25RvNwx5iFeOVvdOsn"
+      "724dhxqBJaKDuFroy0Kp4V5m9msOlB2cG1B/Y2sm4ZMi/"
+      "S8t3UpEreufFySS8LYUVHWdM8FqfBf54x3gcHJGqZyUFyVvuCmn6qASMPWdXhHmw8z4WUWn8"
+      "PHWxLQV8oRxM6DI7Q/EWDI7jhVmzlNx0ZIjYYHBJgkSY1vOaNjAcIo2ZGAi8kn83FqCv8l/"
+      "UiBB0oqGtCxXkUZAShah6xAfW1EYkgmZVX8tnLRuc2+"
+      "mL1NhDmi3SIplLQturUIN34ZUp5JebNYT4WmRWm2VfGG6+L1NFGJLMj5Wz4YNBHcVsXbGu.";
 
   // Alice receives malformed Identity message
   otrng_assert_is_error(
@@ -742,22 +744,24 @@ static void test_api_conversation_errors_with_policies(void) {
   otrng_assert(bob->state == OTRNG_STATE_START);
 
   const char *malformed =
-      "?OTR:AAQ1AAAAAAAAAAAAAAEBAAABAgAQXaS4pTGfRolFC5WuliYvxJJcwqpOQeeO4/"
-      "1zoKokDoUE/"
-      "OnFdvBBv09zDtDvneIbzfs56QHpWGuAAAAAAzM0AAAAAABbSMuiJZfVAhREsc6c6WG7NSVNN"
-      "F58mInKArRia8avA5ZazE7HUNkZ8BWPsouNbLoTYTxViDtavlEpHfCAOqsXGRwAO0H/"
-      "kQNgRJr2ZWTF1AEs1BHP7r+tu/muOUx/7wqh/"
-      "itf9au4j3LO5b1AMCV5tIIpmQcAAAAAAIyDWg5gjDdOL+yYsZs1QdRaNWf6Bb+"
-      "t3R6XAd3kv+AFibvTomYi/OL8j3eM65prcjSOMIDJMbxigAAAAYAPNegWVf5E9/"
-      "rOgH48feVb3m3EP3L0Ln6lgNdcxATBI6AmqvJwYaTwrDGnhOggj6PUC/USidH/"
-      "pUQ2Ht7QnSVqFEgxCttt/"
-      "oRtcd7oiso9wYEgcMQrToZLF3URJEQUFC6TzyCkPPOcoSGCAkJvqpgwp6xCHza7qvFGvlsE4"
-      "RUNj5/09SU0GDIvZkROwmMa14OlHu0Zb84ttyicohcxGmOdTi/c4XPVu5NO2vc/j/"
-      "Px28qWCFy8ZdUdKN1QFhrtU/y2K0jcFsvifJmc1puBjoQvbg51s/"
-      "M9+LNDJhJUN4OUMybqTpnztt2+Jl8FFV+Wg8f6E52gM4rODoc4NWatDc+t9p+"
-      "SiqbSKueci04yIue+5N057t7TT0nh9WEZnom3gbwkmS6b4yz/"
-      "xSssNlgx1+Tnk3oXiJO+SO8znlZ6lkxmhZgrqG1u8abBO9YG6DC4gz9s3sBCJDA+"
-      "eF08cb9C7RwGpebYgJMNZ3PgwVy6s6H5yoD0c2PcqF50hspJu+2oA1A=.";
+      "?OTR:AAQ1AAAA/"
+      "wAAAAAAAAAFAAFtAnOYAAIAEOS3QJQ0qaOmuYPwC5ZNkVSCaKiBkWkLaYOttspqz9qIv28hj"
+      "TVP1ODnSCIyn+6aC1NmCgjxryJYgAADABJYWw6Kupk/tyU/"
+      "HM9qIxBAMKEBVzwgkeW5GrqL8dz6LB8rwObfGbsg1+"
+      "RDaAf7k3Q1KWDiW2I9oYAABAAAAAIzNAAFAAAAAF0hMCI8yzB0KnAbqRZRRdrVcih1KcuCR8"
+      "XYpGk/"
+      "TY1ZyqJW2hWTgognlOBGWZcbrA+"
+      "cfPFWmr1MvscnvQBr6gqCZ6j819wnmr7Uh0Zv1XycBebuC4+DtfFcqlE409pFpkz7teh5+"
+      "UxTQzwl5gopUJZguL5LNwAZeGQzgzmxyAtG/EuD0ij2bGb19UJ2hMc7k3/EY/"
+      "sDq4cYXqn51zj8n95Ek80mqIiXB2zUIIJCtYAAAAGAjmy/"
+      "MhzrgdZ7A1X2BRKn71Obo18OdwZIiiRzNLxIg4ublc8DHBaoDHRT4GsryuBGuJVLmofr1ISd"
+      "Fq5ZmuvBe7wIAaI1NhkBVihD6vqc0nrv8INXywF2NzRhjnq/WJkuhPEdXTpw0l/"
+      "Tw5H5aTDpE43NzRYweQAX9A9l9qbkBjCohLNUO8WApf1NoggXVXfxy25RvNwx5iFeOVvdOsn"
+      "724dhxqBJaKDuFroy0Kp4V5m9msOlB2cG1B/Y2sm4ZMi/"
+      "S8t3UpEreufFySS8LYUVHWdM8FqfBf54x3gcHJGqZyUFyVvuCmn6qASMPWdXhHmw8z4WUWn8"
+      "PHWxLQV8oRxM6DI7Q/EWDI7jhVmzlNx0ZIjYYHBJgkSY1vOaNjAcIo2ZGAi8kn83FqCv8l/"
+      "UiBB0oqGtCxXkUZAShah6xAfW1EYkgmZVX8tnLRuc2+"
+      "mL1NhDmi3SIplLQturUIN34ZUp5JebNYT4WmRWm2VfGG6+L1NFGJLMj5Wz4YNBHcVsXbGu.";
 
   /* Alice receives malformed Identity message */
   otrng_assert_is_error(

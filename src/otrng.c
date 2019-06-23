@@ -1055,7 +1055,7 @@ set_their_prekey_profile(const otrng_prekey_profile_s *profile, otrng_s *otr) {
 
 tstatic otrng_result received_sender_instance_tag(uint32_t their_instance_tag,
                                                   otrng_s *otr) {
-  if (!otrng_instance_tag_valid(their_instance_tag)) {
+  if (otrng_instance_tag_valid(their_instance_tag) == otrng_false) {
     return OTRNG_ERROR;
   }
 
@@ -1065,7 +1065,15 @@ tstatic otrng_result received_sender_instance_tag(uint32_t their_instance_tag,
 }
 
 static otrng_bool valid_receiver_instance_tag(uint32_t instance_tag) {
-  return (instance_tag == 0 || otrng_instance_tag_valid(instance_tag));
+  if (instance_tag == 0) {
+    return otrng_false;
+  }
+
+  if (otrng_instance_tag_valid(instance_tag) == otrng_false) {
+    return otrng_false;
+  }
+
+  return otrng_true;
 }
 
 tstatic otrng_result prekey_message_received(const prekey_message_s *msg,
@@ -1287,7 +1295,7 @@ tstatic otrng_result non_interactive_auth_message_received(
     return OTRNG_ERROR;
   }
 
-  if (!valid_receiver_instance_tag(auth->receiver_instance_tag)) {
+  if (valid_receiver_instance_tag(auth->receiver_instance_tag) == otrng_false) {
     otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
@@ -1387,7 +1395,6 @@ tstatic otrng_result receive_non_interactive_auth_message(
   }
 
   if (!otrng_dake_non_interactive_auth_message_deserialize(&auth, src, len)) {
-    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
 
@@ -1478,7 +1485,6 @@ tstatic otrng_result receive_identity_message(string_p *dst,
   msg.B = NULL;
 
   if (!otrng_dake_identity_message_deserialize(&msg, buffer, buff_len)) {
-    otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     otrng_free(msg.profile);
     return result;
   }
@@ -1636,7 +1642,6 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buffer,
   }
 
   if (!otrng_dake_auth_r_deserialize(&auth, buffer, buff_len)) {
-    otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     otrng_dake_auth_r_destroy(&auth);
     return OTRNG_ERROR;
   }
@@ -1653,7 +1658,7 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buffer,
     return OTRNG_ERROR;
   }
 
-  if (!valid_receiver_instance_tag(auth.receiver_instance_tag)) {
+  if (valid_receiver_instance_tag(auth.receiver_instance_tag) == otrng_false) {
     otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     otrng_dake_auth_r_destroy(&auth);
     return OTRNG_ERROR;
@@ -1737,7 +1742,6 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
   }
 
   if (!otrng_dake_auth_i_deserialize(&auth, buffer, buff_len)) {
-    otrng_error_message(dst, OTRNG_ERR_MSG_MALFORMED);
     otrng_dake_auth_i_destroy(&auth);
     return OTRNG_ERROR;
   }
@@ -1754,7 +1758,7 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
     return OTRNG_ERROR;
   }
 
-  if (!valid_receiver_instance_tag(auth.receiver_instance_tag)) {
+  if (valid_receiver_instance_tag(auth.receiver_instance_tag) == otrng_false) {
     otrng_dake_auth_i_destroy(&auth);
     return OTRNG_ERROR;
   }
@@ -1920,7 +1924,6 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
 
   if (otrng_failed(
           otrng_data_message_deserialize(msg, buffer, buff_len, &read))) {
-    otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     otrng_data_message_free(msg);
     return OTRNG_ERROR;
   }
@@ -1941,7 +1944,7 @@ tstatic otrng_result otrng_receive_data_message_after_dake(
     return OTRNG_ERROR;
   }
 
-  if (!valid_receiver_instance_tag(msg->receiver_instance_tag)) {
+  if (valid_receiver_instance_tag(msg->receiver_instance_tag) == otrng_false) {
     otrng_error_message(&response->to_send, OTRNG_ERR_MSG_MALFORMED);
     return OTRNG_ERROR;
   }
