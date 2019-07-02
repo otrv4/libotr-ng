@@ -312,6 +312,11 @@ API otrng_result otrng_build_identity_message(string_p *dst, otrng_s *otr) {
     return OTRNG_ERROR;
   }
 
+  if (otrng_key_manager_generate_first_ephemeral_keys(otr->keys) ==
+      OTRNG_ERROR) {
+    return OTRNG_ERROR;
+  }
+
   maybe_create_keys(otr->client);
 
   msg = otrng_dake_identity_message_new(get_my_client_profile(otr));
@@ -324,6 +329,8 @@ API otrng_result otrng_build_identity_message(string_p *dst, otrng_s *otr) {
 
   otrng_ec_point_copy(msg->Y, our_ecdh(otr));
   msg->B = otrng_dh_mpi_copy(our_dh(otr));
+  otrng_ec_point_copy(msg->our_ecdh_first, &otr->keys->our_ecdh_first->pub[0]);
+  msg->our_dh_first = otrng_dh_mpi_copy(otr->keys->our_dh_first->pub);
 
   result = serialize_and_encode_identity_message(dst, msg);
   otrng_dake_identity_message_free(msg);
