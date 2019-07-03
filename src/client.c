@@ -570,13 +570,19 @@ INTERNAL void otrng_client_expire_sessions(otrng_client_s *client) {
   now = time(NULL);
 
   for (el = client->conversations; el; el = el->next) {
-    conv = el->data;
-    expiration_time = get_session_expiry_time_from(conv->conn);
 
-    if (conv->conn->keys->last_generated < now - expiration_time) {
-      otrng_client_expire_session(conv);
-    }
+	  if (!conv) {
+		  return;
+	  }
+
+	  conv = el->data;
+	  expiration_time = get_session_expiry_time_from(conv->conn);
+
+	  if (conv->conn->keys->last_generated < now - expiration_time) {
+		  otrng_client_expire_session(conv);
+	  }
   }
+
 }
 
 INTERNAL otrng_result otrng_client_expire_fragments(otrng_client_s *client) {
