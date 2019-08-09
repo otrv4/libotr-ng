@@ -88,7 +88,7 @@ INTERNAL otrng_result otrng_serialize_fingerprint(
     return OTRNG_ERROR;
   }
 
-  /* KDF_1(usage_fingerprint || byte(H) || byte(F), 56) */
+  /* HWC(usage_fingerprint || byte(H) || byte(F), 56) */
   if (!hash_init_with_usage(hd, usage_fingerprint)) {
     return OTRNG_ERROR;
   }
