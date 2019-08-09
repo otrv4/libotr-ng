@@ -69,7 +69,8 @@ static void test_fingerprint_hash_to_human() {
   char fp_human[OTRNG_FPRINT_HUMAN_LEN];
   memset(fp_human, 0, sizeof fp_hash);
 
-  otrng_fingerprint_hash_to_human(fp_human, fp_hash);
+  otrng_assert_is_success(
+      otrng_fingerprint_hash_to_human(fp_human, fp_hash, sizeof(fp_hash)));
 
   g_assert_cmpint(0, ==,
                   strncmp(expected_fp, fp_human, OTRNG_FPRINT_HUMAN_LEN));

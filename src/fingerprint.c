@@ -32,9 +32,14 @@
 /* The 126-byte output INCLUDES a terminating zero byte. The actual content */
 /* is only 125 bytes */
 API otrng_result otrng_fingerprint_hash_to_human(char *human,
-                                                 const unsigned char *hash) {
+                                                 const unsigned char *hash,
+                                                 size_t hash_size) {
   int word, byte;
   char *p = human;
+
+  if (hash_size != FPRINT_LEN_BYTES) {
+    return OTRNG_ERROR;
+  }
 
   for (word = 0; word < 14; ++word) {
     for (byte = 0; byte < 4; ++byte) {
@@ -49,6 +54,11 @@ API otrng_result otrng_fingerprint_hash_to_human(char *human,
   /* Change that last ' ' to a '\0' */
   --p;
   *p = '\0';
+
+  if (strlen(human) != OTRNG_FPRINT_HUMAN_LEN - 1) {
+    return OTRNG_ERROR;
+  }
+
   return OTRNG_SUCCESS;
 }
 

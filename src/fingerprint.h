@@ -66,7 +66,8 @@ typedef struct otrng_known_fingerprints_s {
 API void otrng_known_fingerprints_free(otrng_known_fingerprints_s *kf);
 
 API otrng_result otrng_fingerprint_hash_to_human(char *human,
-                                                 const unsigned char *hash);
+                                                 const unsigned char *hash,
+                                                 size_t hash_size);
 
 INTERNAL otrng_result otrng_serialize_fingerprint(
     otrng_fingerprint fp, const otrng_public_key long_term_pub_key,
