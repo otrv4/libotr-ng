@@ -202,5 +202,5 @@ script:
       if [ "$T" = "32bit" ]; then
            ./autogen.sh
            ./configure --disable-shared
-           make splint
+           make ci
       fi
