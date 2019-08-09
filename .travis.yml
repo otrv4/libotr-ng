@@ -83,7 +83,10 @@ matrix:
     - os: linux
       compiler: gcc
       dist: precise
-      env: T=splint
+     - os: linux
+      dist: trusty
+      compiler: gcc
+      env: T=32bit
   allow_failures:
     - os: osx
       compiler: clang
@@ -120,6 +123,7 @@ before_install:
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew install curl && brew install glib; fi
 - if [[ "$T" == "splint" ]]; then sudo apt-get install splint --quiet --assume-yes; fi
 - if [[ "$T" = "style" ]]; then sudo apt-get install clang-format-3.5 clang-tidy-3.9 --quiet --assume-yes; fi
+- if [[ "$T" = "32bit" ]]; then sudo apt-get install gcc-multilib --quiet --assume-yes; fi
 
 before_script:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
@@ -127,6 +131,7 @@ before_script:
       brew install libsodium || brew outdated libsodium || brew upgrade libsodium;
     fi
   - ./travis_before_script.sh
+  - if [[ "$T" = "32bit" ]]; then export CLAFGS="-m32"; fi
 
 script:
   - export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
@@ -177,6 +182,7 @@ script:
            make -j check
            make ci
       fi
+
   - |
       if [ "$T" = "sanitizer" ]; then
            ./autogen.sh
@@ -190,5 +196,11 @@ script:
       if [ "$T" = "splint" ]; then
            ./autogen.sh
            ./configure
+           make splint
+      fi
+  - |
+      if [ "$T" = "32bit" ]; then
+           ./autogen.sh
+           ./configure --disable-shared
            make splint
       fi
