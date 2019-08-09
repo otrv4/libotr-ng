@@ -83,7 +83,7 @@ matrix:
     - os: linux
       compiler: gcc
       dist: precise
-     - os: linux
+    - os: linux
       dist: trusty
       compiler: gcc
       env: T=32bit
