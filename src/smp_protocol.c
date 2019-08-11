@@ -354,7 +354,10 @@ INTERNAL void otrng_smp_message_1_destroy(smp_message_1_s *msg) {
     return;
   }
 
-  otrng_free(msg->question);
+  if (msg->question != NULL) {
+    otrng_free(msg->question);
+  }
+
   msg->question = NULL;
   msg->q_len = 0;
 
