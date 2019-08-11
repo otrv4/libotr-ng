@@ -920,7 +920,8 @@ API otrng_result otrng_client_export_v4_identity(otrng_client_s *client,
   }
 
   memset(forg_ser, 0, ED448_POINT_BYTES);
-  if (otrng_failed(otrng_serialize_ec_point(forg_ser, *client->forging_key))) {
+  if (otrng_serialize_ec_point(forg_ser, *client->forging_key) !=
+      ED448_POINT_BYTES) {
     return OTRNG_ERROR;
   }
 
