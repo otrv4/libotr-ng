@@ -37,7 +37,9 @@
 
 // needed for comparing with GOLDILOCKS_TRUE
 typedef uint8_t
-    otrng_bool; /* "Boolean" type, will be set to all-zero or all-one */
+    otrng_bool; /* "Boolean" type, will be set to 0 or 1. Compatible
+		   with C native boolean logic so conditionals on
+		   otrng_bool works as expected) */
 
 static const otrng_bool otrng_true = 1;
 static const otrng_bool otrng_false = 0;
@@ -57,20 +59,6 @@ typedef enum {
 
 /*@unused@*/ static inline otrng_bool otrng_result_to_bool(otrng_result v) {
   if (v == OTRNG_SUCCESS) {
-    return otrng_true;
-  }
-  return otrng_false;
-}
-
-/*@unused@*/ static inline int otrng_bool_is_true(otrng_bool v) {
-  if (v == OTRNG_SUCCESS) {
-    return 1;
-  }
-  return 0;
-}
-
-/*@unused@*/ static inline otrng_bool c_bool_to_otrng_bool(int v) {
-  if (v) {
     return otrng_true;
   }
   return otrng_false;

@@ -191,8 +191,7 @@ static otrng_bool otrng_ecdh_valid_secret(uint8_t *shared_secret,
     return otrng_false;
   }
 
-  if (otrng_bool_is_true(
-          otrng_is_empty_array(shared_secret, ED448_POINT_BYTES))) {
+  if (otrng_is_empty_array(shared_secret, ED448_POINT_BYTES)) {
     return otrng_false;
   }
 

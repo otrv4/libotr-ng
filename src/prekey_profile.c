@@ -349,8 +349,7 @@ otrng_prekey_profile_verify_signature(const otrng_prekey_profile_s *profile,
   uint8_t pubkey[ED448_POINT_BYTES];
   otrng_bool valid;
 
-  if (otrng_bool_is_true(
-          otrng_is_empty_array(profile->signature, ED448_SIGNATURE_BYTES))) {
+  if (otrng_is_empty_array(profile->signature, ED448_SIGNATURE_BYTES)) {
     return otrng_false;
   }
 

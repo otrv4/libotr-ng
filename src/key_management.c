@@ -967,8 +967,7 @@ tstatic otrng_result store_enc_keys(
     return OTRNG_SUCCESS;
   }
 
-  if (!otrng_bool_is_true(otrng_is_empty_array(tmp_receiving_ratchet->chain_r,
-                                               CHAIN_KEY_BYTES))) {
+  if (!otrng_is_empty_array(tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES)) {
     while (tmp_receiving_ratchet->k < until) {
       if (!shake_256_kdf1(enc_key, ENC_KEY_BYTES, usage_message_key,
                           tmp_receiving_ratchet->chain_r, CHAIN_KEY_BYTES)) {

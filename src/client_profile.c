@@ -545,8 +545,8 @@ client_profile_verify_signature(const otrng_client_profile_s *client_profile) {
 
   memset(pubkey, 0, ED448_POINT_BYTES);
 
-  if (otrng_bool_is_true(otrng_is_empty_array(client_profile->signature,
-                                              ED448_SIGNATURE_BYTES))) {
+  if (otrng_is_empty_array(client_profile->signature,
+			   ED448_SIGNATURE_BYTES)) {
     return otrng_false;
   }
 
