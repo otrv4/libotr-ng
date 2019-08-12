@@ -654,6 +654,30 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
   return OTRNG_SUCCESS;
 }
 
+INTERNAL void
+otrng_key_manager_set_first_ephemeral_keys(key_manager_s *manager) {
+  otrng_ec_point_destroy(manager->our_ecdh->pub);
+  otrng_ec_point_destroy(manager->their_ecdh);
+
+  otrng_ec_scalar_copy(manager->our_ecdh->priv, manager->our_ecdh_first->priv);
+  otrng_ec_point_copy(manager->our_ecdh->pub, manager->our_ecdh_first->pub);
+  otrng_ec_point_copy(manager->their_ecdh, manager->their_ecdh_first);
+
+  /* They should never be used again */
+  otrng_ec_scalar_destroy(manager->our_ecdh_first->priv);
+  otrng_ec_point_destroy(manager->our_ecdh_first->pub);
+  otrng_ec_point_destroy(manager->their_ecdh_first);
+
+  otrng_dh_pub_key_destroy(manager->our_dh);
+  otrng_dh_priv_key_destroy(manager->our_dh);
+  gcry_mpi_release(manager->their_dh);
+  manager->their_dh = NULL;
+
+  manager->our_dh->pub = otrng_dh_mpi_copy(manager->our_dh_first->pub);
+  manager->our_dh->priv = otrng_dh_mpi_copy(manager->our_dh_first->priv);
+  manager->their_dh = otrng_dh_mpi_copy(manager->their_dh_first);
+}
+
 tstatic otrng_result calculate_ssid(key_manager_s *manager) {
   uint8_t usage_SSID = 0x04;
   if (!shake_256_kdf1(manager->ssid, SSID_BYTES, usage_SSID,

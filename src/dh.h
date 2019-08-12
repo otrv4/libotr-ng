@@ -63,6 +63,8 @@ INTERNAL otrng_result otrng_dh_keypair_generate_from_shared_secret(
 
 INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_s *keypair);
 
+INTERNAL void otrng_dh_pub_key_destroy(dh_keypair_s *keypair);
+
 INTERNAL void otrng_dh_keypair_destroy(dh_keypair_s *keypair);
 
 INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret buffer,

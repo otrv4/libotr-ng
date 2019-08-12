@@ -231,10 +231,14 @@ INTERNAL void otrng_dh_priv_key_destroy(dh_keypair_s *keypair) {
   keypair->priv = NULL;
 }
 
-INTERNAL void otrng_dh_keypair_destroy(dh_keypair_s *keypair) {
-  otrng_dh_priv_key_destroy(keypair);
+INTERNAL void otrng_dh_pub_key_destroy(dh_keypair_s *keypair) {
   gcry_mpi_release(keypair->pub);
   keypair->pub = NULL;
+}
+
+INTERNAL void otrng_dh_keypair_destroy(dh_keypair_s *keypair) {
+  otrng_dh_priv_key_destroy(keypair);
+  otrng_dh_pub_key_destroy(keypair);
 }
 
 INTERNAL otrng_result otrng_dh_shared_secret(dh_shared_secret buffer,
