@@ -286,12 +286,10 @@ otrng_key_manager_generate_ephemeral_keys(key_manager_s *manager) {
 
 INTERNAL otrng_result
 otrng_key_manager_generate_first_ephemeral_keys(key_manager_s *manager) {
-  time_t now;
   uint8_t *sym = otrng_secure_alloc(ED448_PRIVATE_BYTES);
 
   random_bytes(sym, ED448_PRIVATE_BYTES);
 
-  now = time(NULL);
   otrng_ecdh_keypair_destroy(manager->our_ecdh_first);
 
   /* @secret the ecdh keypair will last
