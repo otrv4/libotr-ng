@@ -14,10 +14,10 @@ Before you try to build libotr-ng, verify you have installed:
 
 Then, install the following dependencies:
 * libglib2.0-dev
+* libgcrypt 1.8.0 or newer
 * libgoldilocks
 * libsodium-dev
 * libotr 4.x
-* libgcrypt 1.8.0 or newer
 
 To generate project configuration:
 
