@@ -191,6 +191,16 @@
    fun:main
 }
 {
+   gcrypt_3
+   Memcheck:Leak
+   ...
+   fun:realloc
+   fun:otrl_mem_realloc
+   fun:otrng_dh_init
+   fun:otrng_init
+   fun:main
+}
+{
    osx_si_module_static_search
    Memcheck:Leak
    ...
