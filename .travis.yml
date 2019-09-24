@@ -52,11 +52,11 @@ matrix:
       compiler: gcc
       env: T=normal
     - os: linux
-      dist: precise
+      dist: xenial
       compiler: clang
       env: T=normal
     - os: linux
-      dist: precise
+      dist: xenial
       compiler: gcc
       env: T=normal
     - os: osx
@@ -65,7 +65,7 @@ matrix:
       env: T=normal
     - os: linux
       compiler: gcc
-      dist: precise
+      dist: xenial
       env: T=coverage
     - os: linux
       compiler: gcc
@@ -77,7 +77,7 @@ matrix:
       env: T=style
     - os: linux
       compiler: gcc
-      dist: precise
+      dist: xenial
       env: T=full-valgrind-checks
     - os: linux
       dist: trusty
@@ -85,11 +85,11 @@ matrix:
       env: T=sanitizer
     - os: linux
       compiler: gcc
-      dist: precise
+      dist: xenial
       env: T=ctgrind
     - os: linux
       compiler: gcc
-      dist: precise
+      dist: xenial
     - os: linux
       dist: trusty
       compiler: gcc
@@ -100,7 +100,7 @@ matrix:
       env: T=normal
     - os: linux
       compiler: gcc
-      dist: precise
+      dist: xenial
       env: T=ctgrind
 
 sudo: required
