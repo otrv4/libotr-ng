@@ -201,6 +201,20 @@
    fun:main
 }
 {
+   gcrypt_4
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:realloc
+   fun:otrl_mem_realloc
+   obj:/lib/x86_64-linux-gnu/libgcrypt.so.20.0.5
+   obj:/lib/x86_64-linux-gnu/libgcrypt.so.20.0.5
+   obj:/lib/x86_64-linux-gnu/libgcrypt.so.20.0.5
+   obj:/lib/x86_64-linux-gnu/libgcrypt.so.20.0.5
+   fun:otrng_dh_init
+   fun:otrng_init
+   fun:main
+}
+{
    osx_si_module_static_search
    Memcheck:Leak
    ...
