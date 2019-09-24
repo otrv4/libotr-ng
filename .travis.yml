@@ -69,7 +69,7 @@ matrix:
       env: T=coverage
     - os: linux
       compiler: gcc
-      dist: precise
+      dist: xenial
       env: T=profile
     - os: linux
       dist: trusty
