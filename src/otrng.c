@@ -2452,7 +2452,7 @@ API otrng_result otrng_send_symkey_message(string_p *to_send, unsigned int use,
   }
 }
 
-#define GCRYPT_WANTED_VERSION_16 "1.6.4"
+#define GCRYPT_WANTED_VERSION_16 "1.6.0"
 #define GCRYPT_WANTED_VERSION_17 "1.7.6"
 #define GCRYPT_WANTED_VERSION_18 "1.8.0"
 
