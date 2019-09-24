@@ -173,6 +173,24 @@
    fun:generate
 }
 {
+   gcrypt_1
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:otrl_mem_malloc
+}
+{
+   gcrypt_2
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:otrl_mem_malloc
+   fun:gcry_mpi_scan
+   fun:otrng_dh_init
+   fun:otrng_init
+   fun:main
+}
+{
    osx_si_module_static_search
    Memcheck:Leak
    ...
