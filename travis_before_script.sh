@@ -17,7 +17,6 @@ mkdir -p .deps
 #   sometimes, so it would need more investigation and work to make it functional.
 
 GPG_ERROR_DIR=.deps/libgpg-error-1.26
-LIBGCRYPT_DIR=.deps/libgcrypt-1.8.1
 LIBSODIUM_DIR=.deps/libsodium-stable
 CTGRIND_DIR=.deps/ctgrind
 VALGRIND_DIR=.deps/valgrind-3.13.0
@@ -35,13 +34,6 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
         curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
         (cd $GPG_ERROR_DIR && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$GPG_ERROR_DIR $SOURCE_DIR/$GPG_ERROR_DIR)
     fi
-
-    # if [[ -f $LIBGCRYPT_DIR/src/.libs/libgcrypt.so ]]; then
-    #     (cd $LIBGCRYPT_DIR && sudo make install)
-    # else
-    curl https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.1.tar.bz2 | tar xjf - -C .deps
-    (cd $LIBGCRYPT_DIR && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$LIBGCRYPT_DIR)
-    # fi
 
     if [[ -f $LIBSODIUM_DIR/src/libsodium/.libs/libsodium.so ]]; then
         $MAKE_INSTALL $SOURCE_DIR/$LIBSODIUM_DIR

@@ -137,6 +137,7 @@ before_script:
       brew install libgcrypt || brew outdated libgcrypt || brew upgrade libgcrypt &&
       brew install libsodium || brew outdated libsodium || brew upgrade libsodium;
     fi
+  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get install libgcrypt20-dev; fi
   - ./travis_before_script.sh
   - if [[ "$T" = "32bit" ]]; then export CLAFGS="-m32"; fi
 
