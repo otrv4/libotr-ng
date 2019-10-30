@@ -33,7 +33,7 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
         $MAKE_INSTALL $SOURCE_DIR/$GPG_ERROR_DIR
     else
         curl https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.26.tar.bz2 | tar xjf - -C .deps
-        (cd $GPG_ERROR_DIR && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$GPG_ERROR_DIR $SOURCE_DIR/$GPG_ERROR_DIR)
+        (cd $GPG_ERROR_DIR && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$GPG_ERROR_DIR)
     fi
 
     if [[ -f $LIBSODIUM_DIR/src/libsodium/.libs/libsodium.so ]]; then
