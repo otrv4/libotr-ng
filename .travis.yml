@@ -118,7 +118,11 @@ before_install:
 
 # Update the repo
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew update; fi
-- if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo apt-get update --quiet --assume-yes; fi
+- |
+    if [ $TRAVIS_OS_NAME == 'linux' ]; then
+         sudo apt-get update --quiet --assume-yes
+         sudo apt-get install valgrind --quiet --assume-yes
+    fi
 
 # Dependencies
 - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then brew cleanup; fi

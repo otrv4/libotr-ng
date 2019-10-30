@@ -28,8 +28,6 @@ MAKE_INSTALL="sudo -E -i $SOURCE_DIR/run_make_install.sh"
 echo `which clang`
 
 if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
-    curl https://sourceware.org/ftp/valgrind/valgrind-3.10.0.tar.bz2 | tar xjf - -C .deps
-    (cd $VALGRIND_DIR && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$VALGRIND_DIR)
 
     if [[ -f $GPG_ERROR_DIR/src/.libs/libgpg-error.so ]]; then
         $MAKE_INSTALL $SOURCE_DIR/$GPG_ERROR_DIR
