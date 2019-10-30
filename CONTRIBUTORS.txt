@@ -5,3 +5,8 @@
 
 - The original libotr-ng developers:
   * Sofía Celi
+  * Ola Bini
+  * Reinaldo Junior
+  * Iván Pazmiño
+  * Tania Silva
+
