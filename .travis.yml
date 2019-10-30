@@ -34,9 +34,7 @@ addons:
             - *all_sources
         packages:
             - lcov
-    snaps:
-        - valgrind
-
+            - valgrind
 matrix:
   fast_finish: true
   include:
@@ -51,11 +49,11 @@ matrix:
     - os: linux
       dist: xenial
       compiler: clang
-      env: T=normal
+      env: T=xenial
     - os: linux
       dist: xenial
       compiler: gcc
-      env: T=normal
+      env: T=xenial
     - os: osx
       compiler: clang
       osx_image: xcode8.3
@@ -176,6 +174,14 @@ script:
            make -j
            make -j check
            make ci
+      fi
+  - |
+      if [ "$T" = "xenial" ]; then
+           ./autogen.sh
+           ./configure --disable-shared
+           make -j
+           make -j check
+           make test
       fi
   - |
       if [ "$T" = "style" ]; then
