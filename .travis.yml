@@ -34,7 +34,6 @@ addons:
             - *all_sources
         packages:
             - lcov
-            - valgrind
 
 matrix:
   fast_finish: true
