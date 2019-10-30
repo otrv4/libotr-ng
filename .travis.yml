@@ -72,7 +72,7 @@ matrix:
       env: T=style
     - os: linux
       compiler: gcc
-      dist: xenial
+      dist: trusty
       env: T=full-valgrind-checks
     - os: linux
       dist: trusty
@@ -121,7 +121,7 @@ before_install:
 - |
     if [ $TRAVIS_OS_NAME == 'linux' ]; then
          sudo apt-get update --quiet --assume-yes
-         sudo apt-get install valgrind --quiet --assume-yes
+         sudo apt-get install valgrind=3.10.0 --quiet --assume-yes
     fi
 
 # Dependencies
