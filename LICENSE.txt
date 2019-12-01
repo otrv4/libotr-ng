@@ -1,9 +1,9 @@
 This library and all the files (with exceptions) in this repository are
-  Copyright (C) 2016-2018 the libotr-ng contributors
+  Copyright (C) 2016-2019 the libotr-ng contributors
 and licensed under LGPL-2.1-or-later. See COPYING and
 COPYING.LESSER for the actual licenses.
 
 Exceptions:
   (none so far)
 
-For a list of contributors, see CONTRIBUTORS.txt.
+For a list of contributors, see the CONTRIBUTORS.txt file.

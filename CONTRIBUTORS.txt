@@ -10,3 +10,4 @@
   * Iván Pazmiño
   * Tania Silva
 
+For other contributors, please see the Contributors section on this repository.
