@@ -21,7 +21,7 @@ dnl Process this file with autoconf to produce a configure script.
 #
 
 AC_PREREQ([2.68])
-AC_INIT([libotr-ng], [0.0.1], [otrv4-dev@autonomia.digital])
+AC_INIT([libotr-ng], [0.0.1], [otr@cypherpunks.ca],[],[https://otr.cypherpunks.ca])
 AC_CONFIG_SRCDIR([src/otrng.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([.])
