@@ -1,8 +1,5 @@
 - The original libotr developers
 
-- ThoughtWorks Inc.
-- Centro de Autonomia Digital
-
 - The original libotr-ng developers:
   * Sofía Celi
   * Ola Bini
