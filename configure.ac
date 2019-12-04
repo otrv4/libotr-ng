@@ -59,12 +59,6 @@ AC_C_CONST
 AC_C_INLINE
 
 AC_CANONICAL_HOST
-# Identify which OS we are building and do specific things based on the host
-case $host_os in
-  *linux*)
-    HOST_OS=linux
-    ;;
-esac
 
 dnl Checks for libraries.
 PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.18])
