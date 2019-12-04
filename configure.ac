@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 #  This file is part of the Off-the-Record Next Generation Messaging
 #  library (libotr-ng).
 #
-#  Copyright (C) 2016-2018, the libotr-ng contributors.
+#  Copyright (C) 2016-2019, the libotr-ng contributors.
 #
 #  This library is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Lesser General Public License as published by

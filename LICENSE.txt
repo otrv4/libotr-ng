@@ -1,7 +1,7 @@
 This library and all the files (with exceptions) in this repository are:
 
 Copyright (c) 2016-2017, ThoughtWorks Inc.
-Copyright (c) 2017-2018, Centro de Autonomía Digital Brazil
+Copyright (c) 2017-2018, Centro de Autonomía Digital Brazil, the libotr-ng contributors
 Copyright (C) 2019 Sofía Celi, the libotr-ng contributors
 
 and licensed under LGPL-2.1-or-later. See COPYING and
