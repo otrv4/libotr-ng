@@ -49,6 +49,9 @@ code-check: check
 	echo $(functional_test_args)
 	clang-tidy $(CLANG_TIDY_ARGS) $(top_builddir)/src/*.c
 
+cpp-check: check
+	cppcheck $(top_builddir)/src/*.c
+
 VALGRIND_SUPPRESSIONS = \
 	valgrind.supp
 
