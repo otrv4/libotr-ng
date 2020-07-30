@@ -173,16 +173,19 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
   w += otrng_serialize_uint32(dst + w, client_profile->sender_instance_tag);
   num_fields++;
 
+  printf("\n CHECK 11 \n");
   /* Ed448 public key */
   w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_PUBLIC_KEY);
   w += otrng_serialize_public_key(dst + w, client_profile->long_term_pub_key);
   num_fields++;
 
+  printf("\n CHECK 12 \n");
   /* Ed448 forging key */
   w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_FORGING_KEY);
   w += otrng_serialize_forging_key(dst + w, client_profile->forging_pub_key);
   num_fields++;
 
+  printf("\n CHECK 13 \n");
   /* Versions */
   w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_VERSIONS);
   w += otrng_serialize_data(dst + w, (uint8_t *)client_profile->versions,
