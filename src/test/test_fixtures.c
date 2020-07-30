@@ -63,7 +63,6 @@ void set_up_client(otrng_client_s *client, int byte) {
 
   otrng_keypair_s *f_keypair = otrng_keypair_new();
   otrng_keypair_generate(f_keypair, forging_sym);
-  //create_forging_key_from_2(f_keypair, forging_sym);
 
   otrng_client_add_forging_key(client, f_keypair->pub);
 

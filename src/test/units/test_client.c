@@ -22,7 +22,6 @@
 #include <stdio.h>
 
 #include "test_helpers.h"
-
 #include "test_fixtures.h"
 
 #include "client.h"
@@ -36,29 +35,16 @@ static void test_client_get_our_fingerprint() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_assert(alice);
   set_up_client(alice, 1);
-  printf("\n FAIL 2 \n");
-
-  uint8_t d[ED448_POINT_BYTES];
-  otrng_ec_point_encode(d, ED448_POINT_BYTES, *alice->forging_key);
-
-  printf("PRINTING 33 \n");
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", d[i]);
-  }
 
   otrng_fingerprint expected_fp = {0};
   otrng_assert(otrng_serialize_fingerprint(expected_fp, alice->keypair->pub,
                                            *alice->forging_key));
-  printf("\n FAIL 3 \n");
 
   otrng_fingerprint our_fp = {0};
   otrng_assert_is_success(otrng_client_get_our_fingerprint(our_fp, alice));
-  printf("\n FAIL 4 \n");
   otrng_assert_cmpmem(expected_fp, our_fp, sizeof(otrng_fingerprint));
-  printf("\n FAIL 5 \n");
 
   otrng_global_state_free(alice->global_state);
-  printf("\n FAIL 6 \n");
 }
 
 static void test_fingerprint_hash_to_human() {
