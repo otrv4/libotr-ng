@@ -215,9 +215,11 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
   size_t w = 0;
   uint32_t num_fields = 0;
 
+  printf("\n CHECK 1 \n");
   num_fields = client_profile_body_serialize_pre_transitional_signature(
       dst + 4, dst_len - 4, &w, client_profile);
   w += 4;
+  printf("\n CHECK 2 \n");
 
   /* Transitional Signature */
   if (client_profile->transitional_signature) {
@@ -228,6 +230,7 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
     num_fields++;
   }
 
+  printf("\n CHECK 3 \n");
   /* Write the number of fields at the beginning */
   /* TODO: this can't actually fail - so we should stop returning otrng_result
    * from this function */
@@ -239,6 +242,7 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
     *nbytes = w;
   }
 
+  printf("\n CHECK 4 \n");
   return OTRNG_SUCCESS;
 }
 
