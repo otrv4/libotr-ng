@@ -584,7 +584,7 @@ otrng_client_profile_build_with_custom_expiration(
   client_profile->sender_instance_tag = instance_tag;
   client_profile->expires = expiration_time;
 
-  otrng_ec_point_copy(client_profile->forging_pub_key, forging_key);
+  *client_profile->forging_pub_key = *forging_key;
 
   if (!client_profile_sign(client_profile, keypair)) {
     otrng_client_profile_free(client_profile);
