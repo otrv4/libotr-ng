@@ -34,17 +34,24 @@
 
 static void test_client_get_our_fingerprint() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
+  otrng_assert(alice);
+  printf("\n FAIL 1 \n");
   set_up_client(alice, 1);
+  printf("\n FAIL 2 \n");
 
   otrng_fingerprint expected_fp = {0};
   otrng_assert(otrng_serialize_fingerprint(expected_fp, alice->keypair->pub,
                                            *alice->forging_key));
+  printf("\n FAIL 3 \n");
 
   otrng_fingerprint our_fp = {0};
   otrng_assert_is_success(otrng_client_get_our_fingerprint(our_fp, alice));
+  printf("\n FAIL 4 \n");
   otrng_assert_cmpmem(expected_fp, our_fp, sizeof(otrng_fingerprint));
+  printf("\n FAIL 5 \n");
 
   otrng_global_state_free(alice->global_state);
+  printf("\n FAIL 6 \n");
 }
 
 static void test_fingerprint_hash_to_human() {
