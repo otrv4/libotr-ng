@@ -534,6 +534,14 @@ tstatic otrng_result client_profile_sign(otrng_client_profile_s *client_profile,
   printf("\n AM I HERE INSIDE 31\n");
   otrng_ec_point_copy(client_profile->long_term_pub_key, keypair->pub);
 
+  uint8_t d[ED448_POINT_BYTES];
+  otrng_ec_point_encode(d, ED448_POINT_BYTES, client_profile->long_term_pub_key);
+
+  printf("PRINTING 33 \n");
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", d[i]);
+  }
+
   printf("\n AM I HERE INSIDE 32\n");
   if (!client_profile_body_serialize_into(&body, &bodylen, client_profile)) {
     return OTRNG_ERROR;
@@ -603,16 +611,9 @@ otrng_client_profile_build_with_custom_expiration(
      printf("0x%x, ", f[i]);
   }
   printf("\n AM I HERE INSIDE 2\n");
+
   memset(client_profile->forging_pub_key, 0, ED448_POINT_BYTES);
   *client_profile->forging_pub_key = *forging_key;
-
-  uint8_t d[ED448_POINT_BYTES];
-  otrng_ec_point_encode(d, ED448_POINT_BYTES, client_profile->forging_pub_key);
-
-  printf("PRINTING 33 \n");
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", d[i]);
-  }
 
   if (!client_profile_sign(client_profile, keypair)) {
     otrng_client_profile_free(client_profile);
