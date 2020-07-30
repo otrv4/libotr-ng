@@ -603,7 +603,7 @@ otrng_client_profile_build_with_custom_expiration(
      printf("0x%x, ", f[i]);
   }
   printf("\n AM I HERE INSIDE 2\n");
-  otrng_ec_point_copy(client_profile->forging_pub_key, forging_key);
+  *client_profile->forging_pub_key = *forging_key;
 
   uint8_t d[ED448_POINT_BYTES];
   otrng_ec_point_encode(d, ED448_POINT_BYTES, client_profile->forging_pub_key);
