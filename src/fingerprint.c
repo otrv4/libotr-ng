@@ -81,12 +81,14 @@ INTERNAL otrng_result otrng_serialize_fingerprint(
       ED448_PUBKEY_BYTES) {
     return OTRNG_ERROR;
   }
+  printf("\n INSIDE FAIL 1 \n");
 
   if (otrng_serialize_forging_key(long_term_forging_pub_ser,
                                   long_term_forging_pub_key) !=
       ED448_PUBKEY_BYTES) {
     return OTRNG_ERROR;
   }
+  printf("\n INSIDE FAIL 1 \n");
 
   /* HWC(usage_fingerprint || byte(H) || byte(F), 56) */
   if (!hash_init_with_usage(hd, usage_fingerprint)) {
