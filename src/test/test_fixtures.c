@@ -127,8 +127,8 @@ create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
   return pub;
 }
 
-
-void create_forging_key_from_2(otrng_keypair_s *keypair, const uint8_t sym[ED448_PRIVATE_BYTES]) {
+void create_forging_key_from_2(otrng_keypair_s *keypair,
+                               const uint8_t sym[ED448_PRIVATE_BYTES]) {
   uint8_t pub[ED448_POINT_BYTES];
 
   memcpy(keypair->sym, sym, ED448_PRIVATE_BYTES);

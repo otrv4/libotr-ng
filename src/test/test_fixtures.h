@@ -79,7 +79,8 @@ void create_forging_key_cb_empty(otrng_client_s *client);
 otrng_public_key *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]);
 
-void create_forging_key_from_2(otrng_keypair_s *keypair, const uint8_t sym[ED448_PRIVATE_BYTES]);
+void create_forging_key_from_2(otrng_keypair_s *keypair,
+                               const uint8_t sym[ED448_PRIVATE_BYTES]);
 
 void create_client_profile_cb(struct otrng_client_s *client);
 

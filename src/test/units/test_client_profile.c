@@ -23,8 +23,8 @@
 #include <string.h>
 #include <time.h>
 
-#include "test_helpers.h"
 #include "test_fixtures.h"
+#include "test_helpers.h"
 
 #include "client_profile.h"
 #include "instance_tag.h"

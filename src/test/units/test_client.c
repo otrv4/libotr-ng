@@ -21,8 +21,8 @@
 #include <glib.h>
 #include <stdio.h>
 
-#include "test_helpers.h"
 #include "test_fixtures.h"
+#include "test_helpers.h"
 
 #include "client.h"
 #include "fragment.h"
