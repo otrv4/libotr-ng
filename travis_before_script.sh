@@ -71,6 +71,6 @@ if [[ -f $LIBGOLDILOCKS_DIR/src/.libs/libgoldilocks.so ]]; then
     $MAKE_INSTALL $SOURCE_DIR/$LIBGOLDILOCKS_DIR
 else
     rm -rf $LIBGOLDILOCKS_DIR
-    git clone --depth=1 https://github.com/otrv4/libgoldilocks $LIBGOLDILOCKS_DIR
+    git clone --depth=1 https://bugs.otr.im/otrv4/libgoldilocks $LIBGOLDILOCKS_DIR
     (cd $LIBGOLDILOCKS_DIR && ./autogen.sh && ./configure && make -j && $MAKE_INSTALL $SOURCE_DIR/$LIBGOLDILOCKS_DIR)
 fi
