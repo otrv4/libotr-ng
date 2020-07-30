@@ -61,30 +61,11 @@ void set_up_client(otrng_client_s *client, int byte) {
 
   otrng_client_add_private_key_v4(client, long_term_priv);
 
-  printf("\n CHECKING here \n");
-  otrng_public_key forging_key;
-  create_forging_key_from_2(forging_key, forging_sym);
-  printf("\n CHECKING here 2 \n");
-  uint8_t f[ED448_POINT_BYTES];
-  otrng_ec_point_encode(f, ED448_POINT_BYTES, forging_key);
+  otrng_keypair_s *f_keypair = otrng_keypair_new();
+  otrng_keypair_generate(f_keypair, forging_sym);
+  //create_forging_key_from_2(f_keypair, forging_sym);
 
-  printf("\n PRINTING 3 \n");
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", f[i]);
-  }
-
-  otrng_public_key *lol = otrng_xmalloc_z(sizeof(otrng_public_key));
-  otrng_client_add_forging_key(client, *lol);
-
-  uint8_t d[ED448_POINT_BYTES];
-  otrng_ec_point_encode(d, ED448_POINT_BYTES, *client->forging_key);
-
-  printf("PRINTING 2");
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", d[i]);
-  }
-
-  otrng_free(lol);
+  otrng_client_add_forging_key(client, f_keypair->pub);
 
   otrng_client_add_instance_tag(client, 0x100 + byte);
 
@@ -146,29 +127,17 @@ create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
   return pub;
 }
 
-void create_forging_key_from_2(otrng_public_key forging_key, const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  otrng_keypair_s *keypair = otrng_keypair_new();
-  otrng_assert_is_success(otrng_keypair_generate(keypair, sym));
 
-  uint8_t e[ED448_POINT_BYTES];
-  otrng_ec_point_encode(e, ED448_POINT_BYTES, keypair->pub);
-  printf("PRINTING 444 \n");
+void create_forging_key_from_2(otrng_keypair_s *keypair, const uint8_t sym[ED448_PRIVATE_BYTES]) {
+  uint8_t pub[ED448_POINT_BYTES];
 
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", e[i]);
-  }
+  memcpy(keypair->sym, sym, ED448_PRIVATE_BYTES);
+  otrng_ec_scalar_derive_from_secret(keypair->priv, keypair->sym);
 
-  otrng_ec_point_copy(forging_key, keypair->pub);
+  otrng_ec_derive_public_key(pub, keypair->sym);
+  otrng_ec_point_decode(keypair->pub, pub);
 
-  uint8_t d[ED448_POINT_BYTES];
-  otrng_ec_point_encode(d, ED448_POINT_BYTES, forging_key);
-
-  printf("PRINTING 2 \n");
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", d[i]);
-  }
-
-  otrng_keypair_free(keypair);
+  otrng_secure_wipe(pub, ED448_POINT_BYTES);
 }
 
 void create_client_profile_cb(struct otrng_client_s *client) {
