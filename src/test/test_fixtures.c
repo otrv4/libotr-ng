@@ -126,8 +126,11 @@ create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
      printf("0x%x, ", e[i]);
   }
 
+  printf("\n CHECK 0 \n");
   otrng_public_key *forging_key = otrng_xmalloc_z(sizeof(otrng_public_key));
+  printf("\n CHECK 1 \n");
   otrng_ec_point_copy(*forging_key, keypair->pub);
+  printf("\n CHECK 2 \n");
 
   uint8_t d[ED448_POINT_BYTES];
   otrng_ec_point_encode(d, ED448_POINT_BYTES, *forging_key);

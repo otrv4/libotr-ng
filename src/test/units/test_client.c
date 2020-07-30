@@ -35,7 +35,6 @@
 static void test_client_get_our_fingerprint() {
   otrng_client_s *alice = otrng_client_new(ALICE_IDENTITY);
   otrng_assert(alice);
-  printf("\n FAIL 1 \n");
   set_up_client(alice, 1);
   printf("\n FAIL 2 \n");
 
