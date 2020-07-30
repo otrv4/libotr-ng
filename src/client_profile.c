@@ -524,12 +524,15 @@ tstatic otrng_result client_profile_sign(otrng_client_profile_s *client_profile,
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
+  printf("\n AM I HERE INSIDE 31\n");
   otrng_ec_point_copy(client_profile->long_term_pub_key, keypair->pub);
 
+  printf("\n AM I HERE INSIDE 32\n");
   if (!client_profile_body_serialize_into(&body, &bodylen, client_profile)) {
     return OTRNG_ERROR;
   }
 
+  printf("\n AM I HERE INSIDE 33\n");
   otrng_ec_sign_simple(client_profile->signature, keypair->sym, body, bodylen);
 
   otrng_free(body);

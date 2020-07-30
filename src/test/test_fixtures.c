@@ -61,6 +61,7 @@ void set_up_client(otrng_client_s *client, int byte) {
 
   otrng_client_add_private_key_v4(client, long_term_priv);
 
+  // TODO: free me!
   otrng_keypair_s *f_keypair = otrng_keypair_new();
   otrng_keypair_generate(f_keypair, forging_sym);
 
