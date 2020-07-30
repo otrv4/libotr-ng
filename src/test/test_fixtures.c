@@ -63,7 +63,17 @@ void set_up_client(otrng_client_s *client, int byte) {
 
   otrng_public_key *forging_key = create_forging_key_from(forging_sym);
   otrng_client_add_forging_key(client, *forging_key);
+
+  uint8_t d[ED448_POINT_BYTES];
+  otrng_ec_point_encode(d, ED448_POINT_BYTES, *client->forging_key);
+
+  printf("PRINTING 2");
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", d[i]);
+  }
+
   otrng_free(forging_key);
+
   otrng_client_add_instance_tag(client, 0x100 + byte);
 
   client->client_profile = otrng_client_build_default_client_profile(client);
@@ -121,16 +131,8 @@ create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
   uint8_t e[ED448_POINT_BYTES];
   otrng_ec_point_encode(e, ED448_POINT_BYTES, keypair->pub);
 
-  printf("PRINTING 1");
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", e[i]);
-  }
-
-  printf("\n CHECK 0 \n");
   otrng_public_key *forging_key = otrng_xmalloc_z(sizeof(otrng_public_key));
-  printf("\n CHECK 1 \n");
   otrng_ec_point_copy(*forging_key, keypair->pub);
-  printf("\n CHECK 2 \n");
 
   uint8_t d[ED448_POINT_BYTES];
   otrng_ec_point_encode(d, ED448_POINT_BYTES, *forging_key);

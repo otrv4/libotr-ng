@@ -38,6 +38,14 @@ static void test_client_get_our_fingerprint() {
   set_up_client(alice, 1);
   printf("\n FAIL 2 \n");
 
+  uint8_t d[ED448_POINT_BYTES];
+  otrng_ec_point_encode(d, ED448_POINT_BYTES, *alice->forging_key);
+
+  printf("PRINTING 33 \n");
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", d[i]);
+  }
+
   otrng_fingerprint expected_fp = {0};
   otrng_assert(otrng_serialize_fingerprint(expected_fp, alice->keypair->pub,
                                            *alice->forging_key));
