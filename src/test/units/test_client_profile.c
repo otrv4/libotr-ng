@@ -24,7 +24,6 @@
 #include <time.h>
 
 #include "test_helpers.h"
-
 #include "test_fixtures.h"
 
 #include "client_profile.h"

@@ -603,6 +603,7 @@ otrng_client_profile_build_with_custom_expiration(
      printf("0x%x, ", f[i]);
   }
   printf("\n AM I HERE INSIDE 2\n");
+  memset(client_profile->forging_pub_key, 0, ED448_POINT_BYTES);
   *client_profile->forging_pub_key = *forging_key;
 
   uint8_t d[ED448_POINT_BYTES];
