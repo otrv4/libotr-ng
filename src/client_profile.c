@@ -576,6 +576,7 @@ otrng_client_profile_build_with_custom_expiration(
     return NULL;
   }
 
+  printf("\n AM I HERE INSIDE 1\n");
   client_profile = client_profile_new(versions);
   if (!client_profile) {
     return NULL;
@@ -584,8 +585,10 @@ otrng_client_profile_build_with_custom_expiration(
   client_profile->sender_instance_tag = instance_tag;
   client_profile->expires = expiration_time;
 
-  *client_profile->forging_pub_key = *forging_key;
+  printf("\n AM I HERE INSIDE 2\n");
+  otrng_ec_point_copy(client_profile->forging_pub_key, forging_key);
 
+  printf("\n AM I HERE INSIDE 3\n");
   if (!client_profile_sign(client_profile, keypair)) {
     otrng_client_profile_free(client_profile);
     return NULL;
