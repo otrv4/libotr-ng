@@ -54,6 +54,14 @@ INTERNAL otrng_result otrng_keypair_generate(
     return OTRNG_ERROR;
   }
 
+
+  uint8_t e[ED448_POINT_BYTES];
+  otrng_ec_point_encode(e, ED448_POINT_BYTES, keypair->pub);
+
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", e[i]);
+  }
+
   otrng_secure_wipe(pub, ED448_POINT_BYTES);
 
   return OTRNG_SUCCESS;
