@@ -60,6 +60,15 @@ void set_up_client(otrng_client_s *client, int byte) {
   uint8_t forging_sym[ED448_PRIVATE_BYTES] = {byte + 0xD};
 
   otrng_client_add_private_key_v4(client, long_term_priv);
+
+  uint8_t e[ED448_POINT_BYTES];
+  otrng_ec_point_encode(e, ED448_POINT_BYTES, client->keypair->pub);
+
+  printf("PRINTING 1");
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", e[i]);
+  }
+
   otrng_public_key *forging_key = create_forging_key_from(forging_sym);
   otrng_client_add_forging_key(client, *forging_key);
   otrng_free(forging_key);
@@ -67,6 +76,10 @@ void set_up_client(otrng_client_s *client, int byte) {
 
   client->client_profile = otrng_client_build_default_client_profile(client);
   client->should_heartbeat = test_should_not_heartbeat;
+  printf("PRINTING 2");
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", e[i]);
+  }
 }
 
 void set_up_client_different_policy(otrng_client_s *client, int byte) {
