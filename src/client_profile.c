@@ -595,10 +595,24 @@ otrng_client_profile_build_with_custom_expiration(
   client_profile->sender_instance_tag = instance_tag;
   client_profile->expires = expiration_time;
 
+  uint8_t f[ED448_POINT_BYTES];
+  otrng_ec_point_encode(f, ED448_POINT_BYTES, forging_key);
+
+  printf("PRINTING 33 \n");
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", f[i]);
+  }
   printf("\n AM I HERE INSIDE 2\n");
   otrng_ec_point_copy(client_profile->forging_pub_key, forging_key);
 
-  printf("\n AM I HERE INSIDE 3\n");
+  uint8_t d[ED448_POINT_BYTES];
+  otrng_ec_point_encode(d, ED448_POINT_BYTES, client_profile->forging_pub_key);
+
+  printf("PRINTING 33 \n");
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", d[i]);
+  }
+
   if (!client_profile_sign(client_profile, keypair)) {
     otrng_client_profile_free(client_profile);
     return NULL;
