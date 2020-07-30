@@ -173,19 +173,16 @@ tstatic uint32_t client_profile_body_serialize_pre_transitional_signature(
   w += otrng_serialize_uint32(dst + w, client_profile->sender_instance_tag);
   num_fields++;
 
-  printf("\n CHECK 11 \n");
   /* Ed448 public key */
   w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_PUBLIC_KEY);
   w += otrng_serialize_public_key(dst + w, client_profile->long_term_pub_key);
   num_fields++;
 
-  printf("\n CHECK 12 \n");
   /* Ed448 forging key */
   w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_FORGING_KEY);
   w += otrng_serialize_forging_key(dst + w, client_profile->forging_pub_key);
   num_fields++;
 
-  printf("\n CHECK 13 \n");
   /* Versions */
   w += otrng_serialize_uint16(dst + w, OTRNG_CLIENT_PROFILE_FIELD_VERSIONS);
   w += otrng_serialize_data(dst + w, (uint8_t *)client_profile->versions,
@@ -218,11 +215,9 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
   size_t w = 0;
   uint32_t num_fields = 0;
 
-  printf("\n CHECK 1 \n");
   num_fields = client_profile_body_serialize_pre_transitional_signature(
       dst + 4, dst_len - 4, &w, client_profile);
   w += 4;
-  printf("\n CHECK 2 \n");
 
   /* Transitional Signature */
   if (client_profile->transitional_signature) {
@@ -233,7 +228,6 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
     num_fields++;
   }
 
-  printf("\n CHECK 3 \n");
   /* Write the number of fields at the beginning */
   /* TODO: this can't actually fail - so we should stop returning otrng_result
    * from this function */
@@ -245,7 +239,6 @@ client_profile_body_serialize(uint8_t *dst, size_t dst_len, size_t *nbytes,
     *nbytes = w;
   }
 
-  printf("\n CHECK 4 \n");
   return OTRNG_SUCCESS;
 }
 
@@ -531,23 +524,12 @@ tstatic otrng_result client_profile_sign(otrng_client_profile_s *client_profile,
   uint8_t *body = NULL;
   size_t bodylen = 0;
 
-  printf("\n AM I HERE INSIDE 31\n");
   otrng_ec_point_copy(client_profile->long_term_pub_key, keypair->pub);
 
-  uint8_t d[ED448_POINT_BYTES];
-  otrng_ec_point_encode(d, ED448_POINT_BYTES, client_profile->long_term_pub_key);
-
-  printf("PRINTING 33 \n");
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", d[i]);
-  }
-
-  printf("\n AM I HERE INSIDE 32\n");
   if (!client_profile_body_serialize_into(&body, &bodylen, client_profile)) {
     return OTRNG_ERROR;
   }
 
-  printf("\n AM I HERE INSIDE 33\n");
   otrng_ec_sign_simple(client_profile->signature, keypair->sym, body, bodylen);
 
   otrng_free(body);
@@ -594,7 +576,6 @@ otrng_client_profile_build_with_custom_expiration(
     return NULL;
   }
 
-  printf("\n AM I HERE INSIDE 1\n");
   client_profile = client_profile_new(versions);
   if (!client_profile) {
     return NULL;
@@ -602,15 +583,6 @@ otrng_client_profile_build_with_custom_expiration(
 
   client_profile->sender_instance_tag = instance_tag;
   client_profile->expires = expiration_time;
-
-  uint8_t f[ED448_POINT_BYTES];
-  otrng_ec_point_encode(f, ED448_POINT_BYTES, forging_key);
-
-  printf("PRINTING 33 \n");
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", f[i]);
-  }
-  printf("\n AM I HERE INSIDE 2\n");
 
   memset(client_profile->forging_pub_key, 0, ED448_POINT_BYTES);
   *client_profile->forging_pub_key = *forging_key;
