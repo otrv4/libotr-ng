@@ -61,7 +61,16 @@ void set_up_client(otrng_client_s *client, int byte) {
 
   otrng_client_add_private_key_v4(client, long_term_priv);
 
+  printf("\n CHECKING here \n");
   otrng_public_key *forging_key = create_forging_key_from(forging_sym);
+  uint8_t f[ED448_POINT_BYTES];
+  otrng_ec_point_encode(f, ED448_POINT_BYTES, *forging_key);
+
+  printf("PRINTING 3");
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", f[i]);
+  }
+
   otrng_client_add_forging_key(client, *forging_key);
 
   uint8_t d[ED448_POINT_BYTES];
