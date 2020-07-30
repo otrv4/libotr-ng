@@ -61,14 +61,6 @@ void set_up_client(otrng_client_s *client, int byte) {
 
   otrng_client_add_private_key_v4(client, long_term_priv);
 
-  uint8_t e[ED448_POINT_BYTES];
-  otrng_ec_point_encode(e, ED448_POINT_BYTES, client->keypair->pub);
-
-  printf("PRINTING 1");
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", e[i]);
-  }
-
   otrng_public_key *forging_key = create_forging_key_from(forging_sym);
   otrng_client_add_forging_key(client, *forging_key);
   otrng_free(forging_key);
@@ -76,10 +68,6 @@ void set_up_client(otrng_client_s *client, int byte) {
 
   client->client_profile = otrng_client_build_default_client_profile(client);
   client->should_heartbeat = test_should_not_heartbeat;
-  printf("PRINTING 2");
-  for (int i = 0; i < ED448_POINT_BYTES; i++) {
-     printf("0x%x, ", e[i]);
-  }
 }
 
 void set_up_client_different_policy(otrng_client_s *client, int byte) {
@@ -127,13 +115,31 @@ void create_forging_key_cb_empty(otrng_client_s *client) { (void)client; }
 
 otrng_public_key *
 create_forging_key_from(const uint8_t sym[ED448_PRIVATE_BYTES]) {
-  otrng_keypair_s *key_pair = otrng_keypair_new();
-  otrng_assert_is_success(otrng_keypair_generate(key_pair, sym));
-  otrng_public_key *pub = otrng_xmalloc_z(sizeof(otrng_public_key));
-  otrng_ec_point_copy(*pub, key_pair->pub);
-  otrng_keypair_free(key_pair);
+  otrng_keypair_s *keypair = otrng_keypair_new();
+  otrng_assert_is_success(otrng_keypair_generate(keypair, sym));
 
-  return pub;
+  uint8_t e[ED448_POINT_BYTES];
+  otrng_ec_point_encode(e, ED448_POINT_BYTES, keypair->pub);
+
+  printf("PRINTING 1");
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", e[i]);
+  }
+
+  otrng_public_key *forging_key = otrng_xmalloc_z(sizeof(otrng_public_key));
+  otrng_ec_point_copy(*forging_key, keypair->pub);
+
+  uint8_t d[ED448_POINT_BYTES];
+  otrng_ec_point_encode(d, ED448_POINT_BYTES, *forging_key);
+
+  printf("PRINTING 2");
+  for (int i = 0; i < ED448_POINT_BYTES; i++) {
+     printf("0x%x, ", d[i]);
+  }
+
+  otrng_keypair_free(keypair);
+
+  return forging_key;
 }
 
 void create_client_profile_cb(struct otrng_client_s *client) {
