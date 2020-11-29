@@ -372,6 +372,10 @@ API otrng_result otrng_client_send_non_interactive_auth(
     return OTRNG_ERROR;
   }
 
+  if (conv->conn->policy_type == OTRNG_REQUIRE_INTERACTIVE) {
+    return OTRNG_ERROR;
+  }
+
   return otrng_send_non_interactive_auth(new_msg, ensemble, conv->conn);
 }
 
