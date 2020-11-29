@@ -236,7 +236,7 @@ API void otrng_fingerprint_forget(const otrng_client_s *client,
 /* This returns the fingerprint of the peer, not the self.
  It only works properly if it's a v4 connection. */
 API /*@null@*/ otrng_known_fingerprint_s *
-otrng_fingerprint_get_current(const otrng_s *conn) {
+otrng_fingerprint_get_current_peer(const otrng_s *conn) {
   otrng_fingerprint fp;
   assert(conn != NULL);
 

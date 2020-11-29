@@ -186,7 +186,7 @@ API void otrng_fingerprint_forget(const struct otrng_client_s *client,
  *
  */
 API /*@null@*/ otrng_known_fingerprint_s *
-otrng_fingerprint_get_current(const struct otrng_s *conn);
+otrng_fingerprint_get_current_peer(const struct otrng_s *conn);
 
 #ifdef OTRNG_FINGERPRINT_PRIVATE
 #endif

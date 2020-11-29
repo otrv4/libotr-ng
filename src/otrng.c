@@ -508,6 +508,13 @@ tstatic otrng_result receive_tagged_plaintext(otrng_response_s *response,
 
   switch (otr->running_version) {
   case OTRNG_PROTOCOL_VERSION_4:
+    if (otr->policy_type == OTRNG_REQUIRE_AUTHENTICATED) {
+      otrng_known_fingerprint_s *fp_peer;
+      fp_peer = otrng_fingerprint_get_current_peer(otr);
+      if (!fp_peer || fp_peer->trusted == otrng_false) {
+        return OTRNG_ERROR;
+      }
+    }
     if (otr->policy_type & OTRNG_WHITESPACE_START_DAKE) {
       if (message_to_display_without_tag(response, msg, strlen(msg)) ==
           OTRNG_ERROR) {
@@ -531,6 +538,13 @@ tstatic otrng_result receive_query_message(otrng_response_s *response,
 
   switch (otr->running_version) {
   case OTRNG_PROTOCOL_VERSION_4:
+    if (otr->policy_type == OTRNG_REQUIRE_AUTHENTICATED) {
+      otrng_known_fingerprint_s *fp_peer;
+      fp_peer = otrng_fingerprint_get_current_peer(otr);
+      if (!fp_peer || fp_peer->trusted == otrng_false) {
+        return OTRNG_ERROR;
+      }
+    }
     return start_dake(response, otr);
   case OTRNG_PROTOCOL_VERSION_3:
     return otrng_v3_receive_message(&response->to_send, &response->to_display,
