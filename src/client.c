@@ -376,6 +376,14 @@ API otrng_result otrng_client_send_non_interactive_auth(
     return OTRNG_ERROR;
   }
 
+  if (conv->conn->policy_type == OTRNG_REQUIRE_AUTHENTICATED) {
+    otrng_known_fingerprint_s *fp_peer;
+    fp_peer = otrng_fingerprint_get_current_peer(conv->conn);
+    if (!fp_peer || fp_peer->trusted == otrng_false) {
+      return OTRNG_ERROR;
+    }
+  }
+
   return otrng_send_non_interactive_auth(new_msg, ensemble, conv->conn);
 }
 
