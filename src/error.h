@@ -76,7 +76,6 @@ typedef enum {
   return otrng_false;
 }
 
-// TODO[OB]: do we really need this too?
 typedef enum {
   OTRNG_ERR_MSG_NONE,
   OTRNG_ERR_MSG_UNREADABLE,

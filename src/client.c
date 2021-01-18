@@ -727,8 +727,25 @@ API void otrng_client_debug_print(FILE *f, int indent, otrng_client_s *c) {
     debug_api_print(f, "} // conversations\n");
   }
 
-  // TODO / DEBUG_API: implement
-  /* otrng_prekey_client_s *prekey_client; */
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore("client->client_profile")) {
+    debug_api_print(f, "client_profile = IGNORED\n");
+  } else {
+    debug_api_print(f, "client_profile = {\n");
+    otrng_debug_print_pointer(f, c->client_profile);
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "} // client_profile\n");
+  }
+
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore("client->prekey_profile")) {
+    debug_api_print(f, "prekey_profile = IGNORED\n");
+  } else {
+    debug_api_print(f, "prekey_profile = {\n");
+    otrng_debug_print_pointer(f, c->prekey_profile);
+    otrng_print_indent(f, indent + 2);
+    debug_api_print(f, "} // prekey_profile\n");
+  }
 
   otrng_print_indent(f, indent);
   debug_api_print(f, "} // client\n");
@@ -761,8 +778,27 @@ API void otrng_conversation_debug_print(FILE *f, int indent,
     debug_api_print(f, "recipient = %s\n", c->recipient);
   }
 
-  // TODO / DEBUG_API: implement
-  /* otrng_s *conn */
+  otrng_print_indent(f, indent + 2);
+  if (otrng_debug_print_should_ignore("conversation->conn")) {
+    debug_api_print(f, "conn = IGNORED\n");
+  } else {
+    debug_api_print(f, "conn = \n");
+    debug_api_print(f, "conn->client = ");
+    otrng_debug_print_pointer(f, c->conn->client);
+    debug_api_print(f, "\n");
+    debug_api_print(f, "conn->their_client_profile = ");
+    otrng_debug_print_pointer(f, c->conn->their_client_profile;
+    debug_api_print(f, "\n");
+    debug_api_print(f, "conn->their_prekey_profile = ");
+    otrng_debug_print_pointer(f, c->conn->their_prekey_profile;
+    debug_api_print(f, "\n");
+    debug_api_print(f, "conn->keys = ");
+    otrng_debug_print_pointer(f, c->conn->keys;
+    debug_api_print(f, "\n");
+    debug_api_print(f, "conn->smp = ");
+    otrng_debug_print_pointer(f, c->conn->smp;
+    debug_api_print(f, "\n");
+  }
 
   otrng_print_indent(f, indent);
   debug_api_print(f, "} // conversation\n");
