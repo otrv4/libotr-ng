@@ -1437,6 +1437,9 @@ tstatic otrng_result receive_identity_message_on_state_start(
   otrng_key_manager_set_their_ecdh(identity_msg->Y, otr->keys);
   otrng_key_manager_set_their_dh(identity_msg->B, otr->keys);
 
+  otrng_key_manager_set_their_first_ecdh(identity_msg->Y_first, otr->keys);
+  otrng_key_manager_set_their_first_dh(identity_msg->B_first, otr->keys);
+
   if (!otrng_client_profile_copy(otr->their_client_profile,
                                  identity_msg->profile)) {
     return OTRNG_ERROR;

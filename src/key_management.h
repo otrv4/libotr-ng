@@ -98,6 +98,9 @@ typedef struct key_manager_s {
   ec_point their_ecdh;
   dh_public_key their_dh;
 
+  ec_point their_first_ecdh;
+  /*@null@*/ dh_public_key their_first_dh;
+
   // TODO: @refactoring REMOVE THIS
   // or turn it into a pair and store both this and the long term keypair on
   // this key manager.
@@ -213,10 +216,28 @@ INTERNAL void otrng_key_manager_set_their_ecdh(const ec_point their_ecdh,
 /**
  * @brief Securely replace their dh keys.
  *
- * @param [their_ecdh]  The new their_dh key.
+ * @param [their_dh]  The new their_dh key.
  * @param [manager]     The key manager.
  */
 INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key their_dh,
+                                             key_manager_s *manager);
+
+/**
+ * @brief Securely replace their first ecdh keys.
+ *
+ * @param [their_first_ecdh]  The new their_first_ecdh key.
+ * @param [manager]     The key manager.
+ */
+INTERNAL void otrng_key_manager_set_their_first_ecdh(const ec_point their_first_ecdh,
+                                               key_manager_s *manager);
+
+/**
+ * @brief Securely replace their first dh keys.
+ *
+ * @param [their_first_dh]  The new their_first_dh key.
+ * @param [manager]     The key manager.
+ */
+INTERNAL void otrng_key_manager_set_their_first_dh(const dh_public_key their_first_dh,
                                              key_manager_s *manager);
 
 /**
