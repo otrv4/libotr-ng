@@ -1522,6 +1522,13 @@ tstatic otrng_result receive_identity_message(string_p *dst,
     return result;
   }
 
+  // Validating twice
+  if (!otrng_valid_received_values(msg.sender_instance_tag, msg.Y_first, msg.B_first,
+                                   msg.profile)) {
+    otrng_dake_identity_message_destroy(&msg);
+    return result;
+  }
+
   switch (otr->state) {
   case OTRNG_STATE_START:
     result = receive_identity_message_on_state_start(dst, &msg, otr);
