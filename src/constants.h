@@ -39,7 +39,7 @@
 
 /* size of the Identity Message without client_profile */
 #define IDENTITY_MAX_BYTES                                                     \
-  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES)
+  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES)
 #define PRE_KEY_MAX_BYTES                                                      \
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES)
 #define PRE_KEY_WITH_METADATA_MAX_BYTES                                        \

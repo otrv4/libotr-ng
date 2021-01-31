@@ -113,6 +113,10 @@ INTERNAL struct goldilocks_448_point_s *our_ecdh(const otrng_s *otr);
 
 INTERNAL dh_public_key our_dh(const otrng_s *otr);
 
+INTERNAL struct goldilocks_448_point_s *our_ecdh_first(const otrng_s *otr);
+
+INTERNAL dh_public_key our_dh_first(const otrng_s *otr);
+
 INTERNAL uint32_t our_instance_tag(const otrng_s *otr);
 
 INTERNAL otrng_result otrng_prepare_to_send_data_message(string_p *to_send,

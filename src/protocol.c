@@ -52,6 +52,14 @@ INTERNAL dh_public_key our_dh(const otrng_s *otr) {
   return otr->keys->our_dh->pub;
 }
 
+INTERNAL struct goldilocks_448_point_s *our_ecdh_first(const otrng_s *otr) {
+  return &otr->keys->our_ecdh_first->pub[0];
+}
+
+INTERNAL dh_public_key our_dh_first(const otrng_s *otr) {
+  return otr->keys->our_dh_first->pub;
+}
+
 INTERNAL const otrng_client_profile_s *get_my_client_profile(otrng_s *otr) {
   otrng_client_s *client = otr->client;
   maybe_create_keys(client);

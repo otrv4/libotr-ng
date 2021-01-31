@@ -324,6 +324,9 @@ API otrng_result otrng_build_identity_message(string_p *dst, otrng_s *otr) {
   otrng_ec_point_copy(msg->Y, our_ecdh(otr));
   msg->B = otrng_dh_mpi_copy(our_dh(otr));
 
+  otrng_ec_point_copy(msg->Y_first, our_ecdh_first(otr));
+  msg->B_first = otrng_dh_mpi_copy(our_dh_first(otr));
+
   result = serialize_and_encode_identity_message(dst, msg);
   otrng_dake_identity_message_free(msg);
 
@@ -478,6 +481,9 @@ tstatic otrng_result reply_with_identity_message(otrng_response_s *response,
 
   otrng_ec_point_copy(msg->Y, our_ecdh(otr));
   msg->B = otrng_dh_mpi_copy(our_dh(otr));
+
+  otrng_ec_point_copy(msg->Y_first, our_ecdh(otr));
+  msg->B_first = otrng_dh_mpi_copy(our_dh(otr));
 
   result = serialize_and_encode_identity_message(&response->to_send, msg);
   otrng_dake_identity_message_free(msg);
@@ -1496,6 +1502,7 @@ tstatic otrng_result receive_identity_message(string_p *dst,
   msg.sender_instance_tag = 0;
   msg.receiver_instance_tag = 0;
   msg.B = NULL;
+  msg.B_first = NULL;
 
   if (!otrng_dake_identity_message_deserialize(&msg, buffer, buff_len)) {
     otrng_free(msg.profile);

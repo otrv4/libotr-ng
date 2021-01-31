@@ -50,6 +50,7 @@ otrng_dake_identity_message_new(const otrng_client_profile_s *profile) {
   }
 
   otrng_secure_wipe(identity_msg->Y, ED448_POINT_BYTES);
+  otrng_secure_wipe(identity_msg->Y_first, ED448_POINT_BYTES);
 
   return identity_msg;
 }
@@ -61,9 +62,14 @@ otrng_dake_identity_message_destroy(dake_identity_message_s *identity_msg) {
   otrng_client_profile_destroy(identity_msg->profile);
   otrng_free(identity_msg->profile);
   identity_msg->profile = NULL;
+
   otrng_ec_point_destroy(identity_msg->Y);
   otrng_dh_mpi_release(identity_msg->B);
   identity_msg->B = NULL;
+
+  otrng_ec_point_destroy(identity_msg->Y_first);
+  otrng_dh_mpi_release(identity_msg->B_first);
+  identity_msg->B_first = NULL;
 }
 
 INTERNAL void
@@ -104,6 +110,14 @@ INTERNAL otrng_result otrng_dake_identity_message_serialize(
 
   if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buffer)), &len,
                                      identity_msg->B)) {
+    otrng_free(buffer);
+    return OTRNG_ERROR;
+  }
+  cursor += len;
+
+  cursor += otrng_serialize_ec_point(cursor, identity_msg->Y_first);
+  if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buffer)), &len,
+                                     identity_msg->B_first)) {
     otrng_free(buffer);
     return OTRNG_ERROR;
   }
@@ -183,7 +197,20 @@ INTERNAL otrng_result otrng_dake_identity_message_deserialize(
   cursor += ED448_POINT_BYTES;
   len -= ED448_POINT_BYTES;
 
-  return otrng_deserialize_dh_mpi_otr(&dst->B, cursor, len, &read);
+  if (!otrng_deserialize_dh_mpi_otr(&dst->B, cursor, len, &read)) {
+    return OTRNG_ERROR;
+  }
+  cursor += read;
+  len -= read;
+
+  if (!otrng_deserialize_ec_point(dst->Y_first, cursor, len)) {
+    return OTRNG_ERROR;
+  }
+
+  cursor += ED448_POINT_BYTES;
+  len -= ED448_POINT_BYTES;
+
+  return otrng_deserialize_dh_mpi_otr(&dst->B_first, cursor, len, &read);
 }
 
 INTERNAL dake_auth_r_s *otrng_dake_auth_r_new() {

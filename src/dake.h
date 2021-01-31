@@ -36,6 +36,8 @@ typedef struct dake_identity_message_s {
   otrng_client_profile_s *profile;
   ec_point Y;
   dh_public_key B;
+  ec_point Y_first;
+  dh_public_key B_first;
 } dake_identity_message_s;
 
 typedef struct dake_auth_r_s {

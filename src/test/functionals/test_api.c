@@ -635,65 +635,6 @@ static void test_api_conversation_errors_2(void) {
   otrng_s *alice = set_up(alice_client, 1);
   otrng_s *bob = set_up(bob_client, 2);
 
-  otrng_response_s *response_to_bob = otrng_response_new();
-  otrng_response_s *response_to_alice = otrng_response_new();
-
-  otrng_assert(alice->state == OTRNG_STATE_START);
-  otrng_assert(bob->state == OTRNG_STATE_START);
-
-  const char *malformed =
-      "?OTR:AAQ1AAAA/"
-      "wAAAAAAAAAFAAFtAnOYAAIAEOS3QJQ0qaOmuYPwC5ZNkVSCaKiBkWkLaYOttspqz9qIv28hj"
-      "TVP1ODnSCIyn+6aC1NmCgjxryJYgAADABJYWw6Kupk/tyU/"
-      "HM9qIxBAMKEBVzwgkeW5GrqL8dz6LB8rwObfGbsg1+"
-      "RDaAf7k3Q1KWDiW2I9oYAABAAAAAIzNAAFAAAAAF0hMCI8yzB0KnAbqRZRRdrVcih1KcuCR8"
-      "XYpGk/"
-      "TY1ZyqJW2hWTgognlOBGWZcbrA+"
-      "cfPFWmr1MvscnvQBr6gqCZ6j819wnmr7Uh0Zv1XycBebuC4+DtfFcqlE409pFpkz7teh5+"
-      "UxTQzwl5gopUJZguL5LNwAZeGQzgzmxyAtG/EuD0ij2bGb19UJ2hMc7k3/EY/"
-      "sDq4cYXqn51zj8n95Ek80mqIiXB2zUIIJCtYAAAAGAjmy/"
-      "MhzrgdZ7A1X2BRKn71Obo18OdwZIiiRzNLxIg4ublc8DHBaoDHRT4GsryuBGuJVLmofr1ISd"
-      "Fq5ZmuvBe7wIAaI1NhkBVihD6vqc0nrv8INXywF2NzRhjnq/WJkuhPEdXTpw0l/"
-      "Tw5H5aTDpE43NzRYweQAX9A9l9qbkBjCohLNUO8WApf1NoggXVXfxy25RvNwx5iFeOVvdOsn"
-      "724dhxqBJaKDuFroy0Kp4V5m9msOlB2cG1B/Y2sm4ZMi/"
-      "S8t3UpEreufFySS8LYUVHWdM8FqfBf54x3gcHJGqZyUFyVvuCmn6qASMPWdXhHmw8z4WUWn8"
-      "PHWxLQV8oRxM6DI7Q/EWDI7jhVmzlNx0ZIjYYHBJgkSY1vOaNjAcIo2ZGAi8kn83FqCv8l/"
-      "UiBB0oqGtCxXkUZAShah6xAfW1EYkgmZVX8tnLRuc2+"
-      "mL1NhDmi3SIplLQturUIN34ZUp5JebNYT4WmRWm2VfGG6+L1NFGJLMj5Wz4YNBHcVsXbGu.";
-
-  // Alice receives malformed Identity message
-  otrng_assert_is_error(
-      otrng_receive_message(response_to_bob, malformed, alice));
-  const string_p err_code = "?OTR Error: ERROR_3: OTRNG_ERR_MALFORMED";
-  otrng_assert_cmpmem(err_code, response_to_bob->to_send, strlen(err_code));
-
-  // Bob receives an error message
-  otrng_assert_is_success(
-      otrng_receive_message(response_to_alice, response_to_bob->to_send, bob));
-
-  otrng_free(response_to_bob->to_send);
-  response_to_bob->to_send = NULL;
-
-  otrng_assert(response_to_alice);
-  const string_p err_human = "Malformed message";
-  otrng_assert_cmpmem(err_human, response_to_alice->to_display,
-                      strlen(err_human));
-
-  otrng_response_free(response_to_alice);
-  otrng_response_free(response_to_bob);
-
-  otrng_global_state_free(alice_client->global_state);
-  otrng_global_state_free(bob_client->global_state);
-  otrng_conn_free_all(alice, bob);
-}
-
-static void test_api_conversation_errors_3(void) {
-  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
-  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
-
-  otrng_s *alice = set_up(alice_client, 1);
-  otrng_s *bob = set_up(bob_client, 2);
-
   // DAKE HAS FINISHED
   do_dake_fixture(alice, bob);
 
@@ -724,77 +665,6 @@ static void test_api_conversation_errors_3(void) {
   otrng_assert_is_error(result);
 
   free_message_and_response(response_to_alice, &to_send);
-
-  otrng_global_state_free(alice_client->global_state);
-  otrng_global_state_free(bob_client->global_state);
-  otrng_conn_free_all(alice, bob);
-}
-
-static void test_api_conversation_errors_with_policies(void) {
-  otrng_client_s *alice_client = otrng_client_new(ALICE_IDENTITY);
-  otrng_client_s *bob_client = otrng_client_new(BOB_IDENTITY);
-
-  otrng_s *alice = set_up(alice_client, 1);
-  otrng_s *bob = set_up(bob_client, 2);
-
-  otrng_response_s *response_to_bob = otrng_response_new();
-  otrng_response_s *response_to_alice = otrng_response_new();
-
-  otrng_assert(alice->state == OTRNG_STATE_START);
-  otrng_assert(bob->state == OTRNG_STATE_START);
-
-  const char *malformed =
-      "?OTR:AAQ1AAAA/"
-      "wAAAAAAAAAFAAFtAnOYAAIAEOS3QJQ0qaOmuYPwC5ZNkVSCaKiBkWkLaYOttspqz9qIv28hj"
-      "TVP1ODnSCIyn+6aC1NmCgjxryJYgAADABJYWw6Kupk/tyU/"
-      "HM9qIxBAMKEBVzwgkeW5GrqL8dz6LB8rwObfGbsg1+"
-      "RDaAf7k3Q1KWDiW2I9oYAABAAAAAIzNAAFAAAAAF0hMCI8yzB0KnAbqRZRRdrVcih1KcuCR8"
-      "XYpGk/"
-      "TY1ZyqJW2hWTgognlOBGWZcbrA+"
-      "cfPFWmr1MvscnvQBr6gqCZ6j819wnmr7Uh0Zv1XycBebuC4+DtfFcqlE409pFpkz7teh5+"
-      "UxTQzwl5gopUJZguL5LNwAZeGQzgzmxyAtG/EuD0ij2bGb19UJ2hMc7k3/EY/"
-      "sDq4cYXqn51zj8n95Ek80mqIiXB2zUIIJCtYAAAAGAjmy/"
-      "MhzrgdZ7A1X2BRKn71Obo18OdwZIiiRzNLxIg4ublc8DHBaoDHRT4GsryuBGuJVLmofr1ISd"
-      "Fq5ZmuvBe7wIAaI1NhkBVihD6vqc0nrv8INXywF2NzRhjnq/WJkuhPEdXTpw0l/"
-      "Tw5H5aTDpE43NzRYweQAX9A9l9qbkBjCohLNUO8WApf1NoggXVXfxy25RvNwx5iFeOVvdOsn"
-      "724dhxqBJaKDuFroy0Kp4V5m9msOlB2cG1B/Y2sm4ZMi/"
-      "S8t3UpEreufFySS8LYUVHWdM8FqfBf54x3gcHJGqZyUFyVvuCmn6qASMPWdXhHmw8z4WUWn8"
-      "PHWxLQV8oRxM6DI7Q/EWDI7jhVmzlNx0ZIjYYHBJgkSY1vOaNjAcIo2ZGAi8kn83FqCv8l/"
-      "UiBB0oqGtCxXkUZAShah6xAfW1EYkgmZVX8tnLRuc2+"
-      "mL1NhDmi3SIplLQturUIN34ZUp5JebNYT4WmRWm2VfGG6+L1NFGJLMj5Wz4YNBHcVsXbGu.";
-
-  /* Alice receives malformed Identity message */
-  otrng_assert_is_error(
-      otrng_receive_message(response_to_bob, malformed, alice));
-  const string_p err_code = "?OTR Error: ERROR_3: OTRNG_ERR_MALFORMED";
-  otrng_assert_cmpmem(err_code, response_to_bob->to_send, strlen(err_code));
-
-  /* Bob receives an error message, a query message should be sent */
-  otrng_assert_is_success(
-      otrng_receive_message(response_to_alice, response_to_bob->to_send, bob));
-
-  otrng_free(response_to_bob->to_send);
-  response_to_bob->to_send = NULL;
-
-  otrng_assert(response_to_alice);
-  const string_p err_human = "Malformed message";
-  otrng_assert_cmpmem(err_human, response_to_alice->to_display,
-                      strlen(err_human));
-
-  otrng_assert(response_to_alice->to_send);
-  otrng_assert_cmpmem("?OTRv43?", response_to_alice->to_send, 8);
-
-  /* Alice receives a Query Message */
-  otrng_assert_is_success(otrng_receive_message(
-      response_to_bob, response_to_alice->to_send, alice));
-
-  otrng_free(response_to_alice->to_send);
-  response_to_alice->to_send = NULL;
-
-  otrng_assert(!response_to_bob->to_display);
-
-  otrng_response_free(response_to_alice);
-  otrng_response_free(response_to_bob);
 
   otrng_global_state_free(alice_client->global_state);
   otrng_global_state_free(bob_client->global_state);
@@ -1375,9 +1245,6 @@ void functionals_api_add_tests(void) {
   g_test_add_func("/api/multiple_clients", test_api_multiple_clients);
   g_test_add_func("/api/conversation_errors_1", test_api_conversation_errors_1);
   g_test_add_func("/api/conversation_errors_2", test_api_conversation_errors_2);
-  g_test_add_func("/api/conversation_errors_3", test_api_conversation_errors_3);
-  g_test_add_func("/api/conversation_errors_with_policies",
-                  test_api_conversation_errors_with_policies);
   g_test_add_func("/api/conversation/v3", test_api_conversation_v3);
   g_test_add_func("/api/smp", test_api_smp);
   g_test_add_func("/api/smp_abort", test_api_smp_abort);
