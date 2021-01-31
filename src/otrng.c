@@ -1713,6 +1713,9 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buffer,
   otrng_key_manager_set_their_ecdh(auth.X, otr->keys);
   otrng_key_manager_set_their_dh(auth.A, otr->keys);
 
+  otrng_key_manager_set_their_first_ecdh(auth.X_first, otr->keys);
+  otrng_key_manager_set_their_first_dh(auth.A_first, otr->keys);
+
   if (!otrng_client_profile_copy(otr->their_client_profile, auth.profile)) {
     otrng_dake_auth_r_destroy(&auth);
     return OTRNG_ERROR;
@@ -1735,6 +1738,16 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buffer,
    * initialized */
   if (!otrng_key_manager_generate_shared_secret(otr->keys, otrng_true)) {
     return OTRNG_ERROR;
+  }
+
+  otrng_ec_point_copy(otr->keys->their_ecdh, otr->keys->their_first_ecdh);
+  otrng_ec_point_copy(otr->keys->our_ecdh->pub, otr->keys->our_ecdh_first->pub);
+  otrng_ec_scalar_copy(otr->keys->our_ecdh->priv, otr->keys->our_ecdh_first->priv);
+
+  otr->keys->our_dh->pub = otrng_dh_mpi_copy(otr->keys->our_dh_first->pub);
+  otr->keys->our_dh->priv = otrng_dh_mpi_copy(otr->keys->our_dh_first->priv);
+  if (otr->keys->their_first_dh) {
+    otr->keys->their_dh = otrng_dh_mpi_copy(otr->keys->their_first_dh);
   }
 
   // TODO: Refactor
@@ -1813,6 +1826,16 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
                                   otr->their_client_profile->long_term_pub_key,
                                   otr->their_client_profile->forging_pub_key)) {
     fingerprint_seen_cb_v4(fp, otr);
+  }
+
+  otrng_ec_point_copy(otr->keys->their_ecdh, otr->keys->their_first_ecdh);
+  otrng_ec_point_copy(otr->keys->our_ecdh->pub, otr->keys->our_ecdh_first->pub);
+  otrng_ec_scalar_copy(otr->keys->our_ecdh->priv, otr->keys->our_ecdh_first->priv);
+
+  otr->keys->our_dh->pub = otrng_dh_mpi_copy(otr->keys->our_dh_first->pub);
+  otr->keys->our_dh->priv = otrng_dh_mpi_copy(otr->keys->our_dh_first->priv);
+  if (otr->keys->their_first_dh) {
+    otr->keys->their_dh = otrng_dh_mpi_copy(otr->keys->their_first_dh);
   }
 
   if (!double_ratcheting_init(otr, 't')) {
