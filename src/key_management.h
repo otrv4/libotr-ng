@@ -92,6 +92,9 @@ typedef struct key_manager_s {
   ecdh_keypair_s *our_ecdh;
   dh_keypair_s *our_dh;
 
+  ecdh_keypair_s *our_ecdh_first;
+  dh_keypair_s *our_dh_first;
+
   ec_point their_ecdh;
   dh_public_key their_dh;
 

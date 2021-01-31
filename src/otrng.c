@@ -305,7 +305,6 @@ API otrng_result otrng_build_identity_message(string_p *dst, otrng_s *otr) {
   dake_identity_message_s *msg = NULL;
   otrng_result result;
 
-  // TODO: add policy check
   otr->running_version = OTRNG_PROTOCOL_VERSION_4;
 
   if (otrng_key_manager_generate_ephemeral_keys(otr->keys) == OTRNG_ERROR) {
