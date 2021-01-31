@@ -1642,6 +1642,12 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
     return otrng_false;
   }
 
+  // Repeat validation
+  if (!otrng_valid_received_values(auth->sender_instance_tag, auth->X_first, auth->A_first,
+                                   auth->profile)) {
+    return otrng_false;
+  }
+
   if (!generate_receiving_rsig_tag(&t, &t_len, 'r', &responder, otr)) {
     return otrng_false;
   }
