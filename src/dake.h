@@ -46,6 +46,8 @@ typedef struct dake_auth_r_s {
   otrng_client_profile_s *profile;
   ec_point X;
   dh_public_key A;
+  ec_point X_first;
+  dh_public_key A_first;
   ring_sig_s *sigma;
 } dake_auth_r_s;
 

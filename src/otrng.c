@@ -746,6 +746,9 @@ tstatic otrng_result reply_with_auth_r_message(string_p *dst, otrng_s *otr) {
   otrng_ec_point_copy(msg.X, our_ecdh(otr));
   msg.A = otrng_dh_mpi_copy(our_dh(otr));
 
+  otrng_ec_point_copy(msg.X_first, our_ecdh_first(otr));
+  msg.A_first = otrng_dh_mpi_copy(our_dh_first(otr));
+
   if (!generate_sending_rsig_tag(&t, &t_len, 'r', otr)) {
     otrng_dake_auth_r_destroy(&msg);
     return OTRNG_ERROR;

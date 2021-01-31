@@ -231,6 +231,12 @@ INTERNAL void otrng_dake_auth_r_destroy(dake_auth_r_s *auth_r) {
   auth_r->A = NULL;
   otrng_ec_point_destroy(auth_r->X);
 
+  if (auth_r->A_first) {
+    otrng_dh_mpi_release(auth_r->A_first);
+    auth_r->A_first = NULL;
+  }
+  otrng_ec_point_destroy(auth_r->X_first);
+
   otrng_client_profile_destroy(auth_r->profile);
   otrng_free(auth_r->profile);
   auth_r->profile = NULL;
@@ -274,6 +280,18 @@ INTERNAL otrng_result otrng_dake_auth_r_serialize(uint8_t **dst, size_t *nbytes,
   }
 
   cursor += len;
+
+  cursor += otrng_serialize_ec_point(cursor, auth_r->X_first);
+
+  len = 0;
+  if (!otrng_serialize_dh_public_key(cursor, (size - (cursor - buffer)), &len,
+                                     auth_r->A_first)) {
+    otrng_free(buffer);
+    return OTRNG_ERROR;
+  }
+
+  cursor += len;
+
   cursor += otrng_serialize_ring_sig(cursor, auth_r->sigma);
 
   if (dst) {
@@ -351,6 +369,20 @@ INTERNAL otrng_result otrng_dake_auth_r_deserialize(dake_auth_r_s *dst,
   len -= ED448_POINT_BYTES;
 
   if (!otrng_deserialize_dh_mpi_otr(&dst->A, cursor, len, &read)) {
+    return OTRNG_ERROR;
+  }
+
+  cursor += read;
+  len -= read;
+
+  if (!otrng_deserialize_ec_point(dst->X_first, cursor, len)) {
+    return OTRNG_ERROR;
+  }
+
+  cursor += ED448_POINT_BYTES;
+  len -= ED448_POINT_BYTES;
+
+  if (!otrng_deserialize_dh_mpi_otr(&dst->A_first, cursor, len, &read)) {
     return OTRNG_ERROR;
   }
 
