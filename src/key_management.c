@@ -583,6 +583,17 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
       return OTRNG_ERROR;
     }
 
+    // UNCOMMENT ME
+    //otrng_ec_point_copy(manager->their_ecdh, manager->their_first_ecdh);
+    //otrng_ec_point_copy(manager->our_ecdh->pub, manager->our_ecdh_first->pub);
+    //otrng_ec_scalar_copy(manager->our_ecdh->priv, manager->our_ecdh_first->priv);
+
+    //manager->our_dh->pub = otrng_dh_mpi_copy(manager->our_dh_first->pub);
+    //manager->our_dh->priv = otrng_dh_mpi_copy(manager->our_dh_first->priv);
+    //if (manager->their_first_dh) {
+    //  manager->their_dh = otrng_dh_mpi_copy(manager->their_first_dh);
+    //}
+
   } else if (!interactive) {
     if (!shake_256_kdf1(manager->shared_secret, SHARED_SECRET_BYTES,
                         usage_shared_secret, manager->tmp_key, HASH_BYTES)) {
