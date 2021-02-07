@@ -240,13 +240,15 @@ INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key their_dh,
   manager->their_dh = otrng_dh_mpi_copy(their_dh);
 }
 
-INTERNAL void otrng_key_manager_set_their_first_ecdh(const ec_point their_first_ecdh,
-                                               key_manager_s *manager) {
+INTERNAL void
+otrng_key_manager_set_their_first_ecdh(const ec_point their_first_ecdh,
+                                       key_manager_s *manager) {
   otrng_ec_point_copy(manager->their_first_ecdh, their_first_ecdh);
 }
 
-INTERNAL void otrng_key_manager_set_their_first_dh(const dh_public_key their_first_dh,
-                                             key_manager_s *manager) {
+INTERNAL void
+otrng_key_manager_set_their_first_dh(const dh_public_key their_first_dh,
+                                     key_manager_s *manager) {
   otrng_dh_mpi_release(manager->their_first_dh);
   manager->their_first_dh = otrng_dh_mpi_copy(their_first_dh);
 }
@@ -584,13 +586,15 @@ INTERNAL otrng_result otrng_key_manager_generate_shared_secret(
     }
 
     // UNCOMMENT ME
-    //otrng_ec_point_copy(manager->their_ecdh, manager->their_first_ecdh);
-    //otrng_ec_point_copy(manager->our_ecdh->pub, manager->our_ecdh_first->pub);
-    //otrng_ec_scalar_copy(manager->our_ecdh->priv, manager->our_ecdh_first->priv);
+    // otrng_ec_point_copy(manager->their_ecdh, manager->their_first_ecdh);
+    // otrng_ec_point_copy(manager->our_ecdh->pub,
+    // manager->our_ecdh_first->pub);
+    // otrng_ec_scalar_copy(manager->our_ecdh->priv,
+    // manager->our_ecdh_first->priv);
 
-    //manager->our_dh->pub = otrng_dh_mpi_copy(manager->our_dh_first->pub);
-    //manager->our_dh->priv = otrng_dh_mpi_copy(manager->our_dh_first->priv);
-    //if (manager->their_first_dh) {
+    // manager->our_dh->pub = otrng_dh_mpi_copy(manager->our_dh_first->pub);
+    // manager->our_dh->priv = otrng_dh_mpi_copy(manager->our_dh_first->priv);
+    // if (manager->their_first_dh) {
     //  manager->their_dh = otrng_dh_mpi_copy(manager->their_first_dh);
     //}
 

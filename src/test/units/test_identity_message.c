@@ -93,15 +93,16 @@ static void test_dake_identity_message_serializes(dake_fixture_s *f,
   cursor += mpi_len + 4;
 
   uint8_t ser_first_y[PUB_KEY_SER_BYTES] = {0};
-  int ser_first_len = otrng_serialize_ec_point(ser_first_y, identity_msg->Y_first);
+  int ser_first_len =
+      otrng_serialize_ec_point(ser_first_y, identity_msg->Y_first);
   otrng_assert_cmpmem(cursor, ser_first_y, ser_first_len);
 
   cursor += ser_first_len;
 
   uint8_t ser_first_b[DH3072_MOD_LEN_BYTES] = {0};
   size_t mpi_first_len = 0;
-  otrng_assert(otrng_dh_mpi_serialize(ser_first_b, DH3072_MOD_LEN_BYTES, &mpi_first_len,
-                                      identity_msg->B_first));
+  otrng_assert(otrng_dh_mpi_serialize(ser_first_b, DH3072_MOD_LEN_BYTES,
+                                      &mpi_first_len, identity_msg->B_first));
   // Skip first 4 because they are the size (mpi_len)
   otrng_assert_cmpmem(cursor + 4, ser_first_b, mpi_first_len);
 

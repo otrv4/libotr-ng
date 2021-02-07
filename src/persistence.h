@@ -38,9 +38,8 @@ otrng_client_private_key_v4_read_from(otrng_client_s *client, FILE *privf);
 INTERNAL otrng_result otrng_client_forging_key_read_from(otrng_client_s *client,
                                                          FILE *forgingf);
 
-API otrng_result client_private_key_v4_write_to_buffer(const otrng_client_s *client,
-                                      uint8_t *buf, size_t buflen,
-                                      size_t *written);
+API otrng_result client_private_key_v4_write_to_buffer(
+    const otrng_client_s *client, uint8_t *buf, size_t buflen, size_t *written);
 
 INTERNAL otrng_result
 otrng_client_private_key_v4_write_to(const otrng_client_s *client, FILE *privf);

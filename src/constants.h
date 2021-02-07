@@ -39,7 +39,8 @@
 
 /* size of the Identity Message without client_profile */
 #define IDENTITY_MAX_BYTES                                                     \
-  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES)
+  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES +                  \
+   ED448_POINT_BYTES + DH_MPI_MAX_BYTES)
 #define PRE_KEY_MAX_BYTES                                                      \
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES)
 #define PRE_KEY_WITH_METADATA_MAX_BYTES                                        \
@@ -47,7 +48,8 @@
    ED448_SCALAR_BYTES + DH_MPI_MAX_BYTES)
 
 #define AUTH_R_MAX_BYTES                                                       \
-  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES + RING_SIG_BYTES)
+  (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES +                  \
+   ED448_POINT_BYTES + DH_MPI_MAX_BYTES + RING_SIG_BYTES)
 
 #define NON_INT_AUTH_MAX_BYTES                                                 \
   (DAKE_HEADER_BYTES + ED448_POINT_BYTES + DH_MPI_MAX_BYTES + RING_SIG_BYTES + \

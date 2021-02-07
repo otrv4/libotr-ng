@@ -228,8 +228,9 @@ INTERNAL void otrng_key_manager_set_their_dh(const dh_public_key their_dh,
  * @param [their_first_ecdh]  The new their_first_ecdh key.
  * @param [manager]     The key manager.
  */
-INTERNAL void otrng_key_manager_set_their_first_ecdh(const ec_point their_first_ecdh,
-                                               key_manager_s *manager);
+INTERNAL void
+otrng_key_manager_set_their_first_ecdh(const ec_point their_first_ecdh,
+                                       key_manager_s *manager);
 
 /**
  * @brief Securely replace their first dh keys.
@@ -237,8 +238,9 @@ INTERNAL void otrng_key_manager_set_their_first_ecdh(const ec_point their_first_
  * @param [their_first_dh]  The new their_first_dh key.
  * @param [manager]     The key manager.
  */
-INTERNAL void otrng_key_manager_set_their_first_dh(const dh_public_key their_first_dh,
-                                             key_manager_s *manager);
+INTERNAL void
+otrng_key_manager_set_their_first_dh(const dh_public_key their_first_dh,
+                                     key_manager_s *manager);
 
 /**
  * @brief Generate the ephemeral ecdh and dh keys.

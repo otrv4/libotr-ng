@@ -495,7 +495,8 @@ void do_dake_fixture(otrng_s *alice, otrng_s *bob) {
   /* Bob has Alice's ephemeral keys */
   otrng_assert_ec_public_key_eq(bob->keys->their_ecdh,
                                 alice->keys->our_ecdh_first->pub);
-  otrng_assert_dh_public_key_eq(bob->keys->their_dh, alice->keys->our_dh_first->pub);
+  otrng_assert_dh_public_key_eq(bob->keys->their_dh,
+                                alice->keys->our_dh_first->pub);
   otrng_assert_not_zero(bob->keys->ssid, sizeof(alice->keys->ssid));
   otrng_assert_zero(bob->keys->shared_secret, sizeof(k_shared_secret));
   otrng_assert_not_zero(bob->keys->current->root_key, sizeof(k_root));

@@ -1529,8 +1529,8 @@ tstatic otrng_result receive_identity_message(string_p *dst,
   }
 
   // Validating twice
-  if (!otrng_valid_received_values(msg.sender_instance_tag, msg.Y_first, msg.B_first,
-                                   msg.profile)) {
+  if (!otrng_valid_received_values(msg.sender_instance_tag, msg.Y_first,
+                                   msg.B_first, msg.profile)) {
     otrng_dake_identity_message_destroy(&msg);
     return result;
   }
@@ -1643,8 +1643,8 @@ tstatic otrng_bool valid_auth_r_message(const dake_auth_r_s *auth,
   }
 
   // Repeat validation
-  if (!otrng_valid_received_values(auth->sender_instance_tag, auth->X_first, auth->A_first,
-                                   auth->profile)) {
+  if (!otrng_valid_received_values(auth->sender_instance_tag, auth->X_first,
+                                   auth->A_first, auth->profile)) {
     return otrng_false;
   }
 
@@ -1742,7 +1742,8 @@ tstatic otrng_result receive_auth_r(string_p *dst, const uint8_t *buffer,
 
   otrng_ec_point_copy(otr->keys->their_ecdh, otr->keys->their_first_ecdh);
   otrng_ec_point_copy(otr->keys->our_ecdh->pub, otr->keys->our_ecdh_first->pub);
-  otrng_ec_scalar_copy(otr->keys->our_ecdh->priv, otr->keys->our_ecdh_first->priv);
+  otrng_ec_scalar_copy(otr->keys->our_ecdh->priv,
+                       otr->keys->our_ecdh_first->priv);
 
   otr->keys->our_dh->pub = otrng_dh_mpi_copy(otr->keys->our_dh_first->pub);
   otr->keys->our_dh->priv = otrng_dh_mpi_copy(otr->keys->our_dh_first->priv);
@@ -1830,7 +1831,8 @@ tstatic otrng_result receive_auth_i(char **dst, const uint8_t *buffer,
 
   otrng_ec_point_copy(otr->keys->their_ecdh, otr->keys->their_first_ecdh);
   otrng_ec_point_copy(otr->keys->our_ecdh->pub, otr->keys->our_ecdh_first->pub);
-  otrng_ec_scalar_copy(otr->keys->our_ecdh->priv, otr->keys->our_ecdh_first->priv);
+  otrng_ec_scalar_copy(otr->keys->our_ecdh->priv,
+                       otr->keys->our_ecdh_first->priv);
 
   otr->keys->our_dh->pub = otrng_dh_mpi_copy(otr->keys->our_dh_first->pub);
   otr->keys->our_dh->priv = otrng_dh_mpi_copy(otr->keys->our_dh_first->priv);
