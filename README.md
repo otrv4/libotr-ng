@@ -115,6 +115,11 @@ Pidgin - to not have multipled threads at all. However how you choose to do it,
 it's important to ensure this thread safety, since the results of not doing so
 can be potentially very dangerous.
 
+## Funding
+
+The work made hare was partially supported by the NlNet Foundation.
+Find information [here](https://nlnet.nl/project/OTR4/).
+
 ## License
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fotrv4%2Flibotr-ng.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fotrv4%2Flibotr-ng?ref=badge_large)
